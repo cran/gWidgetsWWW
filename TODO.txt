@@ -1,0 +1,78 @@
+## TODO version 0.1+
+* gdf fixes
+* gtree: issue with loader needing to come from a url, how to load
+  from a data vector? Really want to load from a handler
+* drag and drop functions
+* gdf improvements: names<-, row names (EZ), logical, NA values,
+  adding columns, adding rows, dates, ... Much more is possible
+* menubar/toolbar icons
+* ginput, gmessage -- don't work without cat("alert()") in there??
+  STDOUT issues? 
+* format numbers?
+function addCommas(nStr)
+{
+	nStr += '';
+	x = nStr.split('.');
+	x1 = x[0];
+	x2 = x.length > 1 ? '.' + x[1] : '';
+	var rgx = /(\d+)(\d{3})/;
+	while (rgx.test(x1)) {
+		x1 = x1.replace(rgx, '$1' + ',' + '$2');
+	}
+	return x1 + x2;
+}
+* subwindow needs an on-demand scrollbar HOW
+* FOr gcomobox we should allow items to be a) a vector b) a data frame
+  [DONE} c)a EXTStore object (so that we only print these once) d) a
+  URL with some information about how to read it into JSON object
+* createDelegate to pass info to handlers (kye=value) --implement,
+  current one is not very good. Needed for ginput, gconfirm? one
+  implementation in addHandlerKeystroke but not nice.
+* resizable -- was working, but didn't go into columns, have props error 
+  * made optional for now.
+* file upload??
+## TODO version 0.1
+* documentation
+DONE * border -- blue border is annoying
+* iron out examples: t-test, windows, layout, widgets, combobox
+
+DONE * gcombo -- check api
+DONE * ggooglemaps: working? document here, give examples
+DONE * check ginput -- passed in h$input
+DONE * gbutton: iconCls vs icon?
+DONE* addSpring, addSpace -- define stubs
+DONE * gtext -- multiline additoins? -- \\\\n
+DONE * label, image code needs to go into display of window -- otherwise
+  can't use in a subwindow
+DONE * gcombob with vector input -- not working?
+DONE * gseparator -- make, but how???
+DONE * icons: need for actions -- will this work
+  button.XXX{background-image:url(YYY)};
+  x = getStockIcons()
+  paste("button.",names(x),"{background-image:url(",x,")};", sep="",
+  collapse="")
+  newN = document.createElement('style')
+  newN.innerHTML = paste....
+  document.body.appendChild(newN)
+
+DONE * gcombobox: wanted hideTrigger=gedit -- work on this, but found issue
+  with values. Should have value, label, icon, tooltip, others
+DONE * .$handlerArgs is signal based and can be overridden by an instance
+DONE * gmenu, gtoolbar
+DONE * gtable: XXX
+DONE * fix gradio
+DONE * gcalendar
+DONE * ggroup layout:"row" is an issue (horizontal=TRUE) -- no layout:row
+DONE * gtext -- no wrap, no enter key binding??
+DONE * combobox -- outo of date. XXX finish Move to new EXTWidget style
+DONE cf. gcombobox * widget with store. If working, move proto stuff to aaa. R
+DONE * shQutoeEsc -- write
+DONE * gstatusbar -- but not perfect
+DONE * ghtml -- long strings of HTML via xtable. uploader issues
+DONE * gimage -- similar to ghtml I  suppose. http://extjs.com/forum/showthread.php?t=13390 
+DONE * glayout -- simple algorithm is implemented
+DONE * ggroup, gframe and gpanedgroup are *all* the same, make it so
+
+
+
+

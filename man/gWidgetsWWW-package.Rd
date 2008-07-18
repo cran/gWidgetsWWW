@@ -1,0 +1,477 @@
+\name{gWidgetsWWW-package}
+\alias{gWidgetsWWW-package}
+\alias{gWidgetsWWW}
+\docType{package}
+\title{
+Toolkit implementation of gWidgets for WWW
+}
+\description{
+Port of gWidgets API to WWW using the Rpad package and the ExtJS
+javascript libraries.
+}
+\details{
+  
+  This package ports the gWidgets API allowing the creation of
+  interactive webpages.  The interactivity is provided through the
+  \pkg{Rpad} package. The webpages themselves use the Ext toolkit
+  (\url{www.extjs.com}) to render the widgets. This toolkit must be
+  installed separately and configured to work.
+
+  
+  As \pkg{gWidgets} is meant to be multi-toolkit, this file documents
+  differences from the API, of which there are many. However, this
+  package is not compatible with the \pkg{gWidgets} package so reading
+  that documentation is best done with a separate R process.
+
+  \bold{Overview:}\cr
+
+  The \pkg{gWidgetsWWW} package at one level maps \R\/ commands to
+  javascript commands. The communication between \R\/ and the browser
+  works as follows. Before a page is rendered, it can be constructed
+  using the gWidget constructors and methods. When the top-level window
+  is shown (via its \code{print} method), the javascript code to produce
+  the page is created. This javascript code takes advantage of the
+  freely available Ext libraries which greatly enhance the base
+  javascript language. (Rpad itself has a similar set of libraries --
+  the open source dojo toolkit, \url{www.dojotoolkit.org}-- but
+  gWidgetsWWW uses extjs, which although is not as freely licensed, it
+  is more up to data and has an excellent API and set of examples.) This
+  code should be contained in or sourced into a web page so that it can
+  be rendered in a browser. The \pkg{gWidgetsWWW} package provides
+  several examples of how this works.
+
+  The \pkg{Rpad} package provides a mechanism for the web page to call
+  back into the \R\/ program. The same \R\/ session is used throughout
+  the lifetime of a page. (That means don't refresh the page.)  The
+  server version of \pkg{Rpad} can open several different sessions to
+  handle multiple requests.  When a page calls the \R\/ session, the
+  gWidgets code can produce JavaScript to cause the page to do
+  something, such as update the GUI. This allows the web page to be
+  interactive. What is missing is a way to initiate a request from \R\/
+  to the web page and then back to \R. As such, the state of the web
+  page is constantly passed back to the \R\/ session. That is, when a
+  control is updated, such as when a radio button is clicked, there is a
+  call back into \R\/ to set that value. This allows handlers in R to be
+  aware of the state of the web page. On the downside, this may cause a
+  lag in performance.
+
+
+
+
+  \bold{Installation:}\cr
+  
+  Before the package can run, both the \pkg{Rpad} package and the
+  \code{Ext} libraries must be installed. The \pkg{Rpad} package
+  installation performs a local installation without much work. The
+  "server" installation requires an external web served to be set
+  up. The package provides a script to automate the configuration. The
+  \pkg{Rpad} package installs a javascript toolkit \code{dojo}. The web
+  page must call this in and the \pkg{Rpad} code. Some sample code to do
+  so might be
+
+\code{<script type="text/javascript" src="gui/dojo.js"></script>}
+\cr
+\code{<script type="text/javascript" src="gui/Rpad_main.js"></script>}
+
+
+  The \code{Ext} libraries may be downloaded from
+  \url{www.extjs.com}. Ext has a dual-license model, offering an open
+  source LGPL license along with a per-developer, royalty-free
+  commercial license. The \pkg{gWidgetsWWW} package makes no assumptions
+  about where this library is installed, but the web page that calls the
+  \R\/ code must call in these javascript libraries. The examples use
+
+\code{<script type="text/javascript"
+  src="ext-2.1/adapter/ext/ext-base.js"></script>}
+\cr
+\code{<script type="text/javascript" src="ext-2.1/ext-all.js"></script>}
+
+  
+
+To complete the installation, the \pkg{gWidgetsWWW} package provides some stock
+icons. For now, these icons need to be installed in directory called
+\code{images} in the base directory of the web server. 
+  
+
+
+
+
+\bold{Containers:}
+  \cr
+
+  The \code{gwindow} container is treated differently in
+  \pkg{gWidgetsWWW} than in \pkg{gWidgets}. There can be only one
+  top-level window, as this maps to a webpage. Subwindows are possible
+  though. These are constructed with the same constructor, but one
+  passes in the top-level window to the \code{container} argument. The
+  window object is a bit different than other \code{gWidgets}
+  implementations, as the object isn't rendered until the web page is
+  ready to display. This rendering is done through the \code{print}
+  method. In particular, the \code{visible} argument is ignored. After
+  rendering, new widgets can be added but it doesn't happen by the same
+  process and may not work as desired. To be on the safe side, you can
+  add child widgets and make them not visible to begin.  The default
+  handler is assigned to the \code{unload} signal which is called when a
+  page is left. One thing to remember, is that web pages in
+  \pkg{gWidgetsWWW} will lose state when reloaded. For windows, only the
+  \code{svalue<-} method, for adjusting the title, is defined.  \cr
+  
+  The \code{ggroup} container accepts the \code{horizontal} and
+  \code{spacing} arguments, but does not use the \code{use.scrollwindow}
+  argument (spacing can not be done after rendering with the
+  \code{svalue<-} method though). When adding a child component (which
+  is done when a \code{ggroup} instance is used as a parent container)
+  the \code{expand} argument is not used, nor is the \code{anchor}
+  argument of \pkg{gWidgets}. These are useful for alignment.
+  Additionally, the \code{addSpring} and \code{addSpace} methods are not
+  defined.   
+  \cr
+
+  The \code{gframe} container simply adds a title to a \code{ggroup}
+  instance. This can be adjusted with the \code{svalue<-} method.
+  \cr
+  
+  The \code{gexpandgroup} container extends the \code{gframe} container
+  by making the title clickable. When clicked the container will toggle
+  between a hidden and visible state. When hidden only the title is
+  visible. This can be done programatically through the
+  \code{visible<-} method.
+  \cr
+  
+  The \code{glayout} container lays out its children in a grid. There is
+  no ability to adjust how a child is layed out in the parent cell
+  through the \code{anchor} arugment. When adding a child to this
+  container one specifies the location using the \code{[} method and
+  specifies the container to the constructor as in this example:
+  \code{f <- glayout(cont = g); f[1,1] <- (b <- gbutton("hi", cont=f))}
+  \cr
+
+  
+  The \code{gnotebook} container does not implement all the features
+  expected. The  \code{tab.pos} argument only accepts values of 1 and 3
+  for top and bottom placement of tabs. The \code{close.buttons}
+  argument is not yet implemented. Adding child components is done by
+  specifying the notebook object to the constructor's \code{container}
+  argument. When done, the extra argument \code{label} is used to
+  specify the tab label. The \code{svalue<-} method can be used to set
+  the tab by index, the \code{names} and \code{names<-} method set the
+  tab names. The \code{dispose} method deletes the current tab.
+    \cr
+  
+
+  \bold{Widgets:}\cr
+
+  The \code{glabel} widget  has no handler, and is not editable. HTML
+  markup is allowed, but may not work if not escaped. The
+  \code{font<-} method can be used to adjust font properties. This
+  method takes a vector of values with corresponding names being the CSS
+  property.
+
+
+
+  The \code{gbutton} widget: Can accept a \code{gaction} object to
+  define the click handler. Pass in the action to the \code{action}
+  component and \code{NULL} for the \code{handler} argument.
+  \cr
+
+
+  The \code{ghtml} widget shows urls in the window. The url should point
+  to a basic web page or be HTML formatted text. Some browsers will
+  process this text before it gets to R, so it may be best to source in
+  the file that contains HTML formatted text.
+  \cr
+
+
+  The \code{gcheckbox} widget has no method to change the label (\code{[<-},
+  \code{names<-})
+  \cr
+
+
+  The \code{gcheckboxgroup} widget has no \code{[<-} method.
+  \cr
+
+
+  The \code{gradio} widget has no \code{[<-} method.
+  \cr
+
+  The \code{gslider} widget has a tooltip that indicates the value of
+  the widget.
+  \cr
+
+
+  The \code{gspinbutton} widget is not yet implemented. One can use the
+  \code{gslider} widget instead.
+  \cr
+
+
+  The \code{gedit} widget: The transport occurs on the "blur" signal --
+  when the focus leaves the widget basically. The \code{gedit} widget
+  does not have the \code{[<-} method. However, if this is desired
+  (for type ahead) the \code{gcombobox} widget can be used. By default,
+  this widget has a "trigger" icon indicating to the user that it looks
+  like a combobox, but this will not be drawn if the property
+  \code{..hideTrigger} is set to \code{TRUE}, as in \code{obj =
+    gcombobox(...); obj$..hideTrigger <- TRUE}. In a similar way, one
+  can specify "typeAhead" by setting \code{obj$..typeAhead <- TRUE}.
+  \cr
+  
+
+  The \code{gtext} widget: The transport occurs on the "blur" signal --
+  when the focus leaves the widget basically.
+  \cr
+
+
+  The \code{gimage} widget \code{filename} and \code{dirname} referring
+  to url's not to local files. There is no \code{handler} defined for
+  this widget.
+  \cr
+
+
+  The \code{gcombobox} widget has an \code{items} argument which can be
+  a data vector, or a data frame with one, two, three, or perhaps more
+  columns. This should have two or more values. If a data vector or
+  one-column data frame, then it should be a vector of values. If a two
+  or more column data frame, then the first column will be the value,
+  the second column (if present) will be used to generate an image. If
+  the values are identified as URL, or have that class the image will be
+  downloaded, otherwise it will be assumed to be a character string
+  identifying a stock icon. Finally, the third column (if present) will
+  be used for a tooltip. For the real ambitious, the \code{$tpl()}
+  method of the widget can be used to markup the combobox text and
+  (perhaps) include other columns of the \code{items} argument. The
+  template should use the names "value","text","iconurl" and "qtip" for
+  the first four columns, where the "text" column is the "value" column
+  repeated.\cr
+
+
+  The \code{gcalendar} widget formatting may be unrealiable. The
+  conversion from Ext to R format for dates may be locale dependent and
+  this hasn't been investigated.
+  \cr
+
+
+  The \code{gfilebrowse} widget needs writing
+  \cr
+
+
+  The \code{gtable} widget: when using \code{[<-} to replace values,
+  indices don't work and when replacing data frame the replacement must
+  have same number of columns, each with the same type; has no
+  \code{names<-}method to set column names. Only \code{addHandlerClick} and
+  \code{addHandlerDoubleclick} are working. The filtering feature
+  (specified through \code{filter.FUN} say) is not implemented. The
+  \code{icon.FUN} should return either url's or stock icon names.   
+  \cr
+
+  The \code{gdf} widget is implemented but limited. The widget
+  recognizes certain data types and provides different means to edit the
+  values. However, there is no capacity to add rows or columns. (One
+  could start with more rows and columns than needed and then trim.) As
+  the column types come from the \code{items} argument, this must be
+  provided. The widget does not gracefully handle \code{NA} values
+  (\code{items[complete.cases(items),]} is used). Thi scan be worked
+  around, but isn't automated. For numeric values \code{NaN} is
+  recongized. For character, logical or factors vectors, one could use
+  \code{"NA"} or \code{""}.  The widget does not show the data frames
+  row names. One could add these to \code{items} first as a character
+  vector to edit. and then take them off again. \cr
+
+
+  The \code{gtree} widget needs writing.
+  \cr
+
+
+  The \code{gaction} widget creates "actions" which can be used in
+  menubars and attached to buttons. The methods \code{svalue<-} and
+  \code{enabled<-} can be used to set the label and the en/dis able the
+  items. 
+  \cr
+  
+  The \code{gmenu} widget has no methods to replace or access the
+  elements of the menu. However, the leaves of the menu items should be
+  \code{gaction} elements, rather than lists as with the other gwidgets
+  implementations. This allows one to call \code{enabled<-} to disable,
+  and \code{svalue} to change the text.
+  \cr
+
+
+  The \code{gtoolbar} widget is subsumed in the \code{gmenu} widget. The
+  \code{gaction} constructor can be used to create menubar elements.
+  \cr
+
+
+  The \code{gstatusbar} widget is slightly different from the
+  \pkg{gWidgets} API, where there is a stack of status messages. The
+  intial text stays until overridden via an svalue call. Subsequent
+  svalue calls are transient, lasting for about 10 seconds.  \cr
+
+  The \code{gseparator} widget only works for horizontal lines, and
+  simply uses the \code{HR} tag within the \code{ghtml} widget.
+
+
+  The \code{\link{ggooglemaps}} widget allows one to integrate google
+  maps into an application. This constructor is \pkg{gWidgetsWWW}
+  specific and is documented in its own help file.
+  
+  \bold{Dialogs:}\cr  
+
+  
+  The \code{galert(title = "", message = "")} dialog is specific to
+  \pkg{gWidgetsWWW}. It creates a quick alert that pops down from the
+  top of the web page. It has a \code{title} and \code{message} argument
+  only.  \cr
+  
+  The other dialogs have a \code{parent} argument that must be
+  specified. This allows handlers, etc. to be registered. Visually, the
+  dialogs will appear to "pop-up" from the component specified.
+  \cr
+  
+  The \code{gmessage} dialog produces a modal dialog similar to the
+  javascript \code{alert} dialog.
+  \cr
+
+  The \code{gconfirm} widget has an issue. The handler is called on the
+  "ok" selection, but the javascript code it produces is not rendered by
+  the browser. This is due to some elusive subtlety with \code{cat} that will
+  hopefully be identified and worked around.
+  \cr
+
+  The \code{ginput} widget has the same  issue with the handler as
+  \code{gconfirm}.
+  \cr
+
+  As an alternative to \code{gconfirm} and \code{ginput} a subwindow can
+  be used. These are created by the \code{gwindow} constructor when the
+  \code{container} argument is specified.
+
+
+  \bold{icons:}\cr
+
+  
+  The funtion \code{getStockIcons} returns a vector of these icons. The
+  \code{names} of this vector may be used to define icons in some of the
+  widgets. The return values are url's of the stock icons.
+  
+  The function \code{addStockIcons} can be used to add to this list. These
+  should be added \em{before} the GUI is rendered so that they will be
+  available to the GUI's components.
+  
+
+
+  
+  \bold{Methods:}\cr
+
+
+  The \code{svalue} method should work as with \pkg{gWidgets}.
+  \cr
+
+  
+  The \code{svalue<-} method should work as with \pkg{gWidgets}.
+  \cr
+
+  
+  The \code{add} method for containers (implicitly called by
+  constructors) is implemented (but may behave differently) for
+  containers after they are rendered.
+  \cr
+
+  
+  The \code{enabled<-} method is used to disable/enable a widget for
+  user input.
+  \cr
+
+  
+  The \code{dispose<-} method only hides the widget, rather than
+  destroy the widget. 
+  \cr
+
+  
+  The \code{focus<-} method should work as expected to set the focus
+  to the widget.
+  \cr
+
+  
+  The \code{visible<-} method should unhide a child widget that was
+  hidden via \code{dispose<-}. There is no \code{visible=FALSE} state
+  for widgets when the GUI is initially drawn.
+  \cr
+
+  
+  The \code{[} method method for many constructors is not fully implemented.
+  \cr
+
+  The \code{[<-} method method likely won't use the i,j indexing arguments
+  \cr
+
+  The \code{names<-} method method is only partially implemented.
+  \cr
+
+  The \code{size<-} method can be called with either \code{c(width)}
+  or \code{c(width, height)}. The default sizing for many widgets is
+  "auto", which will fill the width of the page.  This will make
+  \code{horizontal=TRUE} not behave as expected.
+  \cr
+  
+  The \code{print} method for windows (gwindow) will print out the
+  javascript to produce the page. This is how a page gets rendered to
+  the web browser.
+  \cr
+  
+  The \code{tooltip<-} method will set a tooltip for the widget. The
+  value may be a string or a URL which returns a string. URLs are
+  identified by the function \code{isURL}.  \cr
+
+  \bold{Handlers:}\cr
+
+  The interactivity between the web browser GUI and R is provided by
+  handlers which respond to GUI signals sent when an event occurs. For
+  instance, when the mouse clicks on a button, a mousedown signal is
+  sent. The \code{gWidgetsWWW} code -- through the essential \pkg{Rpad}
+  package -- allows \R\/ functions to be used as handlers. These
+  functions create JavaScript code to update the the web browser. The
+  \pkg{gWidgetsWWW} package takes the methods of \pkg{gWidgetsWWW} and
+  produces the JavaScript code, so the \R\/ programmer need only know
+  how to program in \R.
+  
+  Handlers in \pkg{gWidgetsWWW} are slightly different than in other
+  implementations of gWidgets. As with others, the first argument to the
+  handler, traditionally \code{h}, is a list with components \code{obj},
+  referring to the widget; \code{action}, referring to the value passed
+  into the \code{action} argument; and occasionally others.
+
+  Handlers are added to the widget through the \code{handler} argument
+  of the constructor, or using one of the \code{addHandlerXXX}
+  methods. The constructor assigns a default signal (or more) to bind
+  the handler to. More control is given by the \code{addHandlerXXX}
+  methods. If you want to bind to a different signal (after having read
+  the Ext documentation say) the method \code{addHandler} allows the
+  specification of a signal.
+
+  Handlers may not evaluate within the scope of the function, as one
+  would expect. This should be addressed. If not fixed, then one can use
+  global variables within the handler.
+
+  Handlers write out javascript to be interpreted by the web browser. No
+  other output to STDOUT should be inside the handler body. That is,
+  don't use \code{print} or \code{cat}.
+
+  \bold{Drag and Drop:}\cr
+
+  The \code{Ext} library has some built in drag and drop
+  support. Otherwise, drag and drop is not currently supported.
+
+  \bold{proto:}\cr
+
+  %% proto
+  The \pkg{proto} package is used as the backend for this package, rather
+  than the \pkg{gWidgets} package. This was done as much for variety than
+  any other reason. The user of \pkg{gWidgetsWWW} need not be aware of
+  this, but it does allow some undocumented access to the underlying widgets.
+  
+
+}
+\author{ John Verzani <gwidgetsrgtk@gmail.com> }
+
+% \references{}
+\keyword{ package }
+\seealso{gWidgets}

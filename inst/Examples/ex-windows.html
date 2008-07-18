@@ -1,0 +1,40 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>
+Different popup windows
+</title>
+<script type="text/javascript">
+djConfig = {isDebug: true};
+rpadConfig = {rpadHideSource: true,rpadRun: "all"};
+</script>
+<style type="text/css">
+.Rpad_background-color: #eeeeee;font-family: georgia;}
+</style>
+
+
+<script type="text/javascript" src="gui/dojo.js"></script>
+<script type="text/javascript" src="gui/Rpad_main.js"></script> 
+
+<!-- Call in Ext and its style sheet -->
+<script type="text/javascript" src="http://localhost:8079/ext-2.1/adapter/ext/ext-base.js"></script>
+<script type="text/javascript" src="http://localhost:8079/ext-2.1/ext-all.js"></script>
+<link rel="stylesheet" type="text/css" href="http://localhost:8079/ext-2.1/resources/css/ext-all.css">
+
+
+</head>
+<body><pre dojoType="Rpad" rpadType="R"></pre> <!-- oddity -->
+<h1> Different popup windows</h1>
+This shows the dialogs and subwindow
+
+<pre dojoType="Rpad" rpadType="R" rpadOutput="javascript" rpadRun="init">
+source("ex-windows.R")
+## show the web page. The w object sourced in above so stdout is file
+## -- need to work around
+w
+</pre>
+
+</BODY></HTML> 
+
+ 

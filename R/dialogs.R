@@ -1,0 +1,146 @@
+##################################################
+## Dialogs
+## Dialogs are called from a handler. They output
+## javascript code only.
+## The respond to the handler
+
+## XXX The handler does not seem to be called, although
+##     calculateRpadNodeById is called.
+
+## parent can be a container or a widget
+.gshowdialog <- function(type=c("message","confirm","input"),
+                        message, text, title=type,
+                        icon = c("info","warning","error","question"),
+                        parent,
+                        handler = NULL, action = NULL) {
+
+  ## make object to get ID, assign handlers to
+  widget <- EXTWidget$new(toplevel=parent$toplevel)
+  class(widget) <- c("gDialog",class(widget))
+  ## since we don't "add" we pass in id and toplevel
+  id <- widget$ID <- parent$toplevel$newID()
+  widget$toplevel <- parent$toplevel
+
+  widget$..defaultTextHeight <- 40      # if input
+  
+  ## fix icon
+  if(missing(icon)) {
+    icon = "QUESTION"
+  } else {
+    icon <- toupper(match.arg(icon))
+  }
+
+  ## Define handler callback
+  handlerFunction = ""
+   if(!is.null(handler)) {
+     ## add handler and define string to call handler for constructor
+     handlerid <- widget$addHandler(signal=NULL, handler=handler, action=action)
+     if(type == "confirm") {
+       handlerFunction <- String() +
+         'function(btn) {' +
+           'if(btn == "ok") {' +
+             ##           'alert(btn);' + ## makes a *big* different -- why?
+             'runHandlerJS('+handlerid + ',"","");' +
+               '}'+
+                 '}'
+     } else if(type == "input") {
+       ## XXX Note awkward way we have to escape key and text here
+       handlerFunction <- String() +
+         'function(btn,text) {' +
+           'if(btn == "ok") {' +
+#             'runHandlerJS('+handlerid + ',"\'input\'","\'" + escape(text) + "\'");' +
+             'runHandlerJS('+handlerid + ',"input", text);' +
+               '}'+
+                 '}'
+     }
+   }
+     
+  ## doesn't like \n below
+  message <- gsub("\n","<p>",message)
+
+
+  lst <- list(id = id,
+              title = escapeHTML(title),
+              msg = escapeHTML(message),
+              buttons = String(ifelse(type == "message","Ext.Msg.CANCEL","Ext.Msg.OKCANCEL")),
+              animEl = parent$ID,
+              icon =  String("Ext.MessageBox.") + icon
+              )
+  if(handlerFunction != "")
+    lst[['fn']] = handlerFunction
+
+  if(type == "input") {
+    lst[["multiline"]] <- TRUE
+    lst[["defaultTextHeight"]] <- widget$..defaultTextHeight
+  }
+  
+  out <- String() +
+    'Ext.MessageBox.show(' + widget$mapRtoObjectLiteral(lst) + ')';
+
+  return(out)
+
+}
+
+gmessage <- function(message, title="message",
+                     icon = c("info", "warning", "error", "question"),
+                     parent = NULL,
+                     handler = NULL,
+                     action = NULL) {
+  ## parent must be non-NULL
+  out <- .gshowdialog(type="message",message=message,
+               title=title, icon=icon,parent=parent,
+               handler=handler, action=action)
+  cat(out,file=stdout())
+  
+}
+
+gconfirm <- function(message, title="Confirm",
+                     icon = c("info", "warning", "error", "question"),
+                     parent = NULL,
+                     handler = NULL,
+                     action = NULL) {
+  ## parent must be non-NULL
+  out <- .gshowdialog(type="confirm",message=message,
+                      title=title, icon=icon,parent=parent,
+                      handler=handler, action=action)
+  cat(out, file=stdout())
+  
+}
+
+## input -- can't figure out how to get handler the value of input
+## likely needs to be set as a global variable
+ginput <- function(message, text="", title="Input",
+                   icon = c("info", "warning","error", "question"),
+                   parent=NULL,
+                   handler = NULL, action = NULL) {
+  ## parent must be non-NULL
+  out <- .gshowdialog(type="input",message=message,
+                      title=title, icon=icon,parent=parent,
+                      handler=handler, action=action)
+  cat(out, file=stdout())
+}
+  
+
+
+gbasicdialog <- function(title = "Dialog", widget,
+                         parent=NULL, handler = NULL, action=NULL) {}
+
+
+##
+## gfile -- upload a file (not find a file on filesytem)
+## XXX this is different
+gfile <- function() {
+  stop("XXX write me to upload a file")
+}
+
+
+
+## quick alert message dropped from above
+galert <- function(title = "", message = "") {
+  out <- String() +
+    'Ext.example.msg(' + shQuoteEsc(title) + ',' +
+      shQuoteEsc(message) + ');'
+
+  cat(out)
+
+}

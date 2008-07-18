@@ -1,0 +1,13 @@
+
+
+The Rpad use is minimal. The GUI can be made to load faster if these
+lines (136-139, 839) in Rpad_main.js are commented out (using //):
+
+// dojo.require("dojo.widget.*");
+// dojo.require("dojo.widget.HtmlWidget");
+// dojo.require("dojo.event.*");
+// dojo.require("dojo.html.style");
+
+
+// dojo.require("dojo.dnd.*");
+

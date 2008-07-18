@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>
+test
+</title>
+<script type="text/javascript">
+djConfig = {isDebug: true};
+rpadConfig = {rpadHideSource: true,rpadRun: "all"};
+</script>
+<style type="text/css">
+.Rpad_background-color: #eeeeee;font-family: georgia;}
+</style>
+
+
+<script type="text/javascript" src="gui/dojo.js"></script>
+<script type="text/javascript" src="gui/Rpad_main.js"></script> 
+
+<!-- Call in Ext and its style sheet -->
+<script type="text/javascript" src="http://localhost:8079/ext-2.1/adapter/ext/ext-base.js"></script>
+<script type="text/javascript" src="http://localhost:8079/ext-2.1/ext-all.js"></script>
+<link rel="stylesheet" type="text/css" href="http://localhost:8079/ext-2.1/resources/css/ext-all.css">
+
+<!-- Google Maps API requires one to register their website -->
+<!-- Replace the key below with your own. This works for 127.0.0.1:8079 -->
+<script
+src="http://maps.google.com/maps?file=api&v=2.x&key=ABQIAAAAYpRTbDoR3NFWvhN4JrY1ahS5eHnalTx_x--TpGz1e2ncErJceBS7FrNBqzV5DPxkpbheIzZ9nTJPsQ"
+type="text/javascript"></script>
+
+</head>
+<body><pre dojoType="Rpad" rpadType="R"></pre> <!-- oddity -->
+
+<h2>The code:</h2>
+<pre>
+require(gWidgetsWWW, quietly=TRUE)
+w = gwindow("Test of widgets")
+g = ggroup(cont = w, horizontal = FALSE)
+glabel("How big is Central Park? Click around perimeter to see.", cont=g)
+gmap = ggooglemaps(x = "Central Park New York, NY", title =
+"Central Park, New York, NY", cont = g)
+gmap$setZoom(13)
+addHandlerClicked(gmap, handler = function(h,...) {
+  gmap$addMarker(h$latlng)
+})
+
+b = gbutton("draw polygon", cont = g, handler = function(h,...) {
+  gmap$addPolygon()
+})
+
+
+## print out
+w
+</pre>
+
+<pre dojoType="Rpad" rpadType="R" rpadOutput="javascript"
+     rpadRun="init">
+## Example of ggooglemaps
+require(gWidgetsWWW, quietly=TRUE)
+w = gwindow("Test of widgets")
+g = ggroup(cont = w, horizontal = FALSE)
+glabel("How big is Central Park? Click around perimeter to see.", cont=g)
+gmap = ggooglemaps(x = "Central Park New York, NY", title =
+"Central Park, New York, NY", cont = g)
+gmap$setZoom(13)
+addHandlerClicked(gmap, handler = function(h,...) {
+  gmap$addMarker(h$latlng)
+})
+
+b = gbutton("draw polygon", cont = g, handler = function(h,...) {
+  gmap$addPolygon()
+})
+
+
+## print out
+w
+</pre>
+</body></html>
+
+ 
