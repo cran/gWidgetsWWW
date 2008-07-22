@@ -1,5 +1,7 @@
 ## TODO version 0.1+
+* SAFARI broken? why (svalue(button)<-)
 * gdf fixes
+* forgot to do a popup: addpopupmenu, add3rdmouse ...
 * gtree: issue with loader needing to come from a url, how to load
   from a data vector? Really want to load from a handler
 * drag and drop functions

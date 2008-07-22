@@ -273,10 +273,12 @@ widget$makeMarkers <- function(.) {
       .$panTo(value)
   }
   widget$setValuesJS <- function(.,...) {
+    if(exists("..setValuesJS", envir=., inherits=FALSE)) .$..setValuesJS(...)
+  
     values <- .$getValues()
     for(i in 1:nrow(values))
       widget$addMarker(values[i,1:2])
-
+    
   }
 
   

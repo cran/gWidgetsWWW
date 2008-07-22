@@ -52,6 +52,8 @@ gtext <- function(text = NULL, width = NULL, height = 300,
 
   ## lots of escapes for multiline stuff
   widget$setValueJS <- function(.,...) {
+    if(exists("..setValueJS", envir=., inherits=FALSE)) .$..setValueJS(...)
+    
     out <- String() +
       .$asCharacter() + '.setValue(' +
         shQuote(paste(.$..data,collapse="\\\\n")) + ');' + '\n'

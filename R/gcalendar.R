@@ -39,7 +39,7 @@ gcalendar <- function(text = "", format = "%Y-%m-%d",
         lst[["height"]] <- "auto"
       
       out <- String() +
-        'var o' + .$ID + 'date = new Ext.Panel({' +
+        'o' + .$ID + 'date = new Ext.Panel({' + # no var -- global
           'id:' + shQuote(.$ID) + ',' +
             'renderTo:document.body,' +
               'items: [' +
@@ -48,7 +48,7 @@ gcalendar <- function(text = "", format = "%Y-%m-%d",
                     '});'
 
       out <- out +
-        'var o' + .$ID + ' = o' + .$ID + 'date' +
+        'o' + .$ID + ' = o' + .$ID + 'date' + # no var -- global
           '.getComponent(0);' + '\n'
 
       return(out)

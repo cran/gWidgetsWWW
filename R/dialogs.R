@@ -75,7 +75,7 @@
   }
   
   out <- String() +
-    'Ext.MessageBox.show(' + widget$mapRtoObjectLiteral(lst) + ')';
+    'Ext.MessageBox.show(' + widget$mapRtoObjectLiteral(lst) + ');' + '\n';
 
   return(out)
 
@@ -136,10 +136,10 @@ gfile <- function() {
 
 
 ## quick alert message dropped from above
-galert <- function(title = "", message = "") {
+galert <- function(title = "", message = "", delay=3) {
   out <- String() +
     'Ext.example.msg(' + shQuoteEsc(title) + ',' +
-      shQuoteEsc(message) + ');'
+      shQuoteEsc(message) + ',' + delay + ');'
 
   cat(out)
 

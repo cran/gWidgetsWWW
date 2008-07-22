@@ -42,8 +42,10 @@ gwindow <- function(title="title",file="",visible=TRUE,
    w$addAction <- function(., action) 
      .$..actions <- c(.$..actions, action)
 
-   
+   ## set title
    w$setValueJS <- function(.) {
+     if(exists("..setValueJS", envir=., inherits=FALSE)) .$..setValueJS(...)
+     
      out <- String() +
        'document.title = ' + shQuote(.$..data) +';'
      return(out)
@@ -172,14 +174,14 @@ gwindow <- function(title="title",file="",visible=TRUE,
                         '"</div>"].join("");' ,
                         '};' ,
                         'return {' ,
-                        'msg : function(title, format){' ,
+                        'msg : function(title, format, delay){' ,
                         'if(!msgCt){' ,
                         'msgCt = Ext.DomHelper.insertFirst(document.body, {id:"msg-div"}, true);' ,
                         '}' ,
                         'msgCt.alignTo(document, "t-t");' ,
                         'var s = String.format.apply(String, Array.prototype.slice.call(arguments, 1));' ,
                         'var m = Ext.DomHelper.append(msgCt, {html:createBox(title, s)}, true);' ,
-                        'm.slideIn("t").pause(1).ghost("t", {remove:true});' ,
+                        'm.slideIn("t").pause(delay).ghost("t", {remove:true});' ,
                         '},' ,
                         '' ,
                         'init : function(){' ,
@@ -235,13 +237,16 @@ gwindow <- function(title="title",file="",visible=TRUE,
      ##                  collapse="")
      return(out)
    }
-
+   
    w$header <- function(.) {
      out <- String() +
        'var addIconClasses = document.createElement("style");' +
          'addIconClasses.body="' + .$makeIconClasses() + '";' +
            'document.body.appendChild(addIconClasses);' + '\n'
-     return(out)
+     
+#     out <- out +
+#       "Ext.onReady(function(){"
+     .$Cat(out)
    }
 
 
@@ -257,8 +262,8 @@ gwindow <- function(title="title",file="",visible=TRUE,
    ##       .$Cat(out)
    ##     }
    
-   w$footer <- function(.) {
-       
+w$footer <- function(.) {
+  
      ## clear out any old IDS
      remove(list=ls(pat="^gWidgetID",envir=.GlobalEnv),envir=.GlobalEnv)
 
@@ -269,7 +274,9 @@ gwindow <- function(title="title",file="",visible=TRUE,
      ## set title 
      out <- out +
        'document.title =' +shQuote(.$getValue()) + ';\n' 
-     
+
+     ## finish Ext.onReady
+#     out <- out + '})\n'
      .$Cat(out)
    }
    
@@ -281,7 +288,7 @@ gwindow <- function(title="title",file="",visible=TRUE,
 
    ## unload handler
    if(!is.null(handler)) 
-     w$addHandler("onunload",handler, action=action)
+  w$addHandler("onunload",handler, action=action)
 
    
     invisible(w)
@@ -314,12 +321,17 @@ handler = NULL, action=NULL, container=NULL,...) {
   
   ## set title
   widget$setValueJS <- function(.) {
+  if(exists("..setValueJS", envir=., inherits=FALSE)) .$..setValueJS(...)
+  
     out <-  String() +
       'o' + .$ID + '.setTitle(' + shQuote(.$..data) + ');' + '\n'
     cat(out)
   }
   ## odd inheritance here
   widget$setVisibleJS <- function(.) {
+    if(exists("..setVisibleJS", envir=., inherits=FALSE))
+      .$..setVisibleJS()
+    
     ## opposite -- we already changed if we got here
     if(.$..visible)
       method = "show"
@@ -366,7 +378,7 @@ handler = NULL, action=NULL, container=NULL,...) {
 
   
 
-  widget$header <- function(.) {""}
+  widget$header <- function(.) {}
   widget$footer <- function(.) {
     ## render and show
     out <- String()
@@ -374,7 +386,7 @@ handler = NULL, action=NULL, container=NULL,...) {
     out <-  out + 'o' + .$ID + '.render();' + '\n'
     if(visible(.))
       out <-  out + 'o' + .$ID + '.show();' + '\n'
-    
+
     .$Cat(out)
   }
 

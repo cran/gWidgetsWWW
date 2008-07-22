@@ -12,6 +12,8 @@ ghtml <- function(x, container = NULL, ...) {
   widget$setValue(value=x)
 
   widget$setValueJS <- function(.,...) {
+    if(exists("..setValueJS", envir=., inherits=FALSE)) .$..setValueJS(...)
+    
     val <- .$..data
     out <- String() + 'o' + .$ID
     if(isURL(val)) {

@@ -298,7 +298,7 @@ gtable <- function(items, multiple = FALSE, chosencol = 1,
   container$add(widget,...)
 
   ## changed = clicked
-  widget$addHandlerClicked <- widget$addHandlerChanged <- function(.,handler, action=NULL, ...) {
+  widget$addHandlerClicked <- function(.,handler, action=NULL, ...) {
 
     ## we need to set up some stuff
     .$addHandler(signal="cellclick",
@@ -308,7 +308,9 @@ gtable <- function(items, multiple = FALSE, chosencol = 1,
                  handlerValue = "var value = rowIndex + 1;"
                  )
   }
-  widget$addHandlerDoubleclick <- function(.,handler, action=NULL, ...) {
+
+  ## double click is default
+  widget$addHandlerDoubleclick <- widget$addHandlerChanged <- function(.,handler, action=NULL, ...) {
     ## we need to set up some stuff
     .$addHandler(signal="celldblclick",
                  handler = handler,

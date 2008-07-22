@@ -134,7 +134,7 @@ EXTWidget$setValue <- function(., index=NULL, ..., value) {
   }
   ## now process if shown
   if(exists("..shown",envir=., inherits=FALSE)) 
-    cat(.$setValueJS(index=index,...))
+    cat(.$setValueJS(index=index,...),file=stdout())
 
  }
 ## create javascript code to write Javascript to set
@@ -145,6 +145,9 @@ EXTWidget$setValueJSAttribute = "innerHTML"
 ## this uses the DOM value -- not the Ext widget. EXTComponent
 ## overrides this.
 EXTWidget$setValueJS <- function(.,...) {
+  if(exists("..setValueJS", envir=., inherits=FALSE)) .$..setValueJS(...)
+
+  
   ## default method to set the value using setValue
   value <- .$..data                     # don't use svalue here
   
@@ -186,6 +189,7 @@ EXTWidget$setValues <- function(.,i,j,...,value) {
     cat(.$setValuesJS(...))
 }
 EXTWidget$setValuesJS <- function(.,...) {
+  if(exists("..setValuesJS", envir=., inherits=FALSE)) .$..setValuesJS(...)  
   return("")                               # cat javascript to set values
 }
 
@@ -215,6 +219,9 @@ EXTWidget$setVisible <- function(.,value) {
     cat(.$setVisibleJS())
 }
 EXTWidget$setVisibleJS <- function(.) {
+  if(exists("..setVisibleJS", envir=., inherits=FALSE))
+    .$..SosetVisibleJS()
+  
   value <- .$..visible
   if(as.logical(value))
     action = "show"
@@ -413,7 +420,9 @@ EXTWidget$header <- EXTWidget$footer <- EXTWidget$separator <- function(.) retur
 
 EXTWidget$writeConstructor <- function(.) {
   out <- String() +
-    'var o' + .$ID +
+### var creates a *local* variable -- issues with safari here
+###    'var o' + .$ID +
+    'o' + .$ID +
       ' = new ' +.$ExtConstructor + '(\n' +
         .$mapRtoObjectLiteral() +
           ');\n'
@@ -542,6 +551,7 @@ EXTComponent$Show <- function(.,...) {        # wraps Show
 EXTComponent$setValueJSAttribute <- "value"
 EXTComponent$setValueJSMethod = "setValue"  # oID.method()
 EXTComponent$setValueJS <- function(.,...) {
+  if(exists("..setValueJS", envir=., inherits=FALSE)) .$..setValueJS(...)
    ## default method to set the value using setValue
    value <- .$..data                     # don't use svalue here
 
@@ -549,24 +559,29 @@ EXTComponent$setValueJS <- function(.,...) {
    ## use Ext object and a method directly -- no DOM
    out <- String() +
      'o' + .$ID +'.' + .$setValueJSMethod +
-       '(' + toJS(.$..data) + ');'
+       '(' + toJS(.$..data) + ');' + '\n'
    
    return(out)                              # to browser, not file
  }
 
  EXTComponent$setValuesJS <- function(.,...) {
+   if(exists("..setValuesJS", envir=., inherits=FALSE)) .$..setValuesJS(...)  
    return("")
  }
 
 
 EXTComponent$setNamesJS <- function(.) {}    # set names
-EXTComponent$setVisibleJS <- function(.) {
-  if(.$..visible)
-    method = "hide"
-  else
-    method = "show"
-  .$callExtMethod(method)
-}
+## get from EXTWidget
+## EXTComponent$setVisibleJS <- function(.) {
+##   if(exists("..setVisibleJS", envir=., inherits=FALSE))
+##     .$..setVisibleJS()
+  
+##   if(.$..visible)
+##     method = "hide"
+##   else
+##     method = "show"
+##   .$callExtMethod(method)
+## }
 
 
 ## Different components
@@ -953,6 +968,8 @@ EXTComponentWithStore$setValues <- function(.,i,j,...,value) {
     cat(.$setValuesJS(...))
 }
 EXTComponentWithStore$setValuesJS <- function(.) {
+  if(exists("..setValuesJS", envir=., inherits=FALSE)) .$..setValuesJS(...)
+  
   out <- String() +
     .$asCharacter() + '.removeAll();' +
       .$asCharacter() + '.loadData(' +
@@ -995,12 +1012,12 @@ EXTComponentInPanel$writeConstructor <- function(.) {
               items = String("[") + .$mapRtoObjectLiteral() + ']'
               )
   out <- String() +
-    'var o' + .$ID + 'panel = new Ext.Panel(' +
+    'o' + .$ID + 'panel = new Ext.Panel(' + # no var -- global
       .$mapRtoObjectLiteral(lst) +
         ');' + '\n'
   ## get component from first child object
   out <- out +
-    'var o' + .$ID + ' = ' +
+    'o' + .$ID + ' = ' +                # no var -- global
       'o' + .$ID + 'panel.getComponent("' + .$getItemID() + '");' + '\n'
   
   return(out)

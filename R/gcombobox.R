@@ -164,7 +164,7 @@ gcombobox <- gdroplist <-
     ## we need to override methods of EXTComponent$Show
     widget$writeConstructor <- function(.) {
       out <- String() +
-        'var o' + .$ID + 'panel = new Ext.Panel({' +
+        'o' + .$ID + 'panel = new Ext.Panel({' + # no var -- global
           'id:' + shQuote(.$ID) + ',' +
             'xtype:"panel",' +
               'layout:"fit",' +
@@ -176,7 +176,7 @@ gcombobox <- gdroplist <-
                           ']' + '\n' +
                             '});' + '\n'
       out <- out +
-        'var o' + .$ID + ' = ' +
+        'o' + .$ID + ' = ' + # no var -- global
                     'o' + .$ID + 'panel.getComponent(0);' + '\n'
 
       return(out)

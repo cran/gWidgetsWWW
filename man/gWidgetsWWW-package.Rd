@@ -316,10 +316,12 @@ icons. For now, these icons need to be installed in directory called
   \bold{Dialogs:}\cr  
 
   
-  The \code{galert(title = "", message = "")} dialog is specific to
+  The \code{galert(title = "", message = "", delay=3)} dialog is specific to
   \pkg{gWidgetsWWW}. It creates a quick alert that pops down from the
   top of the web page. It has a \code{title} and \code{message} argument
-  only.  \cr
+  for the message and \code{delay} in seconds to specify the time the
+  dialog appears.
+   \cr
   
   The other dialogs have a \code{parent} argument that must be
   specified. This allows handlers, etc. to be registered. Visually, the
@@ -468,7 +470,44 @@ icons. For now, these icons need to be installed in directory called
   any other reason. The user of \pkg{gWidgetsWWW} need not be aware of
   this, but it does allow some undocumented access to the underlying widgets.
   
+  A few examples. First, many of the widgets have properties that are
+  set during the construction of the widget, but are not specified by
+  the arugments to the constructor. This is due to the EXT libraries
+  having more options, than are given by \pkg{gWidgets}. For instance,
+  in the \code{gcombobox} function the properties \code{..hideTrigger}
+  and \code{..emptyText} can be set. The \code{..hideTrigger} values is
+  a logical value, and it \code{TRUE} will render the widget without an
+  arrow indicating to the user this is a combobox. This can be useful
+  for setting values that will appear as the user types. In the API for
+  \code{gWidgets} the \code{[<-} method for \code{gedit} should cause
+  something similar to happen, but it doesn't. The \code{..emptyText}
+  argument is there to set the initial text of the box in gray to
+  suggest to the user what to do.
 
+  The double dots are reserved for properties of methods of the widget
+  that are instance specific, hence the funny names.
+  
+  Another way to modify a widget is to set the method
+  \code{..ExtCfgOptions}. This should be a function which returns a
+  list. The named components of the list map to the properties of the
+  EXT constructor. (See that API for things you may want). These values
+  will override any others set my \pkg{gWidgetsWWW}. The conversion will
+  quote values of type \code{character}. If this is undesired, use the
+  class \code{String} returned by the \code{\link{String}} function.
+
+  
+  The above two examples set properties of the object. These only effect
+  the rendering if  set prior to rendering. To affect the widget after
+  rendering, one can create JavaScript to be sent back to the
+  browser. This can only occur during a handler. Most of the
+  \code{gWidgetsWWW} methods eventually call a function ending in
+  \code{JS}. For instance, \code{svalue<-} calls the proto method
+  \code{setValue} which in turn calls \code{setValueJS}. The latter can
+  be overridden, or can be added to by setting a method for
+  \code{..setValueJS}. This should \code{cat} out javascript code.
+
+  If you do this, and think your code should be integrated into the main
+  code, please share it.
 }
 \author{ John Verzani <gwidgetsrgtk@gmail.com> }
 

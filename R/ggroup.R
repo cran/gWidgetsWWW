@@ -83,6 +83,9 @@ EXTExpandGroup$ExtCfgOptions <- function(.) {
   return(out)
 }
 EXTExpandGroup$setVisibleJS <- function(.) {
+  if(exists("..setVisibleJS", envir=., inherits=FALSE))
+    .$..setVisibleJS()
+  
   .$callExtMethod("expand","true")
 }
 

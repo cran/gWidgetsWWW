@@ -35,6 +35,8 @@ gstatusbar <- function(text = "", container=NULL, ...) {
   }
     
   widget$setValueJS <- function(.,...) {
+    if(exists("..setValueJS", envir=., inherits=FALSE)) .$..setValueJS(...)
+    
     out <- String() +
       .$getSBJS() +
         'widget.setStatus({' +

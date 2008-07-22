@@ -13,6 +13,8 @@ gnotebook <- function(tab.pos = 3, close.buttons = FALSE, container, ...) {
    ## Methods
    ## how to set a value
    widget$setValueJS <- function(.) {
+     if(exists("..setValueJS", envir=., inherits=FALSE)) .$..setValueJS(...)
+       
      ind <- as.numeric(.$..data - 1)
      
      out <- String() +

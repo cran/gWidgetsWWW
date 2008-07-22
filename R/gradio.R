@@ -65,6 +65,8 @@ gradio <- function(items, selected = 1, horizontal=FALSE,
   }
 
   widget$setValueJS <- function(.,..., index) {
+    if(exists("..setValueJS", envir=., inherits=FALSE)) .$..setValueJS(...)
+    
     out <- String() +
       .$asCharacter() + '.getComponent(' + as.character((index-1)) +
         ')' + '.setValue(true);'
