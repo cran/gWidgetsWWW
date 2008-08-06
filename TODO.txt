@@ -1,5 +1,7 @@
 ## TODO version 0.1+
-* SAFARI broken? why (svalue(button)<-)
+* Implement versions of defaultWidget, tag, id, isExtant
+DONE * SAFARI broken? why (svalue(button)<-) (global variables needed,
+  not local)
 * gdf fixes
 * forgot to do a popup: addpopupmenu, add3rdmouse ...
 * gtree: issue with loader needing to come from a url, how to load
@@ -7,7 +9,7 @@
 * drag and drop functions
 * gdf improvements: names<-, row names (EZ), logical, NA values,
   adding columns, adding rows, dates, ... Much more is possible
-* menubar/toolbar icons
+DONE * menubar/toolbar icons
 * ginput, gmessage -- don't work without cat("alert()") in there??
   STDOUT issues? 
 * format numbers?
@@ -33,9 +35,13 @@ function addCommas(nStr)
 * resizable -- was working, but didn't go into columns, have props error 
   * made optional for now.
 * file upload??
+
 ## TODO version 0.1
+DONE * glaoyt <- character->label, 
+* gdf replace NA with ... (see EDF);
+* comment on toolbar buttons, make method to generate code.
 * documentation
-DONE * border -- blue border is annoying
+ONE * border -- blue border is annoying
 * iron out examples: t-test, windows, layout, widgets, combobox
 
 DONE * gcombo -- check api

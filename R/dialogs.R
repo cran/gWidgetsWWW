@@ -4,9 +4,7 @@
 ## javascript code only.
 ## The respond to the handler
 
-## XXX The handler does not seem to be called, although
-##     calculateRpadNodeById is called.
-
+### XXX for some reason, dialogs don't call other dialogs?
 ## parent can be a container or a widget
 .gshowdialog <- function(type=c("message","confirm","input"),
                         message, text, title=type,
@@ -44,7 +42,7 @@
                '}'+
                  '}'
      } else if(type == "input") {
-       ## XXX Note awkward way we have to escape key and text here
+       ## Note  we do not have to escape key and text here
        handlerFunction <- String() +
          'function(btn,text) {' +
            'if(btn == "ok") {' +

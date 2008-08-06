@@ -89,7 +89,21 @@ unescapeURL <- function(x) {
     x <- gsub(i,codes[i],x)
   return(x)
 }
-
+## replace ' with \\'
+escapeQuotes <- function(x) {
+  for(i in 1:length(x)) {
+    chars <- unlist(strsplit(x[i],""))
+    ind <- grep("'", chars)
+    if(length(ind) > 0) {
+      for(j in ind) {
+        if(j < 3 || (chars[j-2] != "/" && chars[j-1] != "/"))
+          chars[ind] <- "\\'"
+      }
+      x[i] <- paste(chars, collapse="")
+    }
+  }
+  return(x)
+}
 ##################################################
 ## string class
 String <- function(x,sep="",collapse="") {

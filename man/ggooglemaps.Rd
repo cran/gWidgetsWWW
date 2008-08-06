@@ -11,7 +11,9 @@
 
 }
 \usage{
-ggooglemaps(x, title = "", type = c("map", "panorama"), container, ...)
+ggooglemaps(x, title = "", type = c("map", "panorama"), 
+	key = "ABQIAAAAYpRTbDoR3NFWvhN4JrY1ahS5eHnalTx_x--TpGz1e2ncErJceBS7FrNBqzV5DPxkpbheIzZ9nTJPsQ",
+container, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -19,6 +21,7 @@ ggooglemaps(x, title = "", type = c("map", "panorama"), container, ...)
     address, or as a vector of latitude and longitude values. }
   \item{title}{The center is marked. This sets the text for the tooltip.}
   \item{type}{Determines type of map. One of "map" or "panorama".}
+    \item{key}{NOT WORKING! SEE BELOW. To use a google map, one must register their domain and get a "key" from Google. The default key is for the domain 127.0.0.1:8079, the Rpad local server default. To use a different domain, one must specify a new key here after getting it from http://code.google.com/apis/maps}
   \item{container}{A \pkg{gWidgetsWWW} container object}
   \item{\dots}{}
 }
@@ -28,19 +31,19 @@ ggooglemaps(x, title = "", type = c("map", "panorama"), container, ...)
   \url{http://extjs.com/blog/2008/07/01/integrating-google-maps-api-with-extjs/}
   . 
   
-  This widget requires the HTML page that will render it have two
-  things. First, the DOCTYPE of the page should be set according to
+  This widget requires the HTML page that will render it have the DOCTYPE of the page set according to
   these instructions:
   \url{http://code.google.com/apis/maps/documentation/index.html#XHTML_and_VML}
 
   Next, the website the page will be listed on must register to have an
-  API key: \url{http://code.google.com/apis/maps/signup.html}. This key is
-  then inserted into the HTML page that will render the widget in the
-  header with a line such as
+  API key: \url{http://code.google.com/apis/maps/signup.html}. NOT WORKING:This key is
+  specifies through the \code{key} argument. The default will work for the domain \code{127.0.0.1:8079}.
 
-  \code{<script src="http://maps.google.com/maps?file=api&v=2.x&key=mykey"
-    type="text/javascript"></script>}
-  
+    The key can be specified in the header of the html page that will render the gWidgets code. The following will work for the domain 127.0.0.1:8079:
+
+\code{<script
+src="http://maps.google.com/maps?file=api&v=2.x&key=ABQIAAAAYpRTbDoR3NFWvhN4JrY1ahS5eHnalTx_x--TpGz1e2ncErJceBS7FrNBqzV5DPxkpbheIzZ9nTJPsQ"
+type="text/javascript"></script>}
   
   This widget is experimental. Its API is still not settled. As of
   now, the  method \code{svalue<-} is used to set the center of the

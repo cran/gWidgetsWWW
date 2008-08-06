@@ -7,9 +7,6 @@
 ## *IF* handler = NULL and action a gaction instance then
 ## will use that action. Not for addHandlerClicked though.
 
-## images XXX -- put into .$..icon property to show -- makes a background image, not a nice image
-## template for this is *ugly*, can't expect user to write.
-
 gbutton <- function(text="", border=TRUE,
                     handler = NULL, action=NULL, container, ...) {
   ## components

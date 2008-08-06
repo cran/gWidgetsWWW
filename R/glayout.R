@@ -14,6 +14,10 @@ glayout <- function(homogeneous = FALSE, spacing = 10,
 
   ## methods
   tbl$setValues <- function(.,i,j,...,value) {
+    ## if character make a glabel object
+    if(is.character(value))
+      value <- glabel(value, cont = .)
+    
     value$..tblLocationRow <- i
     value$..tblLocationCol <- j
     value$..tblSeen <- FALSE

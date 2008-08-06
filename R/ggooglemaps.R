@@ -6,19 +6,16 @@
 
 ## center and markers set *prior* to rendering. No methods after (possible, not done)
 
-## must set API before rendering via
-## header such as the following for http://127.0.0.1:8079
-## <script
-## src="http://maps.google.com/maps?file=api&v=2.x&key=ABQIAAAAYpRTbDoR3NFWvhN4JrY1ahS5eHnalTx_x--TpGz1e2ncErJceBS7FrNBqzV5DPxkpbheIzZ9nTJPsQ"
-## type="text/javascript"></script>
-
 ## the key comes from google : http://code.google.com/apis/maps
+## the key is per domain. The default is 127.0.0:8079
 
 
 
-
-ggooglemaps <- function(x, title = "",  type = c("map","panorama"), container, ...) {
+ggooglemaps <- function(x, title = "",  type = c("map","panorama"),
+                        key = "ABQIAAAAYpRTbDoR3NFWvhN4JrY1ahS5eHnalTx_x--TpGz1e2ncErJceBS7FrNBqzV5DPxkpbheIzZ9nTJPsQ", ## for 127.0.0.1:8079 Rpad local default
+                        container, ...) {
   widget <- EXTComponent$new(toplevel=container$toplevel,
+                             ..key = key,
                              ..title = title,
                              ..gmapType = match.arg(type))
   class(widget) <- c("gGoogleMap",class(widget))
@@ -27,18 +24,22 @@ ggooglemaps <- function(x, title = "",  type = c("map","panorama"), container, .
   widget$setValues(value = data.frame(lat=0,long=0,title="")[0,])
   widget$..runCmds <- c()
   
-  ## add in code from Ext blog
+
   widget$scripts <- function(.) {
-   out <- String(sep = "\n")
-#    +
-#      (String() + 'AddLibrary("script","' +
-#       'http://maps.google.com/maps?file=api&v=2.x&key=' +
-#       .$APIKEY + '");')
-    
+    out <- String('\n') +
+      'var head = document.getElementsByTagName("head")[0];' +
+        'var s = document.createElement("script");' +
+          's.setAttribute("src",  "http://maps.google.com/maps?file=api&v=2.x&key=' +
+            .$..key + '");' +
+              's.setAttribute("type","text/javascript");' +
+                'head.appendChild(s);' + '\n' 
+    ## The above fails, as it reloads the page (Why?)
+    ## as such we just restart ...
+    out <- String("\n") 
     out <- out +
       paste('/**',
             '* http://extjs.com/blog/2008/07/01/integrating-google-maps-api-with-extjs/',
-            '* author Shea Frederick -- says codes is "Lars - Free as a bird. Use it anywhere or any way you like"',
+            '* author Shea Frederick -- says code is "Lars - Free as a bird. Use it anywhere or any way you like"',
             '*/',
               '',
             'Ext.namespace("Ext.ux");',

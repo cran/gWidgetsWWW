@@ -2,12 +2,22 @@ Dear Emacs, please make this -*-Text-*- mode!
 
 NEWS for gWidgetsWWW
 
+Changes for  0.0-3
+--------------------
+
+* gcalendar -- initial value now works for dates. If in format, will
+  pick up
+* fix so that icons in toolbar work
+* changes to gtooltip to allow title and message as per Ext
+
 Changes for  0.0-2
 --------------------
 
 * fixed methods so that .. override by user will get picked up.
 
 * fixes to work with safari
+
+
 
 Changes for  0.0-1
 --------------------

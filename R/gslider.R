@@ -82,45 +82,6 @@ gslider <- function(from = 0, to = 100, by = 1, value = from,
     return(out)
   }
 
-## ### XXX isn't working
-##   widget$show <- function(.) {
-##     ## html
-##     out <- String() +
-##       '<span id=' + shQuote(.$ID) + '></span>\n'
-
-##     ## use ..length to adjust size
-##     if(.$..horizontal)
-##       width <- String("width:") + .$..length
-##     else
-##       width <- String("height:") + .$..length
-    
-##     ## javascript object
-##     out <- out + '<script>' +
-##       'o' + .$ID + '= new Ext.Slider({' +
-##         'renderTo: ' + shQuote(.$ID) + ',' +
-##           'value:' + svalue(.) + ',' +
-##             'enableKeyEvents: true,' +
-##               'vertical:' + tolower(as.character(!.$..horizontal)) + ',' +
-##                 width + ',' +
-##                   'minValue:' + .$..from + ',' +
-##                     'maxValue:' + .$..to + ',' +
-##                       'increment:' + .$..by  +
-##                                         #                    ',plugins: tip' +
-##                       '});'
-
-##     ## transport
-##     out <- out +
-##       'o' + .$ID + '.on("change", function() {' +
-##         'var value = o' + .$ID + '.getValue();' +
-##           '_transportToR(' + shQuote(.$ID) + ',value);' +
-##             '});'
-
-##     ## finish
-##     out <- out + '</script>'
-    
-##     .$Cat(out)
-##   }
-
 
   ## add after CSS, scripts defined
   container$add(widget,...)

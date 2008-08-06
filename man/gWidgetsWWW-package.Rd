@@ -294,6 +294,10 @@ icons. For now, these icons need to be installed in directory called
   and \code{svalue} to change the text.
   \cr
 
+  At this time, support for popup menus via \code{add3rdMousePopupMenu}
+  and \code{addPopupMenu} is not implemented.
+  \cr
+
 
   The \code{gtoolbar} widget is subsumed in the \code{gmenu} widget. The
   \code{gaction} constructor can be used to create menubar elements.
@@ -420,8 +424,11 @@ icons. For now, these icons need to be installed in directory called
   \cr
   
   The \code{tooltip<-} method will set a tooltip for the widget. The
-  value may be a string or a URL which returns a string. URLs are
-  identified by the function \code{isURL}.  \cr
+  value may be a string; a character vector; a URL which returns a
+  string (URLs are
+  identified by the function \code{isURL}); or a list with components
+  \code{title} and \code{message}, where the title component is a string
+  and the message component a character vector.  \cr
 
   \bold{Handlers:}\cr
 
@@ -461,7 +468,13 @@ icons. For now, these icons need to be installed in directory called
 
   The \code{Ext} library has some built in drag and drop
   support. Otherwise, drag and drop is not currently supported.
+  
+  \bold{Compound widgets:}\cr
 
+  At this time the constructors of the compound widgets
+  \code{gdfnotebook}, \code{gvarbrowser}, \code{ggraphicsnotebook},
+  \code{ggenericwidget} are not implemented.
+  
   \bold{proto:}\cr
 
   %% proto

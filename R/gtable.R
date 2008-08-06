@@ -158,7 +158,6 @@ gtable <- function(items, multiple = FALSE, chosencol = 1,
 ##             collapse="\n")
 
     
-    ## XXX Need to get multiple working on other end via transport function
     if(.$..multiple) {
       out[["sm"]] <- String() +
         'new Ext.grid.RowSelectionModel({singleSelect:false})'

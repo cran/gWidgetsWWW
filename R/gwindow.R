@@ -229,23 +229,22 @@ gwindow <- function(title="title",file="",visible=TRUE,
    ## code to set up iconclasses for use with buttons, toolbar, menubar
    w$iconDir <- ""
    w$makeIconClasses <- function(.) {
-     x = getStockIcons()
-    out <- paste("button.",names(x),"{background-image:url(",x,")};", sep="",
-                 collapse="")
-     ## could try !important
-     ##     out <- paste(".",names(x),"{background-image:url(",x,") !important;};", sep="",
-     ##                  collapse="")
+     out <- String()
+     x <- getStockIcons();
+     nms <- names(x)
+     for(i in 1:length(x)) {
+       out <- out +
+         'Ext.util.CSS.createStyleSheet("' +
+           paste("button.",nms[i], "{background-image:url(",x[i],")};", sep="",
+                 collapse="") +
+           '");' + '\n'
+     }
      return(out)
    }
    
    w$header <- function(.) {
-     out <- String() +
-       'var addIconClasses = document.createElement("style");' +
-         'addIconClasses.body="' + .$makeIconClasses() + '";' +
-           'document.body.appendChild(addIconClasses);' + '\n'
-     
-#     out <- out +
-#       "Ext.onReady(function(){"
+     out <- String() + .$makeIconClasses()
+
      .$Cat(out)
    }
 

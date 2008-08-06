@@ -52,12 +52,12 @@ gstatusbar <- function(text = "", container=NULL, ...) {
   ## we add these here as extra methods not in API
   widget$showBusy <- function(.) {
     out <- .$getSBJS() +
-      'widget.showBusy()';
+      'widget.showBusy();';
     cat(out)
   }
   widget$clearStatus <- function(.) {
     out <- .$getSBJS() +
-      'widget.clearStatus()';
+      'widget.clearStatus();';
     cat(out)
   }
 

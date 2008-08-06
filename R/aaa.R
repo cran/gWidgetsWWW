@@ -211,7 +211,6 @@ EXTWidget$setNamesJS <- function(.) {}    # set names
 
 
 ## visible<-
-## XXX setVisibleJS needed
 EXTWidget$getVisible <- function(.) return(.$..visible )
 EXTWidget$setVisible <- function(.,value) {
   .$..visible <- as.logical(value)
@@ -289,7 +288,7 @@ EXTWidget$setStyleJS <- function(.,styles = NULL) {
   
 
  ## set size.
- ## XXX call sletStyle
+ ## calls setStyle
  EXTWidget$setSize <- function(., value) {
    ## fix size in ..style
    if(exists("..style",envir=., inherits=FALSE))
@@ -467,21 +466,38 @@ EXTWidget$writeTransport <- function(.,ext="",signal=NULL) {
 }
 
 ## writes tooltip. Tooltips are added with tooltip<- function
+## value can be a URL (isURL == TRUE) or a string or a character vector which
+## gets pasted together to be a string
+EXTWidget$tooltipWidth <- 200
+EXTWidget$tooltipAutoHide <- TRUE # override to 
 EXTWidget$writeTooltip <- function(.) {
   out <- String()
   ## tooltip
   if(exists("..tooltip", envir=., inherits=FALSE)) {
     lst <- list(target=.$ID,
                 showDelay=100,
-                hideDelay=50)
+                hideDelay=50,
+                autoHide = .$tooltipAutoHide,
+                trackMouse = TRUE,
+                width = .$tooltipWidth)            # default size?
 
     if(isURL(.$..tooltip)) {
       lst[["autoLoad"]] <- String('{url:') + shQuote(.$..tooltip) + '}'
-      lst[["width"]] <- 200
     } else {
-      lst[["title"]] <- .$..tooltip
+      ## ..tooltip can be a) a string, b) a character vector of c) a list with components title and message
+      if(is.list(.$..tooltip)) {
+        lst[['title']] <- .$..tooltip$title
+        message <- .$..tooltip$message
+      } else {
+        message <- .$..tooltip
+      }
+      lst[["html"]] <- paste(escapeQuotes(message), collapse="<BR>")
     }
 
+    if(!.$tooltipAutoHide) {
+      lst[["closable"]] <- TRUE
+      lst[["draggable"]] <- TRUE
+    }
     out <- out +
       'var tooltip' + .$ID + '= new Ext.ToolTip(' +
         +  .$mapRtoObjectLiteral(lst) + ');' + '\n'
@@ -590,16 +606,17 @@ EXTComponentResizable <- EXTComponent$new()
 
 ## footer adds in a resizable conainer -- notw orking?
 EXTComponentResizable$footer <- function(.) {
+  lst <- list(id  = as.character(.$ID + 'resizer'),
+              wrap = TRUE,
+              pinned = TRUE)
   if(inherits(.,"gImage"))
-    pr <- ",preserveRatio: true"
-  else
-    pr <- ""
+    lst[['preserveRatio']] <- TRUE
+
   out <- String() +
-    'new Ext.Resizable(' + shQuote(.$ID) + ',{' +
-      'id:"' + .$ID + 'resizer",' + 
-        'wrap: true, pinned: true' + pr + 
-              '});' + '\n'
-    .$Cat(out)
+    'new Ext.Resizable(' + shQuote(.$ID) + ',' +
+      .$mapRtoObjectLiteral(lst) + ');\n'
+
+  return(out)
   }
 
 
@@ -647,7 +664,7 @@ EXTContainer$add <- function(.,child,...) {
    child$file <- .$file
    child$titlename <- .$titlename
 
-   ## XXX Move scripts, css to toplevel
+   ## Move scripts, css to toplevel
    if(!is.null(child$css)) {
      css <- .$toplevel$css
      if(is.function(child$css))
@@ -763,8 +780,7 @@ EXTContainer$Show <- function(.) {
     .$Cat(out)
   }
 
-  ## css
-  ## XXX how to insert css into javascript???
+  ## css -- use createStyleSheet method of Ext JS to write out
   if(exists("css",envir=., inherits=FALSE)) {
     out <- String() 
     for(i in .$css) {
@@ -773,9 +789,16 @@ EXTContainer$Show <- function(.) {
       else if(is.character(i))
         out <- out + i
     }
+    ## wrap in EXT JS function
+    out <- String('Ext.util.CSS.createStyleSheet("') + out + '");'
+    
     .$Cat(out)
   }
 
+
+  ## now show container
+  if(exists("..header",envir=.,inherits=FALSE))  .$showPart(.$..header)
+  .$showPart(.$header)
 
   
   ## write out actions if present
@@ -788,9 +811,6 @@ EXTContainer$Show <- function(.) {
     }
   }
 
-  ## now show container
-  if(exists("..header",envir=.,inherits=FALSE))  .$showPart(.$..header)
-  .$showPart(.$header)
   
 
   children <- .$children
@@ -1288,12 +1308,13 @@ print.gWindow <- print.gSubwindow <- function(x,...) {
 
 ## Method to set a tooltip on an object
 ## if isURL(value) == TRUE, then loads from website
+## value can be a list with title, message or just a message
 "tooltip<-" <- function(obj,value) UseMethod("tooltip<-")
 "tooltip<-.gWidget" <- function(obj,value) {
   if(isURL(value)) {
     obj$..tooltip <- value
   } else {
-    obj$..tooltip <- paste(as.character(value),sep="\n")
+      obj$..tooltip <- value
   }
   return(obj)
 }
@@ -1516,9 +1537,6 @@ EXTWidget$addHandler <- function(., signal, handler, action=NULL,
     ## all done here
   } else {
     ## need to write out the JS to show the handler
-    ## now write out JS -- XXX consolidate gWindow code
-    
-    ## write out JS XXX -- defined above
     cat(.$writeHandlerJS(signal, lst))          # a single handler
   }
     
