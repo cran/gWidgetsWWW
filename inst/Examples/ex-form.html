@@ -1,11 +1,9 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
+ <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>
-Example of gWidgetsWWW Widgets
+test
 </title>
 <script type="text/javascript">
 djConfig = {isDebug: true};
@@ -18,11 +16,11 @@ rpadConfig = {rpadHideSource: true,rpadRun: "all"};
 <script type="text/javascript" src="gui/Rpad_main.js"></script>
 
 <!-- Include Ext and app-specific scripts: -->
-<script type="text/javascript" src="http://localhost:8079/ext-2.1/adapter/ext/ext-base.js"></script>
-<script type="text/javascript" src="http://localhost:8079/ext-2.1/ext-all.js"></script>
+<script type="text/javascript" src="ext/adapter/ext/ext-base.js"></script>
+<script type="text/javascript" src="ext/ext-all.js"></script>
     
 <!-- Include Ext stylesheets here: -->
-<link rel="stylesheet" type="text/css" href="http://localhost:8079/ext-2.1/resources/css/ext-all.css">
+<link rel="stylesheet" type="text/css" href="ext/resources/css/ext-all.css">
 </head>
 <body><div dojoType="Rpad" rpadType="R"></div> <!-- oddity -->
 
@@ -31,8 +29,8 @@ rpadConfig = {rpadHideSource: true,rpadRun: "all"};
 <pre dojoType="Rpad" rpadType="R" rpadOutput="javascript" rpadRun="init">
 setwd("/var/www/Rpad")
 require(gWidgetsWWW, quietly=TRUE)
-source("ex-actions.R")
 
+source("ex-form.R")
 </pre>
 
 </BODY></HTML> 

@@ -4,12 +4,19 @@
 ## if container is not null, then a subwindow is made
 ## handler is not used
 gwindow <- function(title="title",file="",visible=TRUE,
-                     handler=NULL, action=NULL,container=NULL,...) {
+                    name=title,
+                    width = NULL, height = NULL, parent = NULL,
+                    handler=NULL, action=NULL,...) {
 
+  ## width, height  for subwindows
+  ## changed container argument to  parent to match gWidgets
+  container <- parent
+  
    ## make a subwindow?
    if(!is.null(container))
      return(.gsubwindow(title=title,handler=handler, action=action,
-                       visible=visible,
+                        visible=visible,
+                        width = width, height = height,
                        container=container,...))
 
    w <- EXTContainer$new(file=file,
@@ -18,8 +25,10 @@ gwindow <- function(title="title",file="",visible=TRUE,
    class(w) <- c("gWindow",class(w))
 
    ## no parent container -- so no ID. We fix this
-   w$ID <- "gWidgetID0"
+  w$ID <- "gWidgetID0"
 
+##  w$..visible <- FALSE
+  
    w$setValue(value=title)
    ## XXX handle cat to STDOUT
    w$file <- file; unlink(file)
@@ -32,19 +41,29 @@ gwindow <- function(title="title",file="",visible=TRUE,
 
    ## store name in title for handlers.
    w$titlename <- make.names(title)
-   assign(w$titlename,w, envir=.GlobalEnv)
+  assign(w$titlename,w, envir=.GlobalEnv)
 
    ## Some properties that can be configured later
    w$ExtBaseURL = "http://localhost:8079/" # with trailing slash
 
    
    ## methods
-   w$addAction <- function(., action) 
-     .$..actions <- c(.$..actions, action)
+  ## for top-level window visible same as print
+  w$setVisible <- function(., value) {
+    ## same as print
+    if(value) {
+      .$Show()
+    } else {
+      cat("can't hide otp-level window\n")
+    }
+  }
 
-   ## set title
-   w$setValueJS <- function(.) {
-     if(exists("..setValueJS", envir=., inherits=FALSE)) .$..setValueJS(...)
+  w$addAction <- function(., action) 
+    .$..actions <- c(.$..actions, action)
+  
+  ## set title
+  w$setValueJS <- function(.) {
+    if(exists("..setValueJS", envir=., inherits=FALSE)) .$..setValueJS(...)
      
      out <- String() +
        'document.title = ' + shQuote(.$..data) +';'
@@ -310,14 +329,27 @@ handler = NULL, action=NULL, container=NULL,...) {
                            ) 
   class(widget) <- c("gSubwindow",class(widget))
   widget$setValue(value=title)
-  
+
+  if(is.null(width)) width <- 500
+  if(is.null(height)) height <- 300
   widget$..style <- c("width"=width, height=height)
   ## methods
   widget$addAction <- function(., action) 
      .$..actions <- c(.$..actions, action)
 
-  ## visible -- inherits
-  
+  ## visible
+  widget$setVisible <- function(., value) {
+    .$..visible <- as.logical(value)
+    if(exists("..shown",envir=., inherits=FALSE)) {
+      cat(.$setVisibleJS())
+    } else {
+      if(as.logical(value))
+        print(.)
+    }
+  }
+
+  widget$dispose <- function(.) visible(.) <- FALSE
+
   ## set title
   widget$setValueJS <- function(.) {
   if(exists("..setValueJS", envir=., inherits=FALSE)) .$..setValueJS(...)

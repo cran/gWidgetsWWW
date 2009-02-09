@@ -1,5 +1,4 @@
-require(gWidgetsWWW, quietly = TRUE)
-
+## Build a t-test gui
 w <- gwindow("t-test example")
 g <- ggroup(cont = w, horizontal = FALSE)
 data(Cars93, package="MASS")
@@ -88,5 +87,6 @@ addHandlerClicked(doGraph, handler = function(h,...) {
   w1
 })
   
-
+## show w
+visible(w) <- TRUE
                   

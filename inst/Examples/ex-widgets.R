@@ -1,34 +1,3 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>
-Example of gWidgetsWWW Widgets
-</title>
-<script type="text/javascript">
-djConfig = {isDebug: true};
-rpadConfig = {rpadHideSource: true,rpadRun: "all"};
-</script>
-<style type="text/css">
-.Rpad_background-color: #eeeeee;font-family: georgia;}
-</style>
-<script type="text/javascript" src="gui/dojo.js"></script>
-<script type="text/javascript" src="gui/Rpad_main.js"></script>
-
-<!-- Include Ext and app-specific scripts: -->
-<script type="text/javascript" src="http://localhost:8079/ext-2.1/adapter/ext/ext-base.js"></script>
-<script type="text/javascript" src="http://localhost:8079/ext-2.1/ext-all.js"></script>
-    
-<!-- Include Ext stylesheets here: -->
-<link rel="stylesheet" type="text/css" href="http://localhost:8079/ext-2.1/resources/css/ext-all.css">
-</head>
-<body><div dojoType="Rpad" rpadType="R"></div> <!-- oddity -->
-
-
-
-<pre dojoType="Rpad" rpadType="R" rpadOutput="javascript" rpadRun="init">
 require(gWidgetsWWW, quietly=TRUE)
 w <- gwindow("Example of gWidgetsWWW widgets")
 g1 <- ggroup(cont=w)
@@ -60,7 +29,8 @@ widget = gbutton("button", cont=g)
 
 
 g = gexpandgroup("ghtml", cont=g1)
-widget = ghtml("use a url here", cont=g)
+##widget = ghtml(asURL("ex-widgets.txt"), cont=g)
+widget = ghtml("Can be <b>marked</b><em>up</em> or a <a href='www.r-project.org'>url</a>", cont=g)
 
 g = gexpandgroup("gcheckbox", cont=g1)
 widget = gcheckbox("label", cont=g)
@@ -137,11 +107,3 @@ widget = gstatusbar("statusbar text", cont=w)
 
 
 
-
-## print out values (w$Show())
-w
-</pre>
-
-</BODY></HTML> 
-
- 

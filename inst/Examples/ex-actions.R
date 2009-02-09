@@ -1,4 +1,3 @@
-require(gWidgetsWWW, quietly=TRUE)
 w <- gwindow("Example of using actions")
 g <- ggroup(cont=w, horizontal=FALSE)
 l <- glabel("An example of how to manipulate actions", cont=g)
@@ -25,11 +24,11 @@ mlist <- list(file = list(
                 )
               )
                 
-mb = gmenu(mlist, cont=w)
+mb <- gmenu(mlist, cont=w)
 l <- glabel("Buttons can take actions too.", cont=g)
 b <- gbutton(action = alist$save, cont = g)
 gseparator(cont=g)
-b1 <- gbutton("set a no changes yet state", cont =g,
+b1 <- gbutton("set actions as if a \"no changes yet\" state", cont =g,
               handler = function(h,...) {
                 nms <- names(alist)
                 grayThese <- c("save","save.as","cut")
@@ -39,7 +38,7 @@ b1 <- gbutton("set a no changes yet state", cont =g,
                   enabled(alist[[i]]) <- TRUE
               })
 
-b2 <- gbutton("set a some change state", cont =g,
+b2 <- gbutton("set actions as if \"some change\" is the  state", cont =g,
               handler = function(h,...) {
                 nms <- names(alist)
                 grayThese <- c()
@@ -50,6 +49,6 @@ b2 <- gbutton("set a some change state", cont =g,
               })
 
 
-
+visible(w) <- TRUE
 
 

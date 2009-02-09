@@ -64,6 +64,10 @@ glayout <- function(homogeneous = FALSE, spacing = 10,
     ## but likely isn't worth the trouble
 
     children <- .$children; n <- length(children)
+    if(n == 0) {
+      return("")
+    }
+
     sapply(children, function(i) i$..tblSeen <- FALSE)
     
     allRows <- lapply(children, function(i) i$..tblLocationRow)
@@ -96,7 +100,7 @@ glayout <- function(homogeneous = FALSE, spacing = 10,
       }
     }
 
-    tmp <- sapply(items, function(i) {
+    tmp <- lapply(items, function(i) {
       if(is.null(i$obj)) {
         contentEl <- String('html:"&nbsp;"')
       } else {
@@ -104,7 +108,7 @@ glayout <- function(homogeneous = FALSE, spacing = 10,
       }
 
       out <- String(.$makeItemsFixedItems)
-      
+
       if(i$rowspan > 1 && i$colspan > 1) {
         out <- out +
           'rowspan:' + i$rowspan + ',' +

@@ -36,8 +36,8 @@ gcheckboxgroup = function (items, checked = FALSE, horizontal = FALSE,
         out <- .$..data
       }
     }
-    ## no index -- return values
-    if(is.null(index)) index <- FALSE
+    ## no index -> index TRUE
+    if(is.null(index)) index <- TRUE
     if(index)
       return(out)
     else

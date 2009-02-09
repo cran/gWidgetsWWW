@@ -18,9 +18,9 @@ rpadConfig = {rpadHideSource: true,rpadRun: "all"};
 <script type="text/javascript" src="gui/Rpad_main.js"></script> 
 
 <!-- Call in Ext and its style sheet -->
-<script type="text/javascript" src="http://localhost:8079/ext-2.1/adapter/ext/ext-base.js"></script>
-<script type="text/javascript" src="http://localhost:8079/ext-2.1/ext-all.js"></script>
-<link rel="stylesheet" type="text/css" href="http://localhost:8079/ext-2.1/resources/css/ext-all.css">
+<script type="text/javascript" src="ext/adapter/ext/ext-base.js"></script>
+<script type="text/javascript" src="ext/ext-all.js"></script>
+<link rel="stylesheet" type="text/css" href="ext/resources/css/ext-all.css">
 
 
 </head>
@@ -29,9 +29,10 @@ rpadConfig = {rpadHideSource: true,rpadRun: "all"};
 This example shows the gcombobox widget with slightly different settings.
 
 <pre dojoType="Rpad" rpadType="R" rpadOutput="javascript" rpadRun="init">
+setwd("/var/www/Rpad/")
+require(gWidgetsWWW, quietly=TRUE)
+
 source("ex-gcombobox.R")
-## show the web page. The w object sourced in above.
-w
 </pre>
 
 </BODY></HTML> 

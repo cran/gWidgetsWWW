@@ -243,6 +243,9 @@ toJSArray.data.frame <- function(x,doBrackets=TRUE) {
 
   ## otherwise, we need to work
   tmp <- sapply(x, function(y) toJSArray.list(y, doBrackets=FALSE))
+  if(!is.matrix(tmp))
+    tmp <- matrix(tmp, ncol=length(tmp))
+
   tmp1 <- apply(tmp,1,function(i) paste("[",paste(i,collapse=","),"]",sep=""))
   out <- paste(tmp1, collapse=",")
   if(doBrackets) out <- paste("[",out,"]",sep="")

@@ -4,7 +4,7 @@ export("runHandler",
        "shQuoteEsc")
 
 export(
-       "gmessage","gconfirm","ginput",
+       "galert","gmessage","gconfirm","ginput",
        "gaction",
        "gbutton",
        "gcalendar",
@@ -13,6 +13,7 @@ export(
        "gcombobox","gdroplist",
        "gdf",
        "gedit",
+       "gformlayout",
        "ggroup","gframe","gexpandgroup",
        "ggooglemaps",
        "ghtml",
@@ -79,6 +80,7 @@ S3method("font<-","gWidget")
 S3method("print","gWindow")             # window -- not widget
 S3method("tooltip<-","gWidget")
 S3method("addHandler","gWidget")
+S3method("addHandlerBlur","gWidget")
 S3method("addHandlerChanged","gWidget")
 S3method("addHandlerClicked","gWidget")
 S3method("addHandlerDoubleclick","gWidget")

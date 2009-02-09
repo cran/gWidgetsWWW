@@ -21,41 +21,17 @@ gedit <- function (text = "", width = 25, coerce.with = NULL,
   ## methods
   widget$getValueJSMethod = "getValue"
   widget$setValueJSMethod = "setValue"
-  widget$transportSignal <- "change" 
+#  widget$transportSignal <- "change"
+  widget$transportSignal <- "keyup" 
   widget$ExtConstructor <- "Ext.form.TextField"
   widget$ExtCfgOptions <- function(.) {
-    list("value"= svalue(.),
-         "enableKeyEvents"= TRUE
-         )
+    out <- list("value"= svalue(.),
+                "enableKeyEvents"= TRUE)
+    if(exists("..width", ., inherits=FALSE))
+      out[['width']] <- .$..width
+    return(out)
   }
 
-
-
-##   widget$show <- function(.) {
-##     ## html
-##     out <- String() +
-##       '<span id=' + shQuote(.$ID) + '></span>\n'
-
-##     ## javascript object
-##     out <- out + '<script>' +
-##       'o' + .$ID + '= new Ext.form.TextField({' +
-##         'renderTo: ' + shQuote(.$ID) + ',' +
-##           'value:' + shQuote(svalue(.)) + ',' +
-##             'enableKeyEvents: true,' +
-##               '});'
-
-##     ## transport
-##     out <- out +
-##       'o' + .$ID + '.on("change", function() {' +
-##         'var value = o' + .$ID + '.getValue();' +
-##           '_transportToR(' + shQuote(.$ID) + ',value);' +
-##             '});'
-
-##     ## finish
-##     out <- out + '</script>'
-    
-##     .$Cat(out)
-##   }
 
 
   ## add after CSS, scripts defined

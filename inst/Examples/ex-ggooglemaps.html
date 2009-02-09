@@ -19,9 +19,9 @@ rpadConfig = {rpadHideSource: true,rpadRun: "all"};
 <script type="text/javascript" src="gui/Rpad_main.js"></script> 
 
 <!-- Call in Ext and its style sheet -->
-<script type="text/javascript" src="http://localhost:8079/ext-2.1/adapter/ext/ext-base.js"></script>
-<script type="text/javascript" src="http://localhost:8079/ext-2.1/ext-all.js"></script>
-<link rel="stylesheet" type="text/css" href="http://localhost:8079/ext-2.1/resources/css/ext-all.css">
+<script type="text/javascript" src="ext/adapter/ext/ext-base.js"></script>
+<script type="text/javascript" src="ext/ext-all.js"></script>
+<link rel="stylesheet" type="text/css" href="ext/resources/css/ext-all.css">
 
 <!-- Google Maps API requires one to register their website -->
 <!-- Replace the key below with your own. This works for 127.0.0.1:8079 -->
@@ -51,12 +51,11 @@ b = gbutton("draw polygon", cont = g, handler = function(h,...) {
 
 
 ## print out
-w
+visible(w) = TRUE
 </pre>
 
 <pre dojoType="Rpad" rpadType="R" rpadOutput="javascript"
      rpadRun="init">
-## Example of ggooglemaps
 require(gWidgetsWWW, quietly=TRUE)
 w = gwindow("Test of widgets")
 g = ggroup(cont = w, horizontal = FALSE)
@@ -74,7 +73,7 @@ b = gbutton("draw polygon", cont = g, handler = function(h,...) {
 
 
 ## print out
-w
+visible(w) = TRUE
 </pre>
 </body></html>
 

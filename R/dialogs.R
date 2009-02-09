@@ -133,8 +133,11 @@ gfile <- function() {
 
 
 
-## quick alert message dropped from above
-galert <- function(title = "", message = "", delay=3) {
+## quick alert message -- not modal or obtrusive (dropped from above in extjs)
+galert <- function(message, title = "message", delay=3, parent=NULL) {
+  ## parent not used here
+  if(missing(message))
+    message <- ""
   out <- String() +
     'Ext.example.msg(' + shQuoteEsc(title) + ',' +
       shQuoteEsc(message) + ',' + delay + ');'

@@ -30,6 +30,9 @@ gmenu <- function(menulist,  popup = FALSE, action=NULL, container = NULL,...) {
     
     for(i in names(menulist)) {
       data <- menulist[[i]]
+      if(is(data,"gSeparator"))
+        data <- list(separator=TRUE)
+      
       if(inherits(data, "gAction")) {
         out <- out + data$asCharacter() + ','
       } else if(!is.null(data$separator)) {

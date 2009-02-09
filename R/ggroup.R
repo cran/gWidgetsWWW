@@ -24,7 +24,12 @@ EXTGroup$ExtCfgOptions <-  function(.) {
     }
     ## no "row" layout, so we use the default.
   }
-
+  ## size
+##  out[['autoWidth']] <- TRUE
+  if(exists("..width", envir = ., inherits =FALSE))
+    out[["width"]] <- .$..width
+  if(exists("..height", envir = ., inherits =FALSE))
+    out[["height"]] <- .$..height
   spacing <- 10
   if(exists("..spacing", envir=., inherits=FALSE)) spacing <- .$..spacing
 ##  out[['spacing']] <- spacing
@@ -33,7 +38,7 @@ EXTGroup$ExtCfgOptions <-  function(.) {
   return(out)
 }
 ## these are not defined
-EXTGroup$addSpring <- function(.) {}
+EXTGroup$addSpring <- function(.) {invisible("")}
 EXTGroup$addSpace <- function(., value, horizontal=TRUE, ...) {}
 
 ggroup <- function(horizontal=TRUE, spacing=5, use.scrollwindow = FALSE,
@@ -44,7 +49,11 @@ ggroup <- function(horizontal=TRUE, spacing=5, use.scrollwindow = FALSE,
                      ..spacing = spacing,
                      ..use.scrollwindow = use.scrollwindow
                      )
-   class(cont) <- c("gGroup",class(cont))
+  theArgs <- list(...)
+  if(!is.null(theArgs$width)) cont$..width <- theArgs$width
+  if(!is.null(theArgs$height)) cont$..height <- theArgs$height
+
+  class(cont) <- c("gGroup",class(cont))
    container$add(cont,...)
    invisible(cont)
  }
@@ -62,6 +71,10 @@ gframe <- function(text = "", pos = 0, horizontal=TRUE, container=NULL,...) {
   cont <- EXTFrame$new(toplevel = container$toplevel,
                     ..horizontal = horizontal)
                     
+  theArgs <- list(...)
+  if(!is.null(theArgs$width)) cont$..width <- theArgs$width
+  if(!is.null(theArgs$height)) cont$..height <- theArgs$height
+
   
   class(cont) <- c("gFrame",class(cont))
   cont$setValue(value=text)
@@ -96,6 +109,9 @@ gexpandgroup <- function(text = "", horizontal = TRUE,
   cont <- EXTExpandGroup$new(toplevel=container$toplevel,
                             ..horizontal=horizontal)
                     
+  theArgs <- list(...)
+  if(!is.null(theArgs$width)) cont$..width <- theArgs$width
+  if(!is.null(theArgs$height)) cont$..height <- theArgs$height
 
   class(cont) <- c("gExpandgroup",class(cont))
   cont$setValue(value=text)

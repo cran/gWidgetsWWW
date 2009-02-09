@@ -70,7 +70,7 @@ type="text/javascript"></script>}
   
   The available \pkg{proto} methods and their signatures are:
 
-  
+  \itemize{
   \item{widget\$getBounds()}{Returns a list with the lower and upper
     coordinates of the current map.}
   
@@ -105,7 +105,7 @@ type="text/javascript"></script>}
     \code{latlng}. If missing, the values set via \code{[$<$-} or
     \code{addMarker} are used.. When the polygon is clicked its area in
     square meters is presented.}
-     
+  }   
 
   Adding additional methods from the Google API is certainly possible. 
   

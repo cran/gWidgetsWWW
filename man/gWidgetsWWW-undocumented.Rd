@@ -22,6 +22,7 @@
 \alias{enabled<-}
 \alias{focus<-}
 \alias{font<-}
+\alias{galert}
 \alias{gaction}
 \alias{gbutton}
 \alias{gcalendar}
@@ -34,6 +35,7 @@
 \alias{gedit}
 \alias{getStockIcons}
 \alias{gexpandgroup}
+\alias{gformlayout}
 \alias{gframe}
 \alias{ggroup}
 \alias{ghtml}

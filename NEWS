@@ -2,6 +2,15 @@ Dear Emacs, please make this -*-Text-*- mode!
 
 NEWS for gWidgetsWWW
 
+Changes for  0.0-5
+--------------------
+
+* better organized examples
+
+* added gformlayout
+
+* bug fixes
+
 Changes for  0.0-3
 --------------------
 

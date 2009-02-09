@@ -74,7 +74,7 @@ EXTWidget$asCharacter <- function(.) {String('o') +  .$ID}
 
 ## simple function to call an Ext method on the corresponding object
 EXTWidget$callExtMethod <- function(., methodname, args) {
-  if(missing(arg))
+  if(missing(args))
     args <- '();'
   else
     args <- String('(') + args + ');'
@@ -214,8 +214,9 @@ EXTWidget$setNamesJS <- function(.) {}    # set names
 EXTWidget$getVisible <- function(.) return(.$..visible )
 EXTWidget$setVisible <- function(.,value) {
   .$..visible <- as.logical(value)
-  if(exists("..shown",envir=., inherits=FALSE)) 
+  if(exists("..shown",envir=., inherits=FALSE)) {
     cat(.$setVisibleJS())
+  }
 }
 EXTWidget$setVisibleJS <- function(.) {
   if(exists("..setVisibleJS", envir=., inherits=FALSE))
@@ -1151,6 +1152,18 @@ svalue.gWidget <- function(obj,index=NULL, drop=NULL,...) {
     obj$add(child=value,...)
 }
 
+## insert is new name for add for gtext
+"insert" <- function(obj, value, where = c("end","beginning","at.cursor"),
+                     font.attr = NULL,
+                     do.newline = TRUE, ...) UseMethod("insert")
+"insert.gWidget" <- function(obj, value, where = c("end","beginning","at.cursor"),
+                             font.attr = NULL,
+                             do.newline = TRUE, ...) {
+  where = match.arg(where)
+  add(obj, value, where=where, font.attr=font.attr, do.newline=do.newline,...)
+}
+                       
+
 ## toggle whether widget can receive input
 "enabled" <- function(obj) UseMethod("enabled")
 "enabled.gWidget" <- function(obj) {
@@ -1179,8 +1192,11 @@ svalue.gWidget <- function(obj,index=NULL, drop=NULL,...) {
 "dispose.gWidget" <- function(obj,...) {
   . = obj
 
-  if(exists("..shown",envir=., inherits=FALSE)) 
+  if(exists("dispose", envir=.)) {
+    .$dispose()
+  } else if(exists("..shown",envir=., inherits=FALSE)) {
     cat(.$callExtMethod("hide"))
+  }
 }
 
  ## focus
@@ -1327,7 +1343,7 @@ addSpace.gWidget <- function(obj, value, horizontal=TRUE, ...)
 
 addSpring <- function(obj, ...) UseMethod("addSpring")
 addSpring.gWidget <- function(obj,  ...) 
-  obj$addSpring( ...)
+  obj$addSpring(...)
 
 
 
@@ -1550,8 +1566,19 @@ addHandler.gWidget <- function(obj,signal,handler, action=NULL,...)
   obj$addHandler(signal, handler, action,...)
 
 
- ## instances
- ## addHandlerChanged
+## instances
+## addHandlerBlur
+EXTWidget$addHandlerBlur <- function(., handler, action=NULL) {
+  .$addHandler(signal="blur",handler, action)
+ }
+
+"addHandlerBlur" <- function(obj, handler, action=NULL)
+  UseMethod("addHandlerBlur")
+addHandlerBlur.gWidget <- function(obj,handler, action=NULL)
+  obj$addHandlerBlur(handler, action)
+
+
+## addHandlerChanged
  EXTWidget$addHandlerChanged <- function(., handler, action=NULL) {
    .$addHandler(signal="change",handler, action)
  }

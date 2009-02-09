@@ -103,7 +103,7 @@ icons. For now, these icons need to be installed in directory called
   \pkg{gWidgetsWWW} than in \pkg{gWidgets}. There can be only one
   top-level window, as this maps to a webpage. Subwindows are possible
   though. These are constructed with the same constructor, but one
-  passes in the top-level window to the \code{container} argument. The
+  passes in the top-level window to the \code{parent} argument. The
   window object is a bit different than other \code{gWidgets}
   implementations, as the object isn't rendered until the web page is
   ready to display. This rendering is done through the \code{print}
@@ -158,6 +158,8 @@ icons. For now, these icons need to be installed in directory called
   tab names. The \code{dispose} method deletes the current tab.
     \cr
   
+  Tje \code{gformlayout} widget is used to layout widgets using
+  \code{glayout} is imlemented.
 
   \bold{Widgets:}\cr
 
@@ -359,7 +361,7 @@ icons. For now, these icons need to be installed in directory called
   widgets. The return values are url's of the stock icons.
   
   The function \code{addStockIcons} can be used to add to this list. These
-  should be added \em{before} the GUI is rendered so that they will be
+  should be added \emph{before} the GUI is rendered so that they will be
   available to the GUI's components.
   
 
@@ -504,7 +506,7 @@ icons. For now, these icons need to be installed in directory called
   \code{..ExtCfgOptions}. This should be a function which returns a
   list. The named components of the list map to the properties of the
   EXT constructor. (See that API for things you may want). These values
-  will override any others set my \pkg{gWidgetsWWW}. The conversion will
+  will override any others set by \pkg{gWidgetsWWW}. The conversion will
   quote values of type \code{character}. If this is undesired, use the
   class \code{String} returned by the \code{\link{String}} function.
 

@@ -1,6 +1,3 @@
-## sourced in via ex-gcombobox.html
-
-require(gWidgetsWWW, quietly=TRUE)
 
 w <- gwindow("Test of gcombobox")
 g <- ggroup(cont=w, horizontal=FALSE)
@@ -29,5 +26,5 @@ g1 <- gexpandgroup("Combo to replace gedit when predefined values are set", cont
 cb <- gcombobox(m, editable = TRUE, cont = g1)
 cb$..hideTrigger <- TRUE                # hide the trigger to make it look right
 
-
+visible(w) <- TRUE
 
