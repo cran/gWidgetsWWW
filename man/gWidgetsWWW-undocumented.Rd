@@ -15,6 +15,7 @@
 \alias{addHandlerKeystroke}
 \alias{addHandlerMouseclick}
 \alias{addHandlerMouseMotion}
+\alias{addHandlerIdle}
 \alias{addHandlerSelect}
 \alias{addStockIcons}
 \alias{dispose}

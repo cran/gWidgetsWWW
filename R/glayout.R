@@ -1,7 +1,7 @@
 
 ## glayout
 ## use TableLayout  -- need algorithm to write out widgets
-glayout <- function(homogeneous = FALSE, spacing = 10,
+glayout <- function(homogeneous = FALSE, spacing = 5, # 10 is too big here
                     container = NULL, ...) {
 
 

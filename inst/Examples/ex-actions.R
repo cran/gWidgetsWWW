@@ -49,6 +49,6 @@ b2 <- gbutton("set actions as if \"some change\" is the  state", cont =g,
               })
 
 
-visible(w) <- TRUE
+##visible(w) <- TRUE
 
 

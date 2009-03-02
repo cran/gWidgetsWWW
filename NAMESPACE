@@ -23,6 +23,7 @@ export(
        "gmenu",
        "gnotebook",
        "gpanedgroup",
+       "gprocessingjs",
        "gradio",
        "gseparator",
        "gslider","gspinbutton",
@@ -56,6 +57,7 @@ export(
               "addHandlerDestroy",
               "addHandlerExposed",
               "addHandlerMouseMotion",
+                     "addHandlerIdle",
        "String"
               )
               
@@ -90,9 +92,7 @@ S3method("addHandlerSelect","gWidget")
 S3method("addHandlerDestroy","gWidget")
 S3method("addHandlerExposed","gWidget")
 S3method("addHandlerMouseMotion","gWidget")
-S3method("addHandler","gWidget")
-S3method("addHandler","gWidget")
-S3method("addHandler","gWidget")
+S3method("addHandlerIdle","gWidget")
 S3method("addHandler","gWidget")
 S3method("+","String")
 S3method("print","String")

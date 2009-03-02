@@ -113,8 +113,10 @@ type="text/javascript"></script>}
 \value{
   Returns a \pkg{gWidgetsWWW} object.
 }
-\references{\url{http://extjs.com/blog/2008/07/01/integrating-google-maps-api-with-extjs/},
-\url{http://code.google.com/apis/maps/}}
+\references{
+	\url{http://extjs.com/blog/2008/07/01/integrating-google-maps-api-with-extjs/},
+	\url{http://code.google.com/apis/maps/}
+}
 \author{John Verzani }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

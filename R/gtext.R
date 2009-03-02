@@ -31,16 +31,19 @@ gtext <- function(text = NULL, width = NULL, height = 300,
   ## Scripts
 
   ## methods
-  widget$add <- function(.,child, ...) {
+  widget$add <- function(.,child, where="end", ...) {
     ## warp around svalue<-
-    svalue(.) <- c(svalue(.), child)
+    if(where == "end")
+      svalue(.) <- c(svalue(.), child)
+    else
+      svalue(.) <- c(child,svalue(.))
 ##     curValue <- String(svalue(.))
 ##     for(i in child) {
 ##       curValue <- curValue + i
 ##     }
 ##     svalue(.) <- curValue
   }
-
+  widget$insert <- widget$add
   
   ## methods
   ## getValue must escape the strings -- they are URL encoded by escape()
@@ -56,7 +59,7 @@ gtext <- function(text = NULL, width = NULL, height = 300,
     
     out <- String() +
       .$asCharacter() + '.setValue(' +
-        shQuote(paste(.$..data,collapse="\\\\n")) + ');' + '\n'
+        shQuote(paste(.$..data, collapse="\\\\n")) + ');' + '\n'
 
     return(out)
 
@@ -71,7 +74,8 @@ gtext <- function(text = NULL, width = NULL, height = 300,
   }
   widget$ExtConstructor <- "Ext.form.TextArea"
   widget$ExtCfgOptions <- function(.) {
-    out <- list("value"= svalue(.))
+    out <- list()
+    out[["value"]] = paste(svalue(.), collapse="\\\\n")
     if(!is.null(.$..width)) {
       out[["width"]] <- .$..width
     } else {

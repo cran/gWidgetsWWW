@@ -26,11 +26,11 @@ lst <- list(type = "ggroup",
 f <- gformlayout(lst, cont = g)
 
 bg <- ggroup(cont = g)
-addSpring(bg)
+
 gbutton("ok", cont = bg, handler = function(h,...) {
   vals <- svalue(f)
 })
 
 ## show top level
-visible(w) <- TRUE
+##visible(w) <- TRUE
 

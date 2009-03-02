@@ -56,7 +56,11 @@ EXTWidget <-
 ## used to display to STDOUT or a file for debugging
 ## XXX Should we use .$file <- stdout()???
 ## this isn't working for dialogs
-EXTWidget$Cat <- function(.,...) cat(...,"\n", file=.$file, append=TRUE)
+EXTWidget$Cat <- function(.,...) {
+  cat(...,"\n", file=.$file, append=TRUE)
+}
+EXTWidget$test <- function(.,...) .$Cat("alert('test message');")
+
 ## Cat either a string or function
 EXTWidget$showPart <- function(.,part) {
   ## part may be property of function. This checks
@@ -79,7 +83,7 @@ EXTWidget$callExtMethod <- function(., methodname, args) {
   else
     args <- String('(') + args + ');'
   out <- String() +
-    .$asCharacter() +  methodname + args
+    .$asCharacter() + "." + methodname + args
   return(out)
 }
 
@@ -186,7 +190,7 @@ EXTWidget$setValues <- function(.,i,j,...,value) {
   ## XXX Need to include i,j
   .$..values <- value
   if(exists("..shown",envir=., inherits=FALSE))
-    cat(.$setValuesJS(...))
+    cat(.$setValuesJS(...), file=stdout())
 }
 EXTWidget$setValuesJS <- function(.,...) {
   if(exists("..setValuesJS", envir=., inherits=FALSE)) .$..setValuesJS(...)  
@@ -204,7 +208,7 @@ EXTWidget$getNames <- function(.) .$names
 EXTWidget$setNames <- function(.,value) {
   .$..names <- value
   if(exists("..shown",envir=., inherits=FALSE)) {
-    cat(.$setNamesJS())
+    cat(.$setNamesJS(), file=stdout())
   }
 }
 EXTWidget$setNamesJS <- function(.) {}    # set names
@@ -215,12 +219,12 @@ EXTWidget$getVisible <- function(.) return(.$..visible )
 EXTWidget$setVisible <- function(.,value) {
   .$..visible <- as.logical(value)
   if(exists("..shown",envir=., inherits=FALSE)) {
-    cat(.$setVisibleJS())
+    cat(.$setVisibleJS(), file=stdout())
   }
 }
 EXTWidget$setVisibleJS <- function(.) {
   if(exists("..setVisibleJS", envir=., inherits=FALSE))
-    .$..SosetVisibleJS()
+    .$..setVisibleJS()
   
   value <- .$..visible
   if(as.logical(value))
@@ -235,7 +239,7 @@ EXTWidget$getEnabled <- function(.) return(.$..enabled )
 EXTWidget$setEnabled <- function(.,value) {
   .$..enabled <- as.logical(value)
   if(exists("..shown",envir=., inherits=FALSE)) 
-    cat(.$setEnabledJS())
+    cat(.$setEnabledJS(), file=stdout())
 }
 EXTWidget$setEnabledJS <- function(.) {
   if(exists("..enabled", envir=., inherits=FALSE))
@@ -345,7 +349,6 @@ EXTWidget$ExtStdCfgOptions <- function(.) {
   if(exists("..visible",envir=., inherits = FALSE))
     if(!.$..visible)
       out[['hidden']] <- !.$..visible   # in Ext.Component
-
   if(exists("..tpl", envir=., inherits=FALSE)) {
     out[['tpl']] <- .$..tpl()
   } else if(exists("tpl", envir=., inherits =FALSE)) {
@@ -404,9 +407,9 @@ EXTWidget$mapRtoObjectLiteral <- function(.,values,doBraces=TRUE) {
     }
   }
 
-  res <- paste(names(out), out, sep=": ", collapse=",\n")
+  res <- paste(names(out), out, sep=":", collapse=",")
   if(doBraces)
-    res <- String('{') + res + '}\n'
+    res <- String('{') + res + '}'
 
   return(res)
 }
@@ -428,10 +431,15 @@ EXTWidget$writeConstructor <- function(.) {
           ');\n'
   ## write out x-hidden unless requested not to.
   ## x-hidden causes the widget not to display until added to parent
-  if(!exists("no.x.hidden",envir=., inherits=FALSE))
-    out <- out +
-      'Ext.get(' + shQuote(.$ID) +').addClass("x-hidden");\n'
-  
+  top <- .$toplevel
+  if(!is.null(top)) {
+    if(!exists("..shown", envir=top, inherits=FALSE) ||
+       (exists("..shown", envir=top, inherits=FALSE)  && !top$..shown)) {
+      if(!exists("no.x.hidden",envir=., inherits=FALSE))
+        out <- out +
+          'Ext.get(' + shQuote(.$ID) +').addClass("x-hidden");\n'
+    }
+  }
   return(out)
 }
 
@@ -697,9 +705,9 @@ EXTContainer$add <- function(.,child,...) {
          ## for first time
          i <- scripts[[class(child)[1]]]
          if(is.list(i))
-           cat(i$FUN(i$obj))
+           cat(i$FUN(i$obj), file=stdout())
          else if(is.character(i))
-           cat(i)
+           cat(i, file=stdout())
         }
      }
    }
@@ -722,11 +730,26 @@ EXTContainer$add <- function(.,child,...) {
 ## this is likely not perfect
 EXTContainer$addJS <- function(.,child) {
   out <- String() +
-    .$asCharacter() + '.add(' +
-      child$asCharacter() + ');'
+    .$asCharacter() + '.add(' + child$asCharacter() + ');' +
+      .$asCharacter() + '.doLayout();'
 
   return(out)
 }
+
+## remove a widget
+EXTContainer$delete <- function(., widget) {
+  ## remove widget from obj
+  if(exists("..shown", envir=., inherits=FALSE)) {
+    cat(.$deleteJS(widget))
+  }
+}
+
+EXTContainer$deleteJS <- function(., widget) {
+  out <- String() +
+    .$asCharacter() + '.remove(' + widget$asCharacter() + ');'
+  cat(out)
+}
+      
 
 ## for containers width and height are properties, not in .style
 EXTContainer$setSize <- function(., value) {
@@ -986,7 +1009,7 @@ EXTComponentWithStore$setValues <- function(.,i,j,...,value) {
   ## XXX need to include i,j stuff
   .$..store$data <- value
   if(exists("..shown",envir=., inherits=FALSE))
-    cat(.$setValuesJS(...))
+    cat(.$setValuesJS(...), file=stdout())
 }
 EXTComponentWithStore$setValuesJS <- function(.) {
   if(exists("..setValuesJS", envir=., inherits=FALSE)) .$..setValuesJS(...)
@@ -1152,6 +1175,14 @@ svalue.gWidget <- function(obj,index=NULL, drop=NULL,...) {
     obj$add(child=value,...)
 }
 
+## delete removes add -- in this case we hide
+"delete" <- function(obj, widget, ...) UseMethod("delete")
+delete.gWidget <- function(obj, widget, ...) {
+  if(exists("delete",envir=obj, inherits=TRUE))
+    obj$delete(widget,...)
+}
+  
+
 ## insert is new name for add for gtext
 "insert" <- function(obj, value, where = c("end","beginning","at.cursor"),
                      font.attr = NULL,
@@ -1180,7 +1211,7 @@ svalue.gWidget <- function(obj,index=NULL, drop=NULL,...) {
   .$..enabled <- as.logical(value)
 
   if(exists("..shown", envir=., inherits=FALSE))
-    cat(obj$setEnabledJS())
+    cat(obj$setEnabledJS(), file=stdout())
   
   return(obj)
 }
@@ -1195,7 +1226,7 @@ svalue.gWidget <- function(obj,index=NULL, drop=NULL,...) {
   if(exists("dispose", envir=.)) {
     .$dispose()
   } else if(exists("..shown",envir=., inherits=FALSE)) {
-    cat(.$callExtMethod("hide"))
+    cat(.$callExtMethod("hide"), file=stdout())
   }
 }
 
@@ -1208,7 +1239,7 @@ svalue.gWidget <- function(obj,index=NULL, drop=NULL,...) {
   if(value) .$..focus <- TRUE
   
   if(exists("..shown",envir=., inherits=FALSE) && value)
-    cat(.$callExtMethod("focus",tolower(as.character(value))))
+    cat(.$callExtMethod("focus",tolower(as.character(value))), file=stdout())
 
   return(obj)
 }
@@ -1305,7 +1336,7 @@ visible.gWidget <- function(obj) obj$getVisible()
     .$..style <- c(.$..style,value)
   
   if(exists("..shown",., inherits=FALSE)) {
-    cat(.$setStyleJS())
+    cat(.$setStyleJS(), file=stdout())
    }
   
   return(obj)
@@ -1422,6 +1453,9 @@ EXTWidget$handlerArgumentsList <-
        keydown = "w,e",                 # e Ext.EventObject
        keypress = "w,e",
        keyup = "w,e",
+       mousedown = "e",
+       mouseover = "e", 
+       mousemove = "e", 
        move = "w, x, y",
        render = "w", beforerender = "w",
        resize = "w, adjWidth, adjHeight, rawWidth, rawHeight",
@@ -1446,31 +1480,38 @@ EXTWidget$handlerArguments <- function(.,signal) {
 }
 
 ## write out a single handler passed as a list
+## the special case signal=idle is different
 EXTWidget$writeHandlerJS <- function(.,signal,handler=NULL) {
-  out <- String() +
-    'o' + .$ID + '.on(' +
-      ## XXX transport args needs to be siganl dependent!!
-      shQuote(signal) + ', function(' + .$handlerArguments(signal) + ') {\n' 
-  
-  ## write out transport if necessary
-  ## XXX code to pass values createDelegate ....
-  if(!is.null(.$transportSignal) && signal %in% .$transportSignal) {
-    out <- out + .$writeTransport(signal = signal)
-  }
-              
-
-  ## write out handler if needed
-  if(!is.null(handler)) {
+  out <- String()
+  if(signal == "idle") {
     out <- out +
-      'runHandlerJS(' + handler$handlerID  +
-        handler$handlerExtraParameters + ');' + '\n' +
-          ##            'true;' +  ## return value needed, desired?
-              '\n'
-  }
+      'setInterval(function() {' +
+        'runHandlerJS(' + handler$handlerID  +
+          handler$handlerExtraParameters + ');' +
+            '},' + handler$handlerArguments + ');' + '\n'
+  } else {
+    out <- out +
+      'o' + .$ID + '.on(' +
+        ## XXX transport args needs to be siganl dependent!!
+        shQuote(signal) + ', function(' + .$handlerArguments(signal) + ') {\n' 
+    
+    ## write out transport if necessary
+    ## XXX code to pass values createDelegate ....
+    if(!is.null(.$transportSignal) && signal %in% .$transportSignal) {
+      out <- out + .$writeTransport(signal = signal)
+    }
+    ## write out handler if needed
+    if(!is.null(handler)) {
+      out <- out +
+        'runHandlerJS(' + handler$handlerID  +
+          handler$handlerExtraParameters + ');' + '\n' +
+            ##            'true;' +  ## return value needed, desired?
+            '\n'
+    }
   
-  out <- out +
+    out <- out +
       '},this, {delay:100,buffer:100, single:false});' + '\n'
-  
+  }
   return(out)
 }
 EXTWidget$writeHandlersJS <- function(.) {
@@ -1553,6 +1594,7 @@ EXTWidget$addHandler <- function(., signal, handler, action=NULL,
     ## all done here
   } else {
     ## need to write out the JS to show the handler
+#    cat(.$writeHandlerJS(signal, lst), file=stdout())          # a single handler
     cat(.$writeHandlerJS(signal, lst))          # a single handler
   }
     
@@ -1611,13 +1653,17 @@ addHandlerBlur.gWidget <- function(obj,handler, action=NULL)
 
  ## addHandlerMouseclick
  EXTWidget$addHandlerMouseclick <- function(., handler, action=NULL) {
-   .$addHandler(signal="mousedown",handler, action)
+   .$addHandler(signal="mousedown",handler, action,
+                handlerArguments="e",
+                handlerExtraParameters = ",'xy', [e.layerX,e.layerY]"
+                )
+
  }
 
  "addHandlerMouseclick" <- function(obj, handler, action=NULL)
    UseMethod("addHandlerMouseclick")
  addHandlerMouseclick.gWidget <- function(obj,handler, action=NULL)
-   obj$addHandlerMouseclick(handler, action)
+  obj$addHandlerMouseclick(handler, action)
 
 ## addHandlerKeystroke
 ## This shows how to pass in 1 argument to h using the extraparameters
@@ -1668,7 +1714,10 @@ addHandlerBlur.gWidget <- function(obj,handler, action=NULL)
 
  ## addHandlerMouseMotion
  EXTWidget$addHandlerMouseMotion <- function(., handler, action=NULL) {
-   .$addHandler(signal="onmouseover",handler, action)
+   .$addHandler(signal="mousemove",handler, action,
+                handlerArguments="e",
+                handlerExtraParameters = ",'xy',[e.layerX, e.layerY]"
+                )
  }
 
 "addHandlerMouseMotion" <- function(obj, handler, action=NULL)
@@ -1677,7 +1726,17 @@ addHandlerMouseMotion.gWidget <- function(obj,handler, action=NULL)
   obj$addHandlerMouseMotion(handler, action)
 
 
+## not implemented
+"addHandlerIdle" <- function(obj, handler = NULL, action = NULL, interval = 1000,   ...)
+  UseMethod("addHandlerIdle")
+addHandlerIdle.gWidget <- function(obj, handler=NULL, action=NULL,interval = 1000, ...)
+  obj$addHandlerIdle(handler, action,interval,...)
 
+EXTWidget$addHandlerIdle <- function(., handler=NULL, action=NULL, interval=1000, ...) {
+  ## setInterval(expression, interval) is the javascript to call here
+  ## Need to trap this signal, as it doesn't fit the typical pattern
+  .$addHandler(signal="idle", handler = handler, action=action, handlerArguments=interval,...)
+}
 
 
 

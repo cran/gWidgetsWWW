@@ -1,4 +1,6 @@
 ## Build a t-test gui
+require(Cairo) ## no X11 dependence
+
 w <- gwindow("t-test example")
 g <- ggroup(cont = w, horizontal = FALSE)
 data(Cars93, package="MASS")
@@ -70,23 +72,21 @@ addHandlerClicked(doGraph, handler = function(h,...) {
   df <- svalue(selData)
   var <- svalue(selVariable)
   tmp <- tempfile(tmpdir=""); tmp <- gsub("^/","",tmp)
-  
-  out <- String() +
-    'png(file=' + shQuote(tmp) + ', width=300, height=240);' +
-      "with(" + df + ', hist(' + var +  '));'
 
-  eval(parse(text=out), envir=.GlobalEnv)
+  Cairo(file=paste(basedir,tmp,sep=""), width=400, height=400)
+  eval(parse(text=String() + "with(" + df + ', hist(' + var +  '));'), envir=.GlobalEnv)
+  dev.off()
   dev.off()
   
-  w1 <- gwindow("EDA", container = w)
-  size(w1) <- c(width=400,height=320)
+  w1 <- gwindow("EDA", parent = w, width=410, height=500)
   g1 <- ggroup(horizontal=FALSE, cont=w1, use.scrollwindow=TRUE)
-  glabel("image goes in this subwindow", cont=g1)
   gimage(tmp, cont=g1)
+  gseparator(cont = g1)
+  gbutton("dismiss", cont=g1, handler = function(h,...) dispose(w1))
   ## show page
-  w1
+  visible(w1) <- TRUE
 })
   
 ## show w
-visible(w) <- TRUE
+##visible(w) <- TRUE
                   

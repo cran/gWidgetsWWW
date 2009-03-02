@@ -20,6 +20,7 @@ ghtml <- function(x, container = NULL, ...) {
       out <- out +
         '.load(' + shQuote(val) + ');'
     } else {
+      val <- paste(val,collapse="\\\\n")
       out <- out +
         '.body=' + shQuoteEsc(val) + ';'
     }
@@ -35,7 +36,7 @@ ghtml <- function(x, container = NULL, ...) {
     if(isURL(svalue(.)))
       out[['autoLoad']] <- svalue(.)
     else
-      out[['html']] <- svalue(.)
+      out[['html']] <- paste(svalue(.), collapse="\\\\n")
     
     return(out)
   }

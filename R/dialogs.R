@@ -10,7 +10,9 @@
                         message, text, title=type,
                         icon = c("info","warning","error","question"),
                         parent,
-                        handler = NULL, action = NULL) {
+                        handler = NULL, action = NULL,
+                         ...,
+                         doanimEl=TRUE) {
 
   ## make object to get ID, assign handlers to
   widget <- EXTWidget$new(toplevel=parent$toplevel)
@@ -37,7 +39,7 @@
        handlerFunction <- String() +
          'function(btn) {' +
            'if(btn == "ok") {' +
-             ##           'alert(btn);' + ## makes a *big* different -- why?
+             ##           'alert(btn);' + ## makes a *big* difference -- why?
              'runHandlerJS('+handlerid + ',"","");' +
                '}'+
                  '}'
@@ -64,6 +66,9 @@
               animEl = parent$ID,
               icon =  String("Ext.MessageBox.") + icon
               )
+  if(!doanimEl) ## trouble with deep down handlers??????
+    lst[["animEl"]] <- NULL
+  
   if(handlerFunction != "")
     lst[['fn']] = handlerFunction
 
@@ -83,26 +88,26 @@ gmessage <- function(message, title="message",
                      icon = c("info", "warning", "error", "question"),
                      parent = NULL,
                      handler = NULL,
-                     action = NULL) {
+                     action = NULL,...) {
   ## parent must be non-NULL
   out <- .gshowdialog(type="message",message=message,
                title=title, icon=icon,parent=parent,
-               handler=handler, action=action)
-  cat(out,file=stdout())
-  
+               handler=handler, action=action, ...)
+  cat(out)
+  invisible(out)
 }
 
 gconfirm <- function(message, title="Confirm",
                      icon = c("info", "warning", "error", "question"),
                      parent = NULL,
                      handler = NULL,
-                     action = NULL) {
+                     action = NULL,...) {
   ## parent must be non-NULL
   out <- .gshowdialog(type="confirm",message=message,
                       title=title, icon=icon,parent=parent,
-                      handler=handler, action=action)
-  cat(out, file=stdout())
-  
+                      handler=handler, action=action,...)
+  cat(out)
+  invisible(out)
 }
 
 ## input -- can't figure out how to get handler the value of input
@@ -110,18 +115,21 @@ gconfirm <- function(message, title="Confirm",
 ginput <- function(message, text="", title="Input",
                    icon = c("info", "warning","error", "question"),
                    parent=NULL,
-                   handler = NULL, action = NULL) {
+                   handler = NULL, action = NULL,...) {
   ## parent must be non-NULL
   out <- .gshowdialog(type="input",message=message,
                       title=title, icon=icon,parent=parent,
-                      handler=handler, action=action)
+                      handler=handler, action=action,...)
   cat(out, file=stdout())
+  invisible(out)
 }
   
 
 
 gbasicdialog <- function(title = "Dialog", widget,
-                         parent=NULL, handler = NULL, action=NULL) {}
+                         parent=NULL, handler = NULL, action=NULL) {
+  stop("XXX not written")
+}
 
 
 ##
@@ -143,5 +151,5 @@ galert <- function(message, title = "message", delay=3, parent=NULL) {
       shQuoteEsc(message) + ',' + delay + ');'
 
   cat(out)
-
+  invisible(out)
 }

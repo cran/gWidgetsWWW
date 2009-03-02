@@ -30,27 +30,28 @@ gcombobox <- gdroplist <-
     if(!is.data.frame(items)) {
       if(is.numeric(items))
         widget$coerce.with = "as.numeric"
-      items <- data.frame(value=items, text=items, stringsAsFactors=FALSE)
+      items <- data.frame(value=items, stringsAsFactors=FALSE)
     }
-
+    
     ## double up first column
     items <- items[, c(1, 1:ncol(items))]
     
     ## get names right
     ## if not type 1,2 or 3 or we override in ..tpl this is ignored
-    if(widget$..type %in% 1:2) {
+    nms <- c("value","text","iconurl","qtip")
+    if(widget$..type %in% 1) {
       if(ncol(items) == 1)
         items[,2] <- items[,1]
-      names(items) <- c("value","text")
-    } else if(widget$..type == 3) {
-      names(items) <- c("value","text","iconurl")
-    } else if(widget$..type >= 4) {
-      names(items)[1:4] <- c("value","text","iconurl","qtip")
+      names(items) <- nms[1:2]
+    } else if(widget$..type == 2) {
+      names(items) <- nms[1:3]
+    } else if(widget$..type >= 3) {
+      names(items)[1:4] <- nms
     }
 
     ## fix up icons
-    if(widget$..type >= 3) {
-      if(!isURL(items[,3,drop=TRUE])) {
+    if(widget$..type >= 2) {
+      if(!isURL(items[1,3,drop=TRUE])) {
         ## assume a stock icon
         items[,3] <- getStockIcons(items[,3,drop=TRUE])
       }
@@ -78,11 +79,11 @@ gcombobox <- gdroplist <-
     widget$..tpl <- function(.) {
       ## return string
       if(.$..type == 1) {
-        out <- String() + '<div class="x-combo-list-item"><b>{text}</b></div>'
+        out <- String() + '<div class="x-combo-list-item">{text}</div>'
       } else if(.$..type == 2) {
-        out <- String() + '<div class="x-combo-list-item"><img src="{iconurl}"><b>{text}</b></div>'
+        out <- String() + '<div class="x-combo-list-item"><img src="{iconurl}">{text}</div>'
       } else if(.$..type >= 3) {
-        out <- String() + '<div ext:qtip="{qtip}" class="x-combo-list-item"><img src="{iconurl}"><b>{text}</b></div>'
+        out <- String() + '<div ext:qtip="{qtip}" class="x-combo-list-item"><img src="{iconurl}">{text}</div>'
       }
 
       out <- String('\'<tpl for=".">') + out + '</tpl>\''
@@ -127,7 +128,7 @@ gcombobox <- gdroplist <-
       ## XXX need to include i,j stuff
       .$..store$data <- value
       if(exists("..shown",envir=., inherits=FALSE))
-        cat(.$setValuesJS(...))
+        cat(.$setValuesJS(...), file=stdout())
     }
     widget$ExtConstructor <- "Ext.form.ComboBox"
     widget$ExtCfgOptions <- function(.) {

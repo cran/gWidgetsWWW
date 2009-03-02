@@ -13,7 +13,9 @@ EXTGroup <- EXTPanel$new(children=list())
 EXTGroup$ExtCfgOptions <-  function(.) {
   out <- list(
               border = FALSE,
-              hideBorders=TRUE          # key to getting rid of blud
+              hideBorders=TRUE,          # key to getting rid of blud
+              collapsed=!.$..visible
+              
               )
   if(exists("..horizontal",envir=., inherits=FALSE)) {
     if(.$..horizontal) {
@@ -37,6 +39,16 @@ EXTGroup$ExtCfgOptions <-  function(.) {
     out[["bodyStyle"]] = list('padding' = String('"') + spacing + 'px"'  )
   return(out)
 }
+## even group can be made visible/hidden
+EXTGroup$setVisibleJS <- function(.) {
+  if(exists("..setVisibleJS", envir=., inherits=FALSE))
+    .$..setVisibleJS()
+  if(.$..visible)
+    .$callExtMethod("expand","true")
+  else
+    .$callExtMethod("collapse","true")
+}
+
 ## these are not defined
 EXTGroup$addSpring <- function(.) {invisible("")}
 EXTGroup$addSpace <- function(., value, horizontal=TRUE, ...) {}
@@ -49,6 +61,8 @@ ggroup <- function(horizontal=TRUE, spacing=5, use.scrollwindow = FALSE,
                      ..spacing = spacing,
                      ..use.scrollwindow = use.scrollwindow
                      )
+  cont$..visible <- TRUE
+  
   theArgs <- list(...)
   if(!is.null(theArgs$width)) cont$..width <- theArgs$width
   if(!is.null(theArgs$height)) cont$..height <- theArgs$height
@@ -71,6 +85,8 @@ gframe <- function(text = "", pos = 0, horizontal=TRUE, container=NULL,...) {
   cont <- EXTFrame$new(toplevel = container$toplevel,
                     ..horizontal = horizontal)
                     
+  cont$..visible <- TRUE
+
   theArgs <- list(...)
   if(!is.null(theArgs$width)) cont$..width <- theArgs$width
   if(!is.null(theArgs$height)) cont$..height <- theArgs$height
@@ -95,12 +111,6 @@ EXTExpandGroup$ExtCfgOptions <- function(.) {
   out[['titleCollapse']] <- TRUE
   return(out)
 }
-EXTExpandGroup$setVisibleJS <- function(.) {
-  if(exists("..setVisibleJS", envir=., inherits=FALSE))
-    .$..setVisibleJS()
-  
-  .$callExtMethod("expand","true")
-}
 
 gexpandgroup <- function(text = "", horizontal = TRUE,
                          handler = NULL, action=NULL,
@@ -108,7 +118,8 @@ gexpandgroup <- function(text = "", horizontal = TRUE,
 
   cont <- EXTExpandGroup$new(toplevel=container$toplevel,
                             ..horizontal=horizontal)
-                    
+  cont$..visible <- TRUE
+  
   theArgs <- list(...)
   if(!is.null(theArgs$width)) cont$..width <- theArgs$width
   if(!is.null(theArgs$height)) cont$..height <- theArgs$height
@@ -116,8 +127,10 @@ gexpandgroup <- function(text = "", horizontal = TRUE,
   class(cont) <- c("gExpandgroup",class(cont))
   cont$setValue(value=text)
 
-  cont$..ExtCfgOptions <- function(.)
-    list(border=TRUE)
+  cont$..ExtCfgOptions <- function(.) {
+    out <- list(border=TRUE
+                )
+  }
 
   if(!is.null(handler))
     addHandlerClicked(cont, handler = handler, action=action)

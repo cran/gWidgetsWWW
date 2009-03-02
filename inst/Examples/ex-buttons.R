@@ -7,4 +7,4 @@ for(i in names(x))
   gbutton(i, cont=g1)
 
 
-visible(w) <- TRUE
+## visible(w) <- TRUE

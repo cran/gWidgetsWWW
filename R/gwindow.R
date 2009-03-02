@@ -2,7 +2,7 @@
 ## Should be a big panel with menubar and toolbar and statusbar areas
 ## ... contains width=, height= for gsubwindow call
 ## if container is not null, then a subwindow is made
-## handler is not used
+## handler called on unload
 gwindow <- function(title="title",file="",visible=TRUE,
                     name=title,
                     width = NULL, height = NULL, parent = NULL,
@@ -54,7 +54,7 @@ gwindow <- function(title="title",file="",visible=TRUE,
     if(value) {
       .$Show()
     } else {
-      cat("can't hide otp-level window\n")
+      cat("can't hide otp-level window\n", file=stdout())
     }
   }
 
@@ -306,7 +306,7 @@ w$footer <- function(.) {
 
    ## unload handler
    if(!is.null(handler)) 
-  w$addHandler("onunload",handler, action=action)
+     w$addHandler("onunload",handler, action=action)
 
    
     invisible(w)
@@ -341,7 +341,7 @@ handler = NULL, action=NULL, container=NULL,...) {
   widget$setVisible <- function(., value) {
     .$..visible <- as.logical(value)
     if(exists("..shown",envir=., inherits=FALSE)) {
-      cat(.$setVisibleJS())
+      cat(.$setVisibleJS(), file=stdout())
     } else {
       if(as.logical(value))
         print(.)
@@ -356,7 +356,7 @@ handler = NULL, action=NULL, container=NULL,...) {
   
     out <-  String() +
       'o' + .$ID + '.setTitle(' + shQuote(.$..data) + ');' + '\n'
-    cat(out)
+    cat(out, file=stdout())
   }
   ## odd inheritance here
   widget$setVisibleJS <- function(.) {
@@ -371,7 +371,7 @@ handler = NULL, action=NULL, container=NULL,...) {
     
     out <- String() + 
       'o' + .$ID + '.' + method + '();'
-    cat(out)
+    cat(out, file=stdout())
   }
 
 

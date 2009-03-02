@@ -10,7 +10,9 @@ showLattice <- function(lat,w, title="") {
   g <- ggroup(cont = w1, horizontal=FALSE)
 
   file <- tempFile("png")
-  png(file = file, width = 550, height = 500)
+  aFile <- paste(basedir,file,sep="")
+  ## use Cairo, no X11 dependencies
+  Cairo(file = aFile, width = 550, height = 500)
   print(lat)
   dev.off()
 
@@ -151,10 +153,10 @@ plotBoxplot <- function(w) {
                             height = 100,
                             columns = 2,
                             children = list(
-                              list(name = "type",
+                              list(name = "horizontal",
                                    type = "gcombobox",                            
-                                   label = "type",
-                                   items= c("percent", "count", "density")
+                                   label = "horizontal",
+                                   items= c(TRUE, FALSE)
                                    )
                               )
                             )

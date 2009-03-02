@@ -53,12 +53,12 @@ gstatusbar <- function(text = "", container=NULL, ...) {
   widget$showBusy <- function(.) {
     out <- .$getSBJS() +
       'widget.showBusy();';
-    cat(out)
+    cat(out, file=stdout())
   }
   widget$clearStatus <- function(.) {
     out <- .$getSBJS() +
       'widget.clearStatus();';
-    cat(out)
+    cat(out, file=stdout())
   }
 
   invisible(widget)

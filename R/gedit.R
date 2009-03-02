@@ -1,14 +1,14 @@
 ## gedit
 ## svalue works
 ## svalue<- works
-## autocomplete code not in Ext???
+## autocomplete code not in Ext??? Use gcombobox for that.
 ## addHandlerKeypress should work -- but no key passed in XXX
 ## change handler called after change and losing focus.
 gedit <- function (text = "", width = 25, coerce.with = NULL,
                    handler = NULL,  action = NULL, container = NULL, ...) {
   
   widget <- EXTComponent$new(toplevel=container$toplevel,
-                             ..width = width,
+                             ..width = width * 8, # 8 pixels per character?
                            ..coerce.with=coerce.with)
   class(widget) <- c("gEdit",class(widget))
   widget$setValue(value=text)

@@ -61,7 +61,7 @@ gradio <- function(items, selected = 1, horizontal=FALSE,
     .$..data <- ind
 
     if(exists("..shown",envir=., inherits=FALSE))
-      cat(.$setValueJS(index=ind))
+      cat(.$setValueJS(index=ind), file=stdout())
   }
 
   widget$setValueJS <- function(.,..., index) {

@@ -2,9 +2,8 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>
-Examples of gcombobox widget
-</title>
+
+<!-- Call in Rpad  -->
 <script type="text/javascript">
 djConfig = {isDebug: true};
 rpadConfig = {rpadHideSource: true,rpadRun: "all"};
@@ -12,10 +11,13 @@ rpadConfig = {rpadHideSource: true,rpadRun: "all"};
 <style type="text/css">
 .Rpad_background-color: #eeeeee;font-family: georgia;}
 </style>
-
-
 <script type="text/javascript" src="gui/dojo.js"></script>
 <script type="text/javascript" src="gui/Rpad_main.js"></script> 
+
+
+<!-- Call in processing -->
+<script type="text/javascript" src="processing.js"></script>
+<script type="text/javascript" src="processinginit.js"></script>
 
 <!-- Call in Ext and its style sheet -->
 <script type="text/javascript" src="ext/adapter/ext/ext-base.js"></script>
@@ -23,18 +25,36 @@ rpadConfig = {rpadHideSource: true,rpadRun: "all"};
 <link rel="stylesheet" type="text/css" href="ext/resources/css/ext-all.css">
 
 
-</head>
-<body><pre dojoType="Rpad" rpadType="R"></pre> <!-- oddity -->
-<h1> Example of comboboxes</h1>
-This example shows the gcombobox widget with slightly different settings.
+<!-- Google Maps API requires one to register on the website http://code.google.com/apis/maps/ -->
+<!-- Replace the key below with your own. This works for 127.0.0.1:8079 -->
+<!-- <script -->
+<!-- src="http://maps.google.com/maps?file=api&v=2.x&key=ABQIAAAAYpRTbDoR3NFWvhN4JrY1ahS5eHnalTx_x- -->
+<!-- -TpGz1e2ncErJceBS7FrNBqzV5DPxkpbheIzZ9nTJPsQ" -->
+<!-- type="text/javascript"> -->
+<!-- </script> -->
 
+
+</head>
+<body onunload="rpad.logoutR();">
 <pre dojoType="Rpad" rpadType="R" rpadOutput="javascript" rpadRun="init">
-setwd("/var/www/Rpad/")
+Rfile = "ex-gcombobox.R"
+basedir = ifelse(RpadIsLocal(), "","/var/www/Rpad/")
+
+file = paste(basedir, Rfile,sep="")
+
 require(gWidgetsWWW, quietly=TRUE)
 
-source("ex-gcombobox.R")
+source(file) 
+g = gexpandgroup("Click this to see source for this example", cont = w)
+visible(g) = FALSE
+out = readLines(file)
+out = paste(out, collapse="&lt;p&gt;") ## since this is in html page we escape
+t = ghtml(out, cont = g, width=600, height=400)
+visible(w) = TRUE ## main window from file is w
 </pre>
 
-</BODY></HTML> 
+
+</BODY>
+</HTML> 
 
  

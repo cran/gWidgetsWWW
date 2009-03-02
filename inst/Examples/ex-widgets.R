@@ -1,4 +1,3 @@
-require(gWidgetsWWW, quietly=TRUE)
 w <- gwindow("Example of gWidgetsWWW widgets")
 g1 <- ggroup(cont=w)
 l <- glabel("This page shows the status of several of the widgets in gWidgetsWWW.",cont=g1)
@@ -66,7 +65,7 @@ widget = gimage("http://www.r-project.org/Rlogo.jpg", cont=g)
 g = gexpandgroup("gcombobox", cont=g1)
 ## 3 columns is max: values, icon, tooltip
 m = data.frame(a = letters[1:4],
-rep("http://localhost:8079/bullet.gif",4), c= as.character(1:4))
+rep("images/bullet.gif",4), c= as.character(1:4))
 widget = gcombobox(m, cont=g)
 
 

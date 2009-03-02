@@ -1,17 +1,21 @@
 ## Sample GUI using gWidgetsWWW for students, say, to do simpe
 ## exploring
-require(lattice)
 
+## w is the global top-level window. Don't use for anything else
 w <- gwindow("Simple GUI with gWidgetsWWW")
+g <- ggroup(cont = w, horizontal=FALSE)
 
-## these depend on having global w defined
-source("ex-gui-helpers.R")
-source("ex-gui-variables.R")
-source("ex-gui-ttest.R")
-source("ex-gui-data.R")
-source("ex-gui-plots.R")
-source("ex-gui-help.R")
+if(!require(lattice))
+  ghtml("<h2>no lattice package installed?</h2>", cont = g)
+if(!require(Cairo)) ## doesn't need X11 lke png()
+  ghtml("<h2>Graphic files are produced with the Cairo package. Please install it.</h2>", cont = g)
 
+
+## these files depend on having global w defined
+files <- paste("ex-gui-",c("helpers","variables","ttest","data","plots","help"), ".R", sep="")
+basedir = ifelse(RpadIsLocal(), "","/var/www/Rpad/")
+for(i in paste(basedir,files, sep=""))
+  source(i)
 
 e <- proto()                            # globals go here
 e$currentData <- ".GlobalEnv"             # data frame with current
@@ -54,7 +58,6 @@ menuList$Plots <- list(hist = plotHistAction,
 menuList$Help <- list(about = aboutAction)
 
 gmenu(menuList, cont = w)
-g <- ggroup(cont = w, horizontal=FALSE)
 
 ## command line, data set
 tbl <- glayout(cont = g)
@@ -95,4 +98,4 @@ g2 <- gframe("Output:", cont = g1, width=720, height=400)
 outArea <- gtext("", cont = g2, width=700, height=400)
 
 
-visible(w) <- TRUE
+## visible(w) <- TRUE

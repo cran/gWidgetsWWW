@@ -44,4 +44,4 @@ b5 <- gbutton("gwindow" ,cont=g1, handler = function(h,...) {
   visible(w1) <- TRUE #show
 })
 
-visible(w) <- TRUE
+##visible(w) <- TRUE

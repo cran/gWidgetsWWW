@@ -82,7 +82,6 @@ gnotebook <- function(tab.pos = 3, close.buttons = FALSE, container, ...) {
      ## tooltips
      if(!is.null(theArgs$tooltip))
        child$..tabTooltip <- theArgs$tooltip
-     
      addFUN <- get("add",envir=parent)   # call add for parent widget
      addFUN(.,child)                     # call
    }

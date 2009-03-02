@@ -54,13 +54,13 @@ gcheckboxgroup = function (items, checked = FALSE, horizontal = FALSE,
       value <- sapply(1:n, function(i) i %in% value)
     } else if(!is.logical(value)) {
       ## error
-      cat("Value should be logical vector, vector of indices, or character vector of names\n")
+      cat("Value should be logical vector, vector of indices, or character vector of names\n", file=stdout())
     }
 
     .$..data <- value
 
     if(exists("..shown",envir=., inherits=FALSE))
-      cat(.$setValueJS())
+      cat(.$setValueJS(), file=stdout())
   }
   widget$setValueJS <- function(.) {
     out <- String() +

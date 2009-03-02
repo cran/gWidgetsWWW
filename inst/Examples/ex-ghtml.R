@@ -28,6 +28,6 @@ unlink(file)
 xtableText <- ghtml(x, cont=g)
 
 
-visible(w) <- TRUE
+## visible(w) <- TRUE
 
 

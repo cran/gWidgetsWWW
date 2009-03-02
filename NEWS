@@ -2,6 +2,22 @@ Dear Emacs, please make this -*-Text-*- mode!
 
 NEWS for gWidgetsWWW
 
+Changes for  0.0-6
+--------------------
+
+* started a vignette
+
+* fixed some bugs
+
+* improved examples
+
+* added idle handler
+
+* fixed adding/deleting from ggroup after rendering
+
+* added gprocessingjs widget for javascript graphics. Not a real
+  graphics  device, but still useful
+
 Changes for  0.0-5
 --------------------
 

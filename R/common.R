@@ -124,7 +124,7 @@ c.String <- function(x,...) {
   out <- x + paste(..., sep=sep, collapse=collapse)
   return(out)
 }
-print.String <- function(x,...) cat(x,"\n")
+print.String <- function(x,...) cat(x)
 length.String <- function(x) nchar(x)
 "[.String" <- function(x,i,j,...,drop=TRUE) {
   if(missing(i)) i <- 1:length(x)

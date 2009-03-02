@@ -3,6 +3,7 @@ g <- ggroup(cont = w, horizontal=FALSE)
 ghtml("<h1>gWidgetsWWW</h1>", cont = g)
 
 width <- 800
+
 f <- gframe("Introduction", cont = g, width=width)
 
 str <- paste(
@@ -21,6 +22,7 @@ sep=" ")
 ghtml(str, cont = f)
 
 
+
 f <- gframe("Examples", cont = g, width=width)
 
 str <- paste(
@@ -33,11 +35,14 @@ str <- paste(
 "  <LI>A demo of <A href=ex-windows.html>windows</A> widgets</LI>",
 "  <LI>A demo of <A href=ex-layouts.html>container</A> widgets</LI>",
 "  <LI>A demo of <A href=ex-gcombobox.html>the combobox</A> widget</LI>",
-"  <LI>A  <A href=ex-form.html>simple form</A> using gfromlayout example  </LI>",
-"  <LI>A  <A href=ex-form.html>t-test form</A> example  </LI>",
+"  <LI>A demo <A href=ex-form.html>simple form</A> using gfromlayout example  </LI>",
+" <LI> A demo of <A href=ex-gprocessingjs.html>gprocessingjs</A> for javascript-based graphics.</LI>",
+" <LI> A demo of <A href=ex-image.html>gimage</A> based graphics.</LI>",
+             " <LI> A demo showing how to edit a  <A href=ex-editdata.html>data set</A>.</LI>",             
+"  <LI>A  <A href=ex-t-test.html>t-test form</A> example  </LI>",
 "  <LI>An illustration of <A href=ex-actions.html>action objects</A></LI>",
 "  <LI>An illustration of <A href=ex-buttons.html>button icons</A></LI>",
-"  <LI>An illustration of using <A href=ex-ggooglemaps.html>Google maps</A></LI>",
+"  <LI>An illustration of using <A href=ex-ggooglemaps.html>Google maps</A>(not working except local version)</LI>",
 "</UL>",
 sep=" ")
 ghtml(str, cont = f)
@@ -63,7 +68,18 @@ str <- paste(
 sep=" ")
 ghtml(str, cont = f)
 
-f <- gframe("Installation", cont = g, width=width)
+f <- gexpandgroup("Quirks", cont = g, width=width); visible(f) <- FALSE
+str <- paste(
+             "This package has a few quirks:",
+             "<UL>",
+             "<LI>Sometimes things need to be escaped. escapeHTML, shQuote can help here</LI>",
+             "<LI>Do not use setwd() with the server version</LI>",
+             "<LI>There are a lot of small calls back into R to sychronize the GUI with R</LI>",
+             "<LI>Some features are found through proto method calls: obj$method(...)</LI>",
+             "<LI>Debugging can be a chore, as the browser doesn't give good error messages. Firebug is sometimes useful.</LI>",
+sep=" ")
+ghtml(str, cont = f)
+f <- gexpandgroup("Installation", cont = g, width=width); visible(f) <- FALSE
 
 str <- paste(
 "Installation involves: installing and configuring Rpad, installing the",
@@ -87,14 +103,14 @@ str <- paste(
 "<P></P>",
 "",
 "Installing gWidgetsWWW can be done through install.packages. The stock",
-"icons must be installed so that the web browser can find them, say",
-"/var/www/Rpad/images.  The stock icons (which need redoing) are in the",
+"icons must be installed so that the web browser can find them in '/images', say",
+"/var/www/images.  The stock icons (which need redoing) are in the",
 "images directory of the package. This directory needs to be copied to",
 "the images directory as referred to in a url. For the local version of",
 "Rpad, this is the directory from which it is run.",
 "<P></P>",
 "",
-"This package  has only been tested under linux and Mac OS X.  ",
+"This package  has only been tested under Linux and Mac OS X.  ",
 sep=" ")
 ghtml(str, cont = f)
 
@@ -109,8 +125,10 @@ str <- paste(
 "<LI> A lack of HTML escaping, such as using a quote or &lt; symbol. These are supposed to be programmed around in the package. If you find this error, please email. A quote can be escaped with two slashes.",
 "<LI> a bug in gWidgetsWWW. There are probably many. Please email. ",
 "</UL>",
+             "Running Rpad locally allows one to see if the file sources properly.",
+             "Using the firebug add-on for firefox can help identify errors too.",
 sep=" ")
 ghtml(str, cont = f)
 
 
-visible(w) <- TRUE
+##visible(w) <- TRUE

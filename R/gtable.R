@@ -101,7 +101,7 @@ gtable <- function(items, multiple = FALSE, chosencol = 1,
     .$..store$data <- items
 
     if(exists("..shown",envir=., inherits=FALSE))
-      cat(.$setValuesJS(...))
+      cat(.$setValuesJS(...), file=stdout())
   }
   
   widget$transportSignal <- c("cellclick")

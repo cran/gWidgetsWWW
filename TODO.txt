@@ -1,7 +1,7 @@
 ## TODO version 0.1+
-* Implement versions of defaultWidget, tag, id, isExtant
-DONE * SAFARI broken? why (svalue(button)<-) (global variables needed,
-  not local)
+* Implement versions of defaultWidget, tag, id, isExtant 
+* gcommandline -- work with iphone?
+* tree widget -- can we do it
 * gdf fixes
 * forgot to do a popup: addpopupmenu, add3rdmouse ...
 * gtree: issue with loader needing to come from a url, how to load
@@ -9,7 +9,10 @@ DONE * SAFARI broken? why (svalue(button)<-) (global variables needed,
 * drag and drop functions
 * gdf improvements: names<-, row names (EZ), logical, NA values,
   adding columns, adding rows, dates, ... Much more is possible
-DONE * menubar/toolbar icons
+DONE * addHandlerIdle -- how to repeat call to handler every XXX seconds
+DONE * SAFARI broken? why (svalue(button)<-) (global variables needed,
+  not local)
+ DONE * menubar/toolbar icons
 * ginput, gmessage -- don't work without cat("alert()") in there??
   STDOUT issues? 
 * format numbers?

@@ -1,0 +1,272 @@
+\documentclass[12pt]{article}
+\newcommand{\VERSION}{0.0-7}
+%\VignetteIndexEntry{gWidgets}
+%\VignettePackage{gWidgets}
+%\VignetteDepends{methods}
+
+\usepackage{times}              % for fonts
+\usepackage[]{geometry}
+\usepackage{mathptm}            % for math fonts type 1
+\usepackage{graphicx}           % for graphics files
+\usepackage{floatflt}           % for ``floating boxes''
+%%\usepackage{index}
+\usepackage{relsize}            % for relative size fonts
+\usepackage{amsmath}            % for amslatex stuff
+\usepackage{amsfonts}           % for amsfonts
+\usepackage{url}                % for \url,
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{fancyvrb}
+\usepackage{fancyhdr}
+%%\usepackage{jvfloatstyle}       % redefine float.sty for my style. Hack
+
+
+%% squeeze in stuff
+%%\floatstyle{jvstyle}
+%%\restylefloat{table}
+%%\restylefloat{figure}
+\renewcommand\floatpagefraction{.9}
+\renewcommand\topfraction{.9}
+\renewcommand\bottomfraction{.9}
+\renewcommand\textfraction{.1}
+\setcounter{totalnumber}{50}
+\setcounter{topnumber}{50}
+\setcounter{bottomnumber}{50}
+
+%% Fill these in
+\pagestyle{fancy}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\code{gWidgets}}
+\fancyhead[C]{}
+\fancyhead[R]{\sectionmark}
+\fancyfoot[L]{}
+\fancyfoot[C]{- page \thepage\/ -}
+\fancyfoot[R]{}
+\renewcommand{\headrulewidth}{0.1pt}
+\renewcommand{\footrulewidth}{0.0pt}
+
+%% My abbreviations
+\newcommand{\pkg}[1]{\textbf{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\RFunc}[1]{\code{#1}} %% no ()
+\newcommand{\RArg}[1]{\code{#1=}}
+\newcommand{\RListel}[1]{\code{\$#1}}
+\newcommand{\R}{\texttt{R}}
+
+\newenvironment{RArgs}{\begin{list}{}{}}{\end{list}}
+
+
+\begin{document}
+\thispagestyle{plain}
+\title{gWidgetsWWW}
+
+\author{John Verzani, \url{gWidgetsRGtk@gmail.com}}
+\maketitle
+
+%% Sweave stuff
+\SweaveOpts{keep.source=TRUE}
+
+\section*{Abstract:}
+The \pkg{gWidgets} package provides an API for interfacing with a few of the available GUI toolkits avaiilable through R. The \pkg{gWidgetsWWW} package provides an implementation of the \pkg{gWidgets} API for use with through the web. The package depends on the \pkg{Rpad} package to provide a pipe from a web browser back to an R process and again back to the web browser. \pkg{Rpad} can be run in both a local or server version. The server version allows GUIs written with \pkg{gWidgetsWWW} to be shared over the internet. The \pkg{gWIdgetsWWW} package uses the EXT JS javascript libraries (\url{www.extjs.com}). These need to be downloaded and installed.
+\\
+
+The current status of the project is still experimental. The package does not have much testing as of yet. This document needs to be significantly enhanced. The author appreciates any feedback.
+
+%\setcounter{tocdepth}{3}
+%\tableofcontents
+
+\section{Overview}
+When a user opens a webpage with \pkg{gWidgetsWWW} code, the \pkg{Rpad} functions call back into an \R\/ session. The \R\/ commands produce javascript that is \code{cat}ted back to the browser which renders it on the screen. There is no way to initiate a request back to the browser from the R console, only in response to a request. 
+
+The \pkg{Rpad} package uses AJAX technology to process subsequent requests. Unlike traditional CGI style programming, each page is not reloaded after a new request. So the initial page may take a while to load (it loads in lots of javascript libraries), but once loaded the GUIs are fairly responsive. 
+
+
+For the server version, \pkg{Rpad} uses a PERL package to keep a separate session for each initial loading of a page. This allows multiple users to access the same GUIs at the same time.
+
+
+To make a GUI in \pkg{gWidgets} can be as easy as loading the \pkg{gWidgets} package then calling
+\begin{Sinput}
+w <- gwindow("simple GUI with one button", visible=FALSE)
+g <- ggroup(cont = w)
+b <- gbutton("click me", cont = g, handler = function(h,...) {
+  gmessage("hi", parent = b)
+})
+visible(w) <- TRUE
+\end{Sinput}
+
+With \pkg{gWIdgetsWWW} there are two steps: The first is to create a
+web page that the  user can call. A template is available in the
+Examples directory. Here is the basic form:
+\begin{verbatim}
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<!-- Call in Rpad  -->
+<script type="text/javascript">
+djConfig = {isDebug: true};
+rpadConfig = {rpadHideSource: true,rpadRun: "all"};
+</script>
+<style type="text/css">
+.Rpad_background-color: #eeeeee;font-family: georgia;}
+</style>
+<script type="text/javascript" src="gui/dojo.js"></script>
+<script type="text/javascript" src="gui/Rpad_main.js"></script> 
+
+
+<!-- Call in processing -->
+<script type="text/javascript" src="processing.js"></script>
+<script type="text/javascript" src="processinginit.js"></script>
+
+<!-- Call in Ext and its style sheet -->
+<script type="text/javascript" src="ext/adapter/ext/ext-base.js"></script>
+<script type="text/javascript" src="ext/ext-all.js"></script>
+<link rel="stylesheet" type="text/css" href="ext/resources/css/ext-all.css">
+
+
+<!-- Google Maps API requires one to register on the website http://code.google.com/apis/maps/ -->
+<!-- Replace the key below with your own. This works for 127.0.0.1:8079 -->
+<!-- <script -->
+<!-- src="http://maps.google.com/maps?file=api&v=2.x&key=ABQIAAAAYpRTbDoR3NFWvhN4JrY1ahS5eHnalTx_x- -->
+<!-- -TpGz1e2ncErJceBS7FrNBqzV5DPxkpbheIzZ9nTJPsQ" -->
+<!-- type="text/javascript"> -->
+<!-- </script> -->
+
+
+</head>
+<body onunload="rpad.logoutR();">
+<pre dojoType="Rpad" rpadType="R" rpadOutput="javascript" rpadRun="init">
+Rfile = "ex-template.R" 
+basedir = ifelse(RpadIsLocal(), "","/var/www/Rpad/")
+file = paste(basedir, Rfile,sep="")
+
+require(gWidgetsWWW, quietly=TRUE)
+source(file) 
+</pre>
+</BODY>
+</HTML> 
+\end{verbatim}
+The user changes the \code{Rfile} name and possibly the default base
+directory when run in server mode. This file does a few things
+\begin{itemize}
+\item It loads the necessary javascript files to use Rpad
+\item It loads the necessary extjs files to use the EXT JS libraries
+\item It loads the necessary javascript libraries to use processing.js
+  (for drawing graphics)
+\item It optionally loads javascript for the ggooglemaps widget. 
+\end{itemize}
+The function \code{rpad.logoutR()} will be called when the page is unloaded. The \R\/ code is contained in a \code{pre} environment. In this case, we make sure the R process will find the sourced in file by using absolute paths. (Do not use \code{setwd} here.)
+
+
+The second part is to write a file with the \pkg{gWidgets} commands. The file \code{ex-template.R} above, could look like:
+<<echo=FALSE>>=
+require(gWidgetsWWW)
+@ 
+<<eval=FALSE>>=
+w <- gwindow("simple GUI with one button", visible=FALSE)
+g <- ggroup(cont = w)
+b <- gbutton("click me", cont = g, handler = function(h,...) {
+  gmessage("hi", parent = b)
+})
+visible=FALSE
+@ 
+This would produce a very basic GUI with a single button. Clicking the button will popup a message.
+Delaying the drawing of top-level window is options in \pkg{gWIdgets}, but required here as it creates the javascript code to draw the initial GUI. 
+
+Another difference is there can only be one top-level windows. All other \code{gwindow} instances should use the \code{parent} argument to specify an object that acts as the parent of a subwindow. (an animation will appear from there, say.)
+
+The main webpage for \pkg{gWidgetsWWW} \url{http://www.math.csi.cuny.edu/gWidgetsWWW} contains examples of some basic GUIs. These are included in the Examples subdirectory of the package once installed.
+
+
+
+\section{The containers}
+\label{sec:containers}
+
+The \pkg{gWidgetsWWW} package has all the following containers:the top-level container \code{gwindow}, subwindows also constructed through \code{gwindow} (use a parent object);  the box containers\code{ggroup}, \code{gframe} and \code{gexpandgroup}; the tabular layout container \code{glayout}; the notebook container \code{gnotebook}, but no \code{gpanedgroup}. The demo \url{http://www.math.csi.cuny.edu/gWidgetsWWW/ex-containers.html} contains examples,
+
+To make a component appear in response to some action -- such as happens with gexpandgroup,  one can add it to a box container dynamically. Or one can put it in a \code{ggroup} instance and toggle that containers visibility with the \code{visible} method, in a manner identical to how \code{gexpandgroup} is used.
+
+\section{The widgets}
+\label{sec:what-works}
+
+
+
+Most of the standard widgets work as expected. 
+Examples are visible on\url{http://www.math.csi.cuny.edu/gWidgetsWWW/ex-widgets.html}.
+No attempt has been made to include the compound widgets \code{gvarbrowser}, \code{ggenericwidget}, \code{gdfnotebook}, \code{gcommandline} and \code{ggraphicsnotebook}.
+
+\section{Different features}
+\label{sec:different-features}
+
+There are a few differences/additions for this package. This package is implemented independently of the \pkg{gWidgetsWWW} package, and so there may be some unintended inconsistencies in the arguments. The package uses the \pkg{proto} package for object-oriented support, not S3 or S4 classes. There are some advantages to this, and some drawbacks. One advantage is the user can modify objects or call their internal methods.
+
+\subsection{Data persistence}
+\label{sec:data-persistence}
+
+For the server version, each time a page is loaded a new R process is loaded. Any variables stored in memory are forgotten. To keep data persistent across pages, one can load and write data to a file. The example \url{http://www.math.csi.cuny.edu/gWidgetsWWW/ex-editdata.html} indicates how this might be done.
+
+\subsection{Comboboxes}
+\label{sec:comboboxes}
+
+The \url{http://www.math.csi.cuny.edu/gWidgetsWWW/ex-gcombobox.html} example shows how comboboxes can show a vector of items, or a data frame with a column indicating an icon, or even a third icon with a tooltip. As well, the \code{gedit} widget does not have a type-ahead feature, but the combobox can be used for this purpose.
+
+The following will set this up.
+<<echo=FALSE>>=
+library(gWidgetsWWW)
+w <- gwindow("example of combobox")
+@ 
+<<>>=
+cb <- gcombobox(state.name, editable=TRUE, cont = w)
+cb$..hideTrigger <- TRUE ## set property before being rendered
+@ 
+
+
+
+\subsection{graphics}
+\label{sec:graphics}
+
+There is no plot device avaiable. Rather, one uses the \pkg{Cairo} device driver to create graphic files whichare then shown using \code{gimage}. See \url{http://www.math.csi.cuny.edu/gWidgetsWWW/ex-image.html} for an example. The \pkg{Cairo} package is used, as it does not depend on X11, so works in server installations as well. An example is provided with the package. One caveat is that the \code{gimage} object can use relative paths, but the \code{Cairo} driver should use absolute paths when running under server mode.
+
+\subsection{gprocessingjs}
+\label{sec:gprocessingjs}
+
+The \code{gprocessingjs} widget provdes a javascript-like device for
+writing graphics to.  See
+\url{http://www.math.csi.cuny.edu/gWidgetsWWW/ex-gprocessingjs.html}
+for an example.  It is not an actual device though, it only provides
+some familar methods for drawing grpahics objects. The user needs to
+implement the basic graphs using these methods.
+
+\subsection{ggooglemaps}
+\label{sec:ggooglemaps}
+
+The \code{ggooglemaps} widget provides access to a sliver of the google maps API. 
+The example at \url{http://www.math.csi.cuny.edu/gWidgetsWWW/ex-ggooglemaps.html} does not currently work in server mode.
+This sliver could be enlarged quite easily if desired. This work well with the local version, but may not go on the server version. To use this widget, a key must be obtained from google and the html file must call this in. An example is provided that works through the local web server provided by Rpad.
+
+
+\section{Installation}
+[NEEDS MORE!]\\
+
+Installation can be as easy as:
+\begin{itemize}
+\item install Rpad following instructions at \url{www.rpad.org/Rpad}.
+\item Download and install the extjs java script libraries in a directory \code{ext/} that is references relatively by the browser.
+\item install the \pkg{gWidgetsWWW} package and write a GUI
+\item Start the local version of Rpad and then load the web page that calls in your GUI.
+\end{itemize}
+
+It is suggested that all this be done within a secure environement, as the R user has access to system calls. One method is to use a virtual appliance approach, say with vmware server (\code{vmware.com}). Then setup consists of
+\begin{itemize}
+\item install vmware
+\item Install a host operating system (say JEOS a small linux distrubution from the Ubunto project.)
+\item Install a web server and R (\texttt{sudo apt-get install} is convenient) 
+\end{itemize}
+
+
+
+
+\end{document}
