@@ -9,11 +9,14 @@ lst <- list(type = "ggroup",
                    width = 500,
                    children=list(
                      list(type="gcombobox",
+                          name="Combo",
                           label = "combo",
                           items=letters),
                      list(type = "gslider",
+                          name="slider",
                           label="slider"),
                      list(type = "gedit",
+                          name="edit",
                           label = "edit",
                           text = "edit this",
                           width=200)
@@ -29,8 +32,13 @@ bg <- ggroup(cont = g)
 
 gbutton("ok", cont = bg, handler = function(h,...) {
   vals <- svalue(f)
+  out <- paste(capture.output(str(vals)), collapse="<br>")
+#  out <- paste(names(vals),unlist(vals), sep="=", collapse="<br>")
+  galert(out)
+  
 })
 
 ## show top level
-##visible(w) <- TRUE
+gstatusbar("Powered by RApache and gWidgetsWWW", cont = w)
+visible(w) <- TRUE
 

@@ -24,5 +24,6 @@ g1 <- gexpandgroup("Combo to replace gedit when predefined values are set", cont
 cb <- gcombobox(m[,1], editable = TRUE, cont = g1)
 cb$..hideTrigger <- TRUE                # hide the trigger to make it look right
 
-##visible(w) <- TRUE
+gstatusbar("Powered by RApache and gWidgetsWWW", cont = w)
+visible(w) <- TRUE
 

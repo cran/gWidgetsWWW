@@ -22,9 +22,14 @@ gdf <- function(items = NULL, name = deparse(substitute(items)),
                                       ..name = name,
                                       ..do.subset = do.subset
                                       )
-
   class(widget) <- c("gDf",class(widget))
 
+  ## process width, height if given
+  theArgs <- list(...)
+  if(!is.null(theArgs$width)) widget$..width <- theArgs$width
+  if(!is.null(theArgs$height)) widget$..height <- theArgs$height
+
+  
   ## set up store
   store <- EXTStore$new()
   store$ID <- container$newID()       # set ID
@@ -45,13 +50,13 @@ gdf <- function(items = NULL, name = deparse(substitute(items)),
     ## first we pt the new values into the data frame
     items <- .$..store$data
 
-    newVals <- ls(pat = String("^") + .$ID + '\\.', envir=.GlobalEnv)
+    newVals <- ls(pat = String("^") + .$ID + '\\.', envir=.)
     if(length(newVals) > 0) {
       for(i in newVals) {
         tmp <- unlist(strsplit(i, "\\."))
         row <- as.numeric(tmp[2])
         col <- as.numeric(tmp[3])
-        value <- get(i, envir=.GlobalEnv)
+        value <- get(i, envir=.)
 
         colType <- class(items[,col, drop=TRUE])[1]
 
@@ -62,7 +67,7 @@ gdf <- function(items = NULL, name = deparse(substitute(items)),
                         as.character(value))
         items[row,col] <- value
 
-        rm(list = i, envir=.GlobalEnv)                           # remove
+        rm(list = i, envir=.)                           # remove
       }
     }
 

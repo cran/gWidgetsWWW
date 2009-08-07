@@ -21,8 +21,8 @@ gedit <- function (text = "", width = 25, coerce.with = NULL,
   ## methods
   widget$getValueJSMethod = "getValue"
   widget$setValueJSMethod = "setValue"
-#  widget$transportSignal <- "change"
-  widget$transportSignal <- "keyup" 
+  widget$transportSignal <- "change"
+#  widget$transportSignal <- "keyup" ## this gets sent too often, but will addHandlerKeystroke work w/o?
   widget$ExtConstructor <- "Ext.form.TextField"
   widget$ExtCfgOptions <- function(.) {
     out <- list("value"= svalue(.),

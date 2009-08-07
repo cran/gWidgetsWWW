@@ -1,21 +1,27 @@
 export("runHandler",
        "escapeHTML","unescapeURL",
        "asURL","isURL",
-       "shQuoteEsc")
+       "shQuoteEsc",
+       "getStaticTmpFile",
+       "convertStaticFileToUrl"
+       )
 
 export(
        "galert","gmessage","gconfirm","ginput",
        "gaction",
        "gbutton",
        "gcalendar",
+       "gcanvas",
        "gcheckboxgroup",
        "gcheckbox",
        "gcombobox","gdroplist",
        "gdf",
        "gedit",
+#       "gfile",
        "gformlayout",
        "ggroup","gframe","gexpandgroup",
        "ggooglemaps",
+       "ggraphics",
        "ghtml",
        "gimage",
        "glabel",
@@ -28,6 +34,7 @@ export(
        "gseparator",
        "gslider","gspinbutton",
        "gstatusbar",
+       "gsvg",
        "gtable",
        "gtext",
        "gwindow",
@@ -94,6 +101,8 @@ S3method("addHandlerExposed","gWidget")
 S3method("addHandlerMouseMotion","gWidget")
 S3method("addHandlerIdle","gWidget")
 S3method("addHandler","gWidget")
+S3method("addSpring","gWidget")
+S3method("addSpace","gWidget")
 S3method("+","String")
 S3method("print","String")
 S3method("length","String")

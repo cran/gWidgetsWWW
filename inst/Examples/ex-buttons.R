@@ -7,4 +7,5 @@ for(i in names(x))
   gbutton(i, cont=g1)
 
 
-## visible(w) <- TRUE
+gstatusbar("Powered by RApache and gWidgetsWWW", cont = w)
+ visible(w) <- TRUE

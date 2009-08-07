@@ -16,42 +16,8 @@ gslider <- function(from = 0, to = 100, by = 1, value = from,
   
   widget$scripts <- function(.) {
     ## from main example page 
-    out <- String() +
-    '/**' +
-      '* @class Ext.ux.SliderTip' +
-        '* @extends Ext.Tip' +
-          '* Simple plugin for using an Ext.Tip with a slider to show the slider value' +
-            '*/'
-    out <- out +
-      'Ext.ux.SliderTip = Ext.extend(Ext.Tip, {' +
-        'minWidth: 10,' +
-          'offsets : [0, -10],' +
-            'init : function(slider){' +
-              'slider.on("dragstart", this.onSlide, this);' +
-                'slider.on("drag", this.onSlide, this);' +
-                  'slider.on("dragend", this.hide, this);' +
-                    'slider.on("destroy", this.destroy, this);' +
-                      '},' +
-                        ''
-    out <- out +
-      
-      'onSlide : function(slider){' +
-        'this.show();' +
-          'this.body.update(this.getText(slider));' +
-            'this.doAutoWidth();' +
-              'this.el.alignTo(slider.thumb, "b-t?", this.offsets);' +
-                '},' +
-                  '' +
-                    'getText : function(slider){' +
-                      'return slider.getValue();' +
-                        '}' +
-                          '});'
-    out <- out +
-      'var tip = new Ext.ux.SliderTip({' +
-        'getText: function(slider){' +
-          'return String.format("<b>{0}% complete</b>", slider.getValue());' +
-            '}' +
-              '});'
+    f <- system.file("javascript","ext.ux.slidertip.js", package="gWidgetsWWW")
+    out <- paste(readLines(f), collapse="\n")
     return(out)
   }
   
@@ -93,4 +59,5 @@ gslider <- function(from = 0, to = 100, by = 1, value = from,
   invisible(widget)
 }
 
-gspinbutton <- function(...) {stop("No spinbutton widget in ext. The gslider widget is an alternative")}
+
+

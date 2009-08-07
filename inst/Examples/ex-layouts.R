@@ -43,4 +43,5 @@ font(tl) <- c("weight" = "bold")
 f[2,2] <- glabel("missing 2,1 in this row", cont=f)
 addHandlerClicked(tb,handler=function(h,...) svalue(tl) = "new label")
 
-## visible(w) <- TRUE
+gstatusbar("Powered by RApache and gWidgetsWWW", cont = w)
+visible(w) <- TRUE

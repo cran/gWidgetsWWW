@@ -2,6 +2,44 @@ Dear Emacs, please make this -*-Text-*- mode!
 
 NEWS for gWidgetsWWW
 
+Changes for  0.0-8
+--------------------
+
+* Major changes to implement RApache as the backend, in place of
+  RPad. The Rpad project seems to be abandoned, despite its very
+  interesting core. However, using RApache greatly diminishes the
+  security issues that RPad raises and *hopefully* will make
+  gWidgetsWWW much more stable
+
+ The configuration of RApache is very important. Sample template in
+ templates directory
+
+* requires filehash and digest packages to manage
+  sesssions. Sesssion are used to store state between requests
+
+* AJAX features are implemented through a script gWidgetsWWWAJAX.R
+
+* Added gcanvas widget for using the canvas device package of Jeffrey
+  Horner. This is replacing the gprocessingjs package, which isn't
+  working as of now.
+
+* added gsvg widget which is similar to gcanvas widget. Can be used
+  with SVG devices (RSVGTipsDevice, or SVGAnnotation). 
+
+* added gspinbutton widget, although trigger icons not showing.
+
+* removed some CSS for buttons to make work with Internet Explorer
+
+* added ggplot2 example
+
+* fixed bug when adding widgets to layout after rendering. 
+
+Changes for  0.0-7
+--------------------
+
+* added clt example
+
+
 Changes for  0.0-6
 --------------------
 

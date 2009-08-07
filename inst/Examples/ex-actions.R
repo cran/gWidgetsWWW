@@ -48,7 +48,7 @@ b2 <- gbutton("set actions as if \"some change\" is the  state", cont =g,
                   enabled(alist[[i]]) <- TRUE
               })
 
-
-##visible(w) <- TRUE
+gstatusbar("Powered by RApache and gWidgetsWWW", cont = w)
+visible(w) <- TRUE
 
 

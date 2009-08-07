@@ -7,7 +7,8 @@
 \alias{shQuoteEsc}
 \alias{unescapeURL}
 \alias{String}
-
+\alias{getStaticTmpFile}
+\alias{convertStaticFileToUrl}
 
 \title{Helper functions in gWidgetsWWW}
 \description{
@@ -32,7 +33,12 @@
   strings. This is the primary convenience of this class. Otherwise, the
   \code{[} method is useful for string extraction. The \code{length}
   method is an alternative to \code{nchar}.
+  \cr
 
+  The need for temporary files that can be accessed through a URL
+  gives rise to the functions \code{getStaticTmpFile}, which creates a
+  temporary file, and \code{convertStaticFileToUrl} which returns the
+  URL from the name of the static temporary file.
 
   }
 \keyword{interface}% at least one, from doc/KEYWORDS

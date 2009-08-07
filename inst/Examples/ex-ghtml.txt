@@ -1,1 +1,0 @@
-This is text that is to be rendered as a web page for the ghtml test.

@@ -22,13 +22,15 @@ ghtml <- function(x, container = NULL, ...) {
     } else {
       val <- paste(val,collapse="\\\\n")
       out <- out +
-        '.body=' + shQuoteEsc(val) + ';'
+        '.setText(' + shQuoteEsc(val) + ', false);'
     }
     return(out)
   }
 
-  
-  widget$ExtConstructor <- "Ext.Panel"
+  if(isURL(x)) 
+    widget$ExtConstructor <- "Ext.Panel"
+  else
+    widget$ExtConstructor <- "Ext.form.Label"
   widget$ExtCfgOptions <-  function(.) {
     out <- list()
     out[['border']] <- FALSE

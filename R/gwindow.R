@@ -3,6 +3,7 @@
 ## ... contains width=, height= for gsubwindow call
 ## if container is not null, then a subwindow is made
 ## handler called on unload
+
 gwindow <- function(title="title",file="",visible=TRUE,
                     name=title,
                     width = NULL, height = NULL, parent = NULL,
@@ -11,7 +12,7 @@ gwindow <- function(title="title",file="",visible=TRUE,
   ## width, height  for subwindows
   ## changed container argument to  parent to match gWidgets
   container <- parent
-  
+1  
    ## make a subwindow?
    if(!is.null(container))
      return(.gsubwindow(title=title,handler=handler, action=action,
@@ -24,9 +25,10 @@ gwindow <- function(title="title",file="",visible=TRUE,
                          ..actions = list())
    class(w) <- c("gWindow",class(w))
 
-   ## no parent container -- so no ID. We fix this
-  w$ID <- "gWidgetID0"
-
+  ## no parent container -- so no ID. We fix this
+  w$ID <- "gWidgetID0"                  # XXX Issue if more than one per page!
+  w$toplevel <- w
+  w$..renderTo <- String("Ext.getBody()") # can override
 ##  w$..visible <- FALSE
   
    w$setValue(value=title)
@@ -39,22 +41,39 @@ gwindow <- function(title="title",file="",visible=TRUE,
 
 
 
-   ## store name in title for handlers.
-   w$titlename <- make.names(title)
+  ## store name in title for handlers.
+  w$titlename <- make.names(title)
   assign(w$titlename,w, envir=.GlobalEnv)
-
-   ## Some properties that can be configured later
-   w$ExtBaseURL = "http://localhost:8079/" # with trailing slash
-
+  
    
    ## methods
+
+  w$runHandler <- function(., id,key,value) {
+    lst <- .$jscriptHandlers[[as.numeric(id)]]
+    h <- list(obj=lst$obj, action = lst$action)
+    if(!missing(key) && key != "") {
+      value <- unescapeURL(value)
+      assign("test", value,envir=.)
+      ## eval things that say ... eval:
+      if(length(grep("^evalme", value)) > 0) {
+        cmd <- gsub("^evalme","",value)
+        value <- eval(parse(text = cmd), envir=.)
+      }
+      h[[key]] <- value       # escaped text. See dialogs example
+    }
+    ##  with(lst$scope,lst$handler(h))
+    return(lst$handler(h))
+  }
+
+
+  
   ## for top-level window visible same as print
   w$setVisible <- function(., value) {
     ## same as print
     if(value) {
       .$Show()
     } else {
-      cat("can't hide otp-level window\n", file=stdout())
+      cat("can't hide top-level window\n", file=stdout())
     }
   }
 
@@ -70,63 +89,6 @@ gwindow <- function(title="title",file="",visible=TRUE,
      return(out)
    }
    
-
-   ## The method makeTemplate will make the website template for this instance
-   w$templateHeader <- function(.) {
-     out <- String() +
-       '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"' +
-         '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' +
-           '<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">' +
-             '<html>'+
-               '<head>' + 
-                 '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'+
-                   '<title>' + .$getValue() +'</title>' 
-     
-     ## turn on debug; load RPad
-     out <- out +
-       '<script type="text/javascript">' +
-         'djConfig = {isDebug: true};' +
-           'rpadConfig = {rpadHideSource: true,rpadRun: "all"};' +
-             '</script>\n' 
-               ## CSS for rpad results
-     out <- out +
-       '<style type="text/css">\n' +
-         '.Rpad_results {background-color: #eeeeee;font-family: georgia}' +
-           '</style>\n'
-     ## Rpad javascript stuff
-     out <- out +
-       '<script type="text/javascript" src="gui/dojo.js"></script>\n' +
-         '<script type="text/javascript" src="gui/Rpad_main.js"></script>\n'
-     ## Ext files
-     out <- out +
-       '<script type="text/javascript" src="' + .$ExtBaseURL +'ext-2.1/adapter/ext/ext-base.js"></script>' +
-         '<script type="text/javascript" src="' + .$ExtBaseURL +'ext-2.1/ext-all.js"></script>' +
-           '<link rel="stylesheet" type="text/css" href="' + .$ExtBaseURL + 'ext-2.1/resources/css/ext-all.css">'
-     ## finish up
-     out <- out +
-       '</head>' +
-         '<body class=' + shQuote(.$defaultCSS) + '>\n'
-     out <- out +
-       '<div dojoType="Rpad" rpadType="R"></div> <!-- oddity -->\n' +
-         '<pre dojoType="Rpad" rpadType="R" rpadOutput="javascript" rpadRun="init">'
-     
-     .$Cat(out)
-   }
-
-   w$templateFooter <- function(.) {
-     ## put in footer
-     if(.$file == "") return("")
-     out <- String() + '</pre>' +'</body>' + '</html>\n'
-     .$Cat(out)
-   }
-   w$makeTemplate <- function(.) {
-     .$templateHeader()
-     .$Cat("<!-- PUT CODE HERE -->")
-     .$templateFooter()
-   }
-
-
-   ## Now for the real stuff
    
    ## css and scripts are different for gwindow instances, as these
    ## are the toplevel instances -- sub classes place there values into
@@ -145,90 +107,107 @@ gwindow <- function(title="title",file="",visible=TRUE,
               ## add Library and Style Sheets
               ## use "script" to add library
               ## use "link" to add style sheet for type
-              out <- out +
-                'AddLibrary = function(type, file){' +
-                  'var NewNode=document.createElement(type);' +
-                    'NewNode.src=file;' +
-                       'document.body.appendChild(NewNode);' +
-                         '};' + '\n'
+##               out <- out +
+##                 'AddLibrary = function(type, file){' +
+##                   'var NewNode=document.createElement(type);' +
+##                     'NewNode.src=file;' +
+##                        'document.body.appendChild(NewNode);' +
+##                          '};' + '\n'
               
 
               
               ## runHandlerJS is key to linking in R with the web page
               ## we pass in an ID and optionally some values with keys.
+
+
+              ## Some javascript functions
+              ## XXX make betters
+              out <- out +
+                "function processFailure(response, options) {" +
+                  "eval(response.responseText);" +
+                    "};" +
+                      "\n" +
+                        "function evalJSONResponse(response, options) {" +
+                          "eval(response.responseText);" +
+                            "};"
+
+              if(!exists("gWidgetsWWWAJAXurl")) 
+                gWidgetsWWWAJAXurl <- "/gWidgetsWWW"
+
+              ## XXX Need to fix
+              ## * url is fixed
+              ## key, extra needs to be added
               out <- out +
                 'runHandlerJS = function(id,key,extra) {' +
-                  'var value = "runHandler(\'' + .$titlename +
-                    '\'," + id + ",\'" + key + "\',\'" + escape(extra) + "\')";'  +
-                  'rpad.script.run("R",' +
-                    'value,' +
-                      '"javascript",' +
-                        'document,' +
-                          '"djConfig.isDebug = false");};\n'
-              
-              
+                  "Ext.Ajax.request({" +
+                    "url: '" + gWidgetsWWWAJAXurl + "'," +
+                      "success: evalJSONResponse," +
+                        "failure: processFailure," +
+                          "method: 'POST', " +
+                            "params: { type: 'runHandler', " +
+                              "sessionID: sessionID," +
+                                "id: id," +
+                                  "key: key," +
+                                    "extra: extra" +
+                                      "}" +
+                                        "}); " +
+                                          '};'
+
               ## transportToR copies data in widget back into R
-              ## using a global variable IDXXX (as does Rpad)
-              ## This shouldn't be necessary, but Rpad runs flaky from
-              ## within a script.
-              
+              ## using a global variable IDXXX 
               out <- out +
                 '_transportToR = function(id, val) {' +
-                  ' R("assign(\'" + id.toString()+ "\',\'" + val.toString() + "\', envir=.GlobalEnv)");' +
-                    '};\n'
+                  "Ext.Ajax.request({" +
+                    "url: '" + gWidgetsWWWAJAXurl + "'," +
+                      "success: evalJSONResponse," +
+                        "failure: processFailure," +
+                          "method: 'POST'," +
+                            "params: { type: 'assign', " +
+                              "sessionID: sessionID," +
+                                "variable: id," +
+                                  "value: val" +
+                                    "}})};"
+
+              out <- out +
+                'function clearSession() {' +
+#                  'alert(sessionID);};'
+                  "Ext.Ajax.request({" +
+                    "url: '" + gWidgetsWWWAJAXurl + "'," +
+                      "method: 'POST'," +
+                        "params: { type: 'clearSession', " +
+                          "sessionID: sessionID" +
+                            "}})};"
+              
+
+              ## put into run function
+##               out <- out +
+##                 'clearSession = function() {' +
+##                   "Ext.Ajax.request({" +
+##                     "url: '" + gWidgetsWWWAJAXurl + "'," +
+##                       "success: evalJSONResponse," +
+##                         "failure: processFailure," +
+##                           "method: 'POST'," +
+##                             "params: { type: 'clearSession', " +
+##                               "sessionID: sessionID," +
+##                                     "}})};"
+
+              
               
               ## this is for tooltips in, say, gnotebook tabs.
               out <- out +
                 "Ext.QuickTips.init();\n"
 
               ## ext message for galert
-              galertString <-
-                paste('Ext.example = function(){' ,
-                      'var msgCt;' ,
-                        'function createBox(t, s){' ,
-                        'return ["<div class=\'msg\'>",' ,
-                        '"<div class=\'x-box-tl\'><div class=\'x-box-tr\'><div class=\'x-box-tc\'></div></div></div>",' ,
-                        '"<div class=\'x-box-ml\'><div class=\'x-box-mr\'><div class=\'x-box-mc\'><h3>", t, "</h3>", s, "</div></div></div>",' ,
-                        '"<div class=\'x-box-bl\'><div class=\'x-box-br\'><div class=\'x-box-bc\'></div></div></div>",' ,
-                        '"</div>"].join("");' ,
-                        '};' ,
-                        'return {' ,
-                        'msg : function(title, format, delay){' ,
-                        'if(!msgCt){' ,
-                        'msgCt = Ext.DomHelper.insertFirst(document.body, {id:"msg-div"}, true);' ,
-                        '}' ,
-                        'msgCt.alignTo(document, "t-t");' ,
-                        'var s = String.format.apply(String, Array.prototype.slice.call(arguments, 1));' ,
-                        'var m = Ext.DomHelper.append(msgCt, {html:createBox(title, s)}, true);' ,
-                        'm.slideIn("t").pause(delay).ghost("t", {remove:true});' ,
-                        '},' ,
-                        '' ,
-                        'init : function(){' ,
-                        'var t = Ext.get("exttheme");' ,
-                        'if(!t){ ' ,
-                                                        'return;' ,
-                        '}' ,
-                        'var theme =  "aero";' ,
-                                                            'if(theme){' ,
-                        't.dom.value = theme;' ,
-                        'Ext.getBody().addClass("x-",theme);' ,
-                        '};' ,
-                        't.on("change", function(){' ,
-                        'setTimeout(function(){' ,
-                        'window.location.reload();' ,
-                        '}, 250);' ,
-                        '});' ,
-                        'var lb = Ext.get("lib-bar");' ,
-                        'if(lb){' ,
-                        'lb.show();' ,
-                        '}' ,
-                        '}' ,
-                        '};' ,
-                        '}();',
-                        collapse="\n")
-              
-              
-              out <- out + galertString
+              f <- system.file("javascript","ext.ux.example.js", package="gWidgetsWWW")
+              out <- out + paste(readLines(f), sep="\n")
+
+              ## statusbar
+              if(exists("..statusBar", envir=., inherits=FALSE)) {
+                f <- system.file("javascript","ext.ux.statusbar.js", package="gWidgetsWWW")
+                out <- out + paste(readLines(f), collapse="\n")
+              }
+
+#              out <- "" ## for debug
               return(out)
             })
           )
@@ -236,6 +215,7 @@ gwindow <- function(title="title",file="",visible=TRUE,
    w$ExtConstructor <- "Ext.Panel" ## inherits
    w$ExtCfgOptions <- function(.) { ## ih
      out <- list(
+                 renderTo= .$..renderTo,
                  border = TRUE,
 #                 bodyBorder = FALSE,
                  hideBorders = FALSE,
@@ -258,6 +238,9 @@ gwindow <- function(title="title",file="",visible=TRUE,
                  collapse="") +
            '");' + '\n'
      }
+     ## XXX -- this doesn't work with IE so we cut it out.
+     out <- ""
+     
      return(out)
    }
    
@@ -267,23 +250,11 @@ gwindow <- function(title="title",file="",visible=TRUE,
      .$Cat(out)
    }
 
-
-     
-   ## This didn't work. Tried to make finding Ext configurable
-   ##     w$header <- function(.) {
-   ##       out <- String() +
-   ## ##        'AddLibrary("script","/gui/dojo.js");' +
-   ## ##          'AddLibrary("script","/gui/Rpad_main.js");' +
-   ##             'AddLibrary("script","/ext-2.1/adapter/ext/ext-base.js");' +
-   ##               'AddLibrary("script","/ext-2.1/ext-all.js");' +
-   ##                 'AddLibrary("link","/ext-2.1/resources/css/ext-all.css");'
-   ##       .$Cat(out)
-   ##     }
    
-w$footer <- function(.) {
+  w$footer <- function(.) {
   
      ## clear out any old IDS
-     remove(list=ls(pat="^gWidgetID",envir=.GlobalEnv),envir=.GlobalEnv)
+     remove(list=ls(pat="^gWidgetID",envir=.),envir=.)
 
      ## doLayout()
      out <- String() +
@@ -293,9 +264,14 @@ w$footer <- function(.) {
      out <- out +
        'document.title =' +shQuote(.$getValue()) + ';\n' 
 
+##      out <- out +
+##        'o' + .$ID + '.on("destroy", function() {clearSession("hi");});'
+
      ## finish Ext.onReady
 #     out <- out + '})\n'
      .$Cat(out)
+
+
    }
    
 
@@ -383,7 +359,7 @@ handler = NULL, action=NULL, container=NULL,...) {
     
     out <- list(
                 'title' = .$..data,
-                'layout' = "fit",
+                'layout' = "auto",      # not fit
                 'width' = as.numeric(width),
                 'height' =  as.numeric(height),
                 'closeAction' = "hide",
@@ -395,7 +371,8 @@ handler = NULL, action=NULL, container=NULL,...) {
     ## statusbar. Menu? Tool?
     if(exists("..statusBar",envir=., inherits=FALSE)) {
       sbText <- String() +
-        'new Ext.StatusBar({' +
+#        'new Ext.StatusBar({' +
+        'new Ext.ux.StatusBar({' +      # as of 3.0 not in ext -- uses toolbar instead
           'id: "' + .$ID + 'statusBar",' +
             'defaultText: "",' +
               'text:' + shQuote(.$..statusBarText) +

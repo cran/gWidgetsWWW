@@ -108,7 +108,7 @@ gcombobox <- gdroplist <-
       }
       .$..data <- as.character(value)
       if(.$ID != "")
-        assign(.$ID,value, envir=.GlobalEnv)
+        assign(.$ID,value, envir=.$toplevel)
     }
     
 
@@ -183,7 +183,7 @@ gcombobox <- gdroplist <-
       return(out)
     }
 
-    widget$transportSignal <- c("change" ,"select","blur")
+    widget$transportSignal <- c("blur" ,"select", "change")
     widget$transportValue <- function(., ..., signal=NULL) {
       out <- String()
       if(signal == "change") {

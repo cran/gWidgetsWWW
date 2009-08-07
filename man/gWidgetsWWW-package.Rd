@@ -6,17 +6,20 @@
 Toolkit implementation of gWidgets for WWW
 }
 \description{
-Port of gWidgets API to WWW using the Rpad package and the ExtJS
+Port of gWidgets API to WWW using RApache and the ExtJS
 javascript libraries.
 }
 \details{
   
-  This package ports the gWidgets API allowing the creation of
+  This package ports the gWidgets API to WWW, allowing the creation of
   interactive webpages.  The interactivity is provided through the
-  \pkg{Rpad} package. The webpages themselves use the Ext toolkit
+  \pkg{RApache} package. The webpages themselves use the Ext toolkit
   (\url{www.extjs.com}) to render the widgets. This toolkit must be
   installed separately and configured to work.
-
+  
+  For some reason, not yet figured out, this package does not seem to
+  work with internet explorer. It does work well with firefox.
+  
   
   As \pkg{gWidgets} is meant to be multi-toolkit, this file documents
   differences from the API, of which there are many. However, this
@@ -32,22 +35,17 @@ javascript libraries.
   is shown (via its \code{print} method), the javascript code to produce
   the page is created. This javascript code takes advantage of the
   freely available Ext libraries which greatly enhance the base
-  javascript language. (Rpad itself has a similar set of libraries --
-  the open source dojo toolkit, \url{www.dojotoolkit.org}-- but
-  gWidgetsWWW uses extjs, which although is not as freely licensed, it
-  is more up to data and has an excellent API and set of examples.) This
+  javascript language.  This
   code should be contained in or sourced into a web page so that it can
   be rendered in a browser. The \pkg{gWidgetsWWW} package provides
   several examples of how this works.
 
-  The \pkg{Rpad} package provides a mechanism for the web page to call
-  back into the \R\/ program. The same \R\/ session is used throughout
-  the lifetime of a page. (That means don't refresh the page.)  The
-  server version of \pkg{Rpad} can open several different sessions to
-  handle multiple requests.  When a page calls the \R\/ session, the
-  gWidgets code can produce JavaScript to cause the page to do
-  something, such as update the GUI. This allows the web page to be
-  interactive. What is missing is a way to initiate a request from \R\/
+ 
+  The interactivity of a GUI is created through httpxmlrequests back to
+  the RApache server. Each page load creates a unique session to store
+  the state. This allows data to be passed from the web page back to an
+  R process and back without needed to reload an entire page. In fact,
+  reloading a page creates a new session. What is missing is a way to initiate a request from \R\/
   to the web page and then back to \R. As such, the state of the web
   page is constantly passed back to the \R\/ session. That is, when a
   control is updated, such as when a radio button is clicked, there is a
@@ -55,46 +53,80 @@ javascript libraries.
   aware of the state of the web page. On the downside, this may cause a
   lag in performance.
 
-
+  Prior to version 0.8.0, gWidgetsWWW used RPad to provide
+  interactivity. This opened up the security risk that RPad has. One can
+  run Rpad from a virtual machine to reduce the risk, but still a user
+  could issue any R command they wanted. The RApache backend end
+  severely limits what a user can request from an R process. Basically
+  they can assign a variable and initiate a handler that a gWidgetsWWW
+  script defines. Still be careful when processing user input, as that
+  can open security risks, as it does with all web programming.
 
 
   \bold{Installation:}\cr
   
-  Before the package can run, both the \pkg{Rpad} package and the
-  \code{Ext} libraries must be installed. The \pkg{Rpad} package
-  installation performs a local installation without much work. The
-  "server" installation requires an external web served to be set
-  up. The package provides a script to automate the configuration. The
-  \pkg{Rpad} package installs a javascript toolkit \code{dojo}. The web
-  page must call this in and the \pkg{Rpad} code. Some sample code to do
-  so might be
+  Installation requires several steps: a) installing RApache, b)
+  installing gWidgetsWWW c) configuring RApache for gWidgetsWWW,
+  d) installing the extjs libraries,  e) installing the gWidgetsWWW
+  icons on the web browsers path and f) creating some webpages
+  \cr
+  
+  Installing RApache is documented at the RApache website. Installing
+  gWidgetsWWW is straightforward.
+  \cr
 
-\code{<script type="text/javascript" src="gui/dojo.js"></script>}
-\cr
-\code{<script type="text/javascript" src="gui/Rpad_main.js"></script>}
-
-
+  To configure RApache for gWidgetsWWW, a sample configuration is
+  included in the templates directory. There are several variables to
+  configure. As well, one can use to show pages one of two ways.
+  \cr
+  
   The \code{Ext} libraries may be downloaded from
   \url{www.extjs.com}. Ext has a dual-license model, offering an open
   source LGPL license along with a per-developer, royalty-free
   commercial license. The \pkg{gWidgetsWWW} package makes no assumptions
-  about where this library is installed, but the web page that calls the
-  \R\/ code must call in these javascript libraries. The examples use
+  about where this library is installed, as you configure it in the
+  RApache configuration.
+  \cr
 
-\code{<script type="text/javascript"
-  src="ext-2.1/adapter/ext/ext-base.js"></script>}
-\cr
-\code{<script type="text/javascript" src="ext-2.1/ext-all.js"></script>}
+  To complete the installation, the \pkg{gWidgetsWWW} package provides
+  some stock icons. As with the extjs libraries, these can be installed
+  whereever, but where they are installed must be specified in the
+  RApache configuration.
+  \cr
 
+  Web pages can be made in two ways. Either using brew templates to call
+  back into R to make standalone pages. The Examples directory has a
+  template and an example. Or, one can use a script to source in R files
+  where the filename is part of the url the user specifies. This allows
+  the webpage designer to only use gWidgets commands to produce webpages
+  -- no HTML needed.
+  \cr
+
+  \bold{Sessions:}
+
+  \pkg{gWidgetsWWW} uses sessions to store data when a web page is
+  loaded. Sessions are simply R environments. HTML itself is stateless,
+  so some means is necessary to keep track of data between
+  interactions. The use of AJAX allows pieces of a page to be updated
+  without the entire page, making pages appear much more
+  responsive. This involves callbacks into a R process that are executed
+  within the environment stored for the session.
+  \cr
+  The environments do not
+  remember which packages are loaded, so if your callback requires a
+  package beyond the base and \pkg{gWidgetsWWW} you will need to include
+  the appropriate \code{require} command in the callback.
+  \cr
+  Sometimes the database driver will complain. Likely this is due to the
+  database not being locked while a transaction is being completed.
+  \cr
+  The sessions are stored by default in files under a directory using
+  filehash. This has the advantage of being easy to remove using regular
+  cron jobs, but may be slower than other forms of storage.
+  \cr
+  This is all a
+  bit of a hack, so any report of bugs is appreciated.
   
-
-To complete the installation, the \pkg{gWidgetsWWW} package provides some stock
-icons. For now, these icons need to be installed in directory called
-\code{images} in the base directory of the web server. 
-  
-
-
-
 
 \bold{Containers:}
   \cr
@@ -115,7 +147,14 @@ icons. For now, these icons need to be installed in directory called
   page is left. One thing to remember, is that web pages in
   \pkg{gWidgetsWWW} will lose state when reloaded. For windows, only the
   \code{svalue<-} method, for adjusting the title, is defined.  \cr
-  
+  \cr
+
+  The default means of each window being a webpage can be overridden
+  by specifying a value of \code{..renderTo}, as in \code{w =
+  gwindow(); w$..renderTo = "someId"} for some HTML object with
+  appropriate id.
+
+
   The \code{ggroup} container accepts the \code{horizontal} and
   \code{spacing} arguments, but does not use the \code{use.scrollwindow}
   argument (spacing can not be done after rendering with the
@@ -201,8 +240,8 @@ icons. For now, these icons need to be installed in directory called
   \cr
 
 
-  The \code{gspinbutton} widget is not yet implemented. One can use the
-  \code{gslider} widget instead.
+  The \code{gspinbutton} widget is  implemented if Ext 3.0 is
+  installed. However, the trigger icons may not appear. The widget is responsive to arrow keys to cycle through the specified values.
   \cr
 
 
@@ -250,6 +289,19 @@ icons. For now, these icons need to be installed in directory called
   conversion from Ext to R format for dates may be locale dependent and
   this hasn't been investigated.
   \cr
+
+  
+  The \code{ggraphics} widget is a link to the \pkg{gWidgetsWWW}
+  \code{gcanvas} widget. This is used slightly differently than an
+  interactive graphics device -- how \code{ggraphics} is meant to be
+  used, but is similar to how a non-interactive device is used. The
+  \pkg{canvas} grahics device allows graphics to be written using
+  JavaScript, so they render natively in a canvas widget in a
+  browser. Not all browsers implement this relatively modern widget.
+  \cr
+  
+  The \code{gsvg} widget creates a space in a page to use the		
+  \pkg{RSVGTipsDevice} to display graphics within a web page.
 
 
   The \code{gfilebrowse} widget needs writing

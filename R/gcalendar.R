@@ -54,7 +54,7 @@ gcalendar <- function(text = "", format = "%Y-%m-%d",
       out <- String() +
         'o' + .$ID + 'date = new Ext.Panel({' + # no var -- global
           'id:' + shQuote(.$ID) + ',' +
-            'renderTo:document.body,' +
+            'renderTo:Ext.getBody(),' +
               'items: [' +
                 .$mapRtoObjectLiteral(lst) +
                   ']\n' +

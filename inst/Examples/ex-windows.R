@@ -1,8 +1,11 @@
 w <- gwindow("Windows example")
 g <- ggroup(cont = w, horizontal = FALSE)
+ghtml(paste("Illustration of state of modal dialogs and subwindows. Modal dialogs",
+            "are used with a handler (gconfirm). The ginput dialog doesn't not work.",
+            "Subwindows are created by gwindow with the argument parent=toplevel_window.",
+            sep=" "), cont = g)
 
-
-g1 <- gexpandgroup("Modal dialogs. Handlers for gconfirm, ginput don't really work!!!",cont=g)
+g1 <- gexpandgroup("Modal dialogs. Handler for ginput doesn't work!!!",cont=g)
 
 b1 <- gbutton("galert", cont=g1, handler = function(h,...) {
   galert("for quick transient messages", title="galert dialog")
@@ -15,17 +18,16 @@ b2 <- gbutton("gmessage", cont=g1, handler = function(h,...) {
 })
 
 b3 <- gbutton("gconfirm", cont=g1, handler = function(h,...) {
-  gconfirm("Unfortunately the handler doesn't work without an intrusive hack.", parent = b3,
+  gconfirm("gconfirm handler is run on ok but not cancel.", parent = b3,
            handler = function(h,...) {
-             gmessage("you clicked ok", parent = b3)
+             galert("you clicked ok", parent=b3)
            })
 })
 
 b4 <- gbutton("ginput", cont=g1, handler = function(h,...) {
-  ginput("Unfortunately the handler doesn't work without an intrusive hack.",
+  ginput("ginput doesn't work, as the input is lost",
          parent = b4, handler = function(h,...) {
-           ##   cat("alert('hack to make handler work');")
-           gmessage(String("you clicked ok") + h$input, parent = b4)
+           galert(h$input)
          })
 })
 
@@ -44,4 +46,6 @@ b5 <- gbutton("gwindow" ,cont=g1, handler = function(h,...) {
   visible(w1) <- TRUE #show
 })
 
-##visible(w) <- TRUE
+
+gstatusbar("Powered by RApache and gWidgetsWWW", cont = w)
+visible(w) <- TRUE

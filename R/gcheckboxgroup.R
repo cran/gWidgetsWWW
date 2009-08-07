@@ -28,7 +28,7 @@ gcheckboxgroup = function (items, checked = FALSE, horizontal = FALSE,
     out <- .$..data
     if(exists("..shown",envir=.,inherits=FALSE)) {
       ## get from widget ID
-      out <- try(get(.$ID,envir=.GlobalEnv),silent=TRUE) ## XXX work in index here?
+      out <- try(get(.$ID,envir=.),silent=TRUE) ## XXX work in index here?
       if(!inherits(out,"try-error")) {
         if(is.character(out))
           out <- eval(parse(text = out))          # transport ischaracter
@@ -54,13 +54,13 @@ gcheckboxgroup = function (items, checked = FALSE, horizontal = FALSE,
       value <- sapply(1:n, function(i) i %in% value)
     } else if(!is.logical(value)) {
       ## error
-      cat("Value should be logical vector, vector of indices, or character vector of names\n", file=stdout())
+      cat("Value should be logical vector, vector of indices, or character vector of names\n")
     }
 
     .$..data <- value
 
     if(exists("..shown",envir=., inherits=FALSE))
-      cat(.$setValueJS(), file=stdout())
+      cat(.$setValueJS())
   }
   widget$setValueJS <- function(.) {
     out <- String() +
@@ -97,7 +97,7 @@ gcheckboxgroup = function (items, checked = FALSE, horizontal = FALSE,
                 '};' +
                   're = /,$/;' +
                     'value = value.replace(re,"");' +
-                      'value = value + ")"' + '\n'
+                      'value = value + ")";' + '\n'
     return(out)
   }
 

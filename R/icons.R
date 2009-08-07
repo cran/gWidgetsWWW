@@ -11,11 +11,15 @@ addStockIcons <- function(iconNames, iconFiles) {
 ## otherwise paste in prefix.
 .stockicons <- proto()
 .stockicons$si <- NULL
+
 getStockIcons <- function(icons) {
+  if(!exists("gWidgetsWWWimageUrl"))
+    gWidgetsWWWimageUrl <- "/images/"
+  
   if(is.null(.stockicons$si)) {
     files <- list.files(path=system.file("images/", package="gWidgetsWWW"))
     newfiles <- gsub("\\.gif$|\\.jpg$|\\.jpeg$|\\.png$","",files)
-    si <<- paste("images/",files, sep="")
+    si <<- paste(gWidgetsWWWimageUrl,files, sep="")
     class(si) <- c("URL",class(si))
     names(si) <- newfiles
     .stockicons$si <- si

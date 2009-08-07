@@ -1,5 +1,5 @@
 ## Build a t-test gui
-require(Cairo) ## no X11 dependence
+##require(Cairo) ## no X11 dependence
 
 w <- gwindow("t-test example")
 g <- ggroup(cont = w, horizontal = FALSE)
@@ -42,8 +42,8 @@ enabled(buttonGroup) <- FALSE
 addHandlerChanged(selData, handler = function(h,...) {
   enabled(selVariable) <- TRUE
   df <- svalue(selData)
-  df <- get(df, envir=.GlobalEnv)                # string to object
-  selVariable[] <- data.frame(names(df),names(df))
+  df <- get(df, inherits=TRUE)                # string to object
+  selVariable[] <- data.frame(names(df),names(df), stringsAsFactors=FALSE)
 })
 
 addHandlerChanged(selVariable, handler = function(h,...) {
@@ -53,40 +53,47 @@ addHandlerChanged(selVariable, handler = function(h,...) {
 })
                   
 addHandlerClicked(doButton, handler = function(h,...) {
-  df <- svalue(selData)
-  var <- svalue(selVariable)
-  mu <- svalue(selMu)
-  alt <- svalue(selAlt)
-  
-  out <- String() +
-    "with(" + df + ', t.test(' + var +
-      ', mu = ' + mu +
-        ', alt = ' + shQuote(alt) +
-          '))'
+   df <- svalue(selData)
+   var <- svalue(selVariable)
+   mu <- svalue(selMu)
+   alt <- svalue(selAlt)
 
-  val <- capture.output(eval(parse(text=out),envir=.GlobalEnv))
-  svalue(outputArea) <- paste(val,collapse="\\\\n") # lots of escapes
+   if(df != "") {
+     df <- try(get(df, inherits=TRUE), silent=TRUE)
+     val <- capture.output({
+       t.test(df[,var], mu=as.numeric(mu), alt=as.character(alt))
+     })
+     
+     svalue(outputArea) <- paste(val,collapse="\\n") # lots of escapes
+   }
 })
 
 addHandlerClicked(doGraph, handler = function(h,...) {
   df <- svalue(selData)
   var <- svalue(selVariable)
-  tmp <- tempfile(tmpdir=""); tmp <- gsub("^/","",tmp)
+  width <- 400; height <- 300
 
-  Cairo(file=paste(basedir,tmp,sep=""), width=400, height=400)
-  eval(parse(text=String() + "with(" + df + ', hist(' + var +  '));'), envir=.GlobalEnv)
-  dev.off()
-  dev.off()
-  
-  w1 <- gwindow("EDA", parent = w, width=410, height=500)
+
+
+  w1 <- gwindow("EDA", parent = w, width=width, height=height+2*25 + 20 + 30)
   g1 <- ggroup(horizontal=FALSE, cont=w1, use.scrollwindow=TRUE)
-  gimage(tmp, cont=g1)
+  cv <- gsvg(cont = g1, width=width, height=height)
   gseparator(cont = g1)
   gbutton("dismiss", cont=g1, handler = function(h,...) dispose(w1))
+
+  require(RSVGTipsDevice, quietly=TRUE, warn=FALSE)
+  f <- getStaticTmpFile(ext=".svg")
+  devSVGTips(f)
+  df <- get(df, inherits=TRUE)
+  hist(df[, var], main=var)
+  dev.off()
+  svalue(cv) <- convertStaticFileToUrl(f)
+  
   ## show page
   visible(w1) <- TRUE
 })
   
 ## show w
-##visible(w) <- TRUE
+gstatusbar("Powered by RApache and gWidgetsWWW", cont = w)
+visible(w) <- TRUE
                   

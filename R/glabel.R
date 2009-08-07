@@ -11,7 +11,7 @@ glabel <- function(text = "", markup = FALSE, editable = FALSE,
 
   widget$scripts <- function(.) {
     out <- String(sep="\n") +
-      'Ext.ux.labelBox = Ext.extend(Ext.Component, {' + 
+      'Ext.ux.labelBox = Ext.extend(Ext.BoxComponent, {' + 
 	'value: null,' + 
           'initComponent:function() {' + 
 	    'Ext.ux.labelBox.superclass.initComponent.call(this);' + 

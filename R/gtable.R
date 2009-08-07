@@ -55,7 +55,7 @@ gtable <- function(items, multiple = FALSE, chosencol = 1,
     
     if(exists("..shown",envir=.,inherits=FALSE)) {
       ## get from widget ID
-      out <- try(get(.$ID,envir=.GlobalEnv),silent=TRUE) ## XXX work in index here?
+      out <- try(get(.$ID,envir=.),silent=TRUE) ## XXX work in index here?
       if(!inherits(out,"try-error")) {
         ## For multiple, this is stored as a vector that needs to be eval'ed
         if(.$..multiple) {

@@ -29,9 +29,9 @@ gradio <- function(items, selected = 1, horizontal=FALSE,
   widget$getValue <- function(.,index=NULL ,drop=NULL,...) {
     ## we need to revers logic from AWidgtet$getValue
     out <- .$..data
-    if(exists("..shown",envir=.,inherits=FALSE)) {
+    if(exists("..shown",envir=.$toplevel,inherits=FALSE)) {
       ## get from widget ID
-      out <- try(get(.$ID,envir=.GlobalEnv),silent=TRUE) ## XXX work in index here?
+      out <- try(get(.$ID,envir=.$toplevel),silent=TRUE) ## XXX work in index here?
       if(!inherits(out,"try-error")) {
         out <- as.numeric(out)          # is character
       } else {
@@ -121,76 +121,15 @@ gradio <- function(items, selected = 1, horizontal=FALSE,
   }
 
   widget$transportFUN <- function(.) return(String(""))
-
-##   widget$makeRadioItems <- function(.) {
-##     out <- String()
-
-##     values <- .$getValues()
-##     if((n <- length(values)) < 2)  return(out)
-
-##     tmp <- list()                          # store items as String
-##     for(i in 1:n) {
-##       lst <- list(xtype = "radio",
-##                   name = as.character(String() + .$ID + "radiogroup"),
-##                   boxLabel = as.character(values[i]),
-##                   checked = (i == .$..selected)
-##                   )
-##       tmp[[i]] <- .$mapRtoObjectLiteral(lst)
-##     }
-
-##     out <- out +
-##       '[' + paste(tmp,collapse=",") + ']'
-    
-##     return(out)
-##   }
-
-##   widget$makeRadioButtons <- function(.) {
-##     ## get ccmponents
-##     values <- .$getValues()
-##     n <- length(values)
-##     out <- String()
-##     for(i in 1:n) {
-##       out <- out +
-##         'var ' + .$ID + "radiobutton" + i +
-##           ' = o' + .$ID + '.getComponent(' + as.character(i-1) + ');' + '\n'
-##     }
-##     return(out)
-##   }
-
-##   ## panel has regular id
-##   widget$makeRadioPanel <- function(.) {
-##     lst <- list(id = as.character(.$ID),
-##                 renderTo =  String("document.body"),
-##                 border = FALSE,
-##                 bodyStyle = as.character('{padding: "5px"}')
-##                 )
-##     if(.$..horizontal)
-##       lst[["layout"]] <- "column"
-
-##     lst[["items"]] <-  .$makeRadioItems()
-
-
-    
-##     out <- String() +
-##       'o' + .$ID + ' = new Ext.Panel(' + '\n' +
-##         .$mapRtoObjectLiteral(lst) +
-##           ');' + '\n'
-##     return(out)
-##   }
-
-  ## do the transport function with handler 
-  ## add handler (also does transport)
-
-  ## override show method
-##   widget$show <- function(.) {
-##     out <- String() +
-##         .$makeRadioPanel() +
-##           .$makeRadioButtons() +
-##             .$addRadioButtonHandlers() ## also does transport
-
-##     .$Cat(out)
-##   }
-
+  ## override to put with checked===true
+  widget$writeHandlerFunction <- function(., signal, handler) {
+    out <- String() +
+          'if(checked === true) {' +
+            'runHandlerJS(' + handler$handlerID  +
+              handler$handlerExtraParameters + ');' + 
+                '};' + '\n'
+    return(out)
+  }
 
   ## add after CSS, scripts defined
   container$add(widget,...)
@@ -225,10 +164,17 @@ gradio <- function(items, selected = 1, horizontal=FALSE,
 ##     .$..handlerID <- id
 ##     invisible(id)
 ##   }
+
+  widget$addHandlerClicked <- function(., handler, action=NULL, ...) 
+    .$addHandler(signal="check", handler, action=NULL, ...)
   
 
   ## we add handler regardless, as this introduces transport function
-  id <- widget$addHandler(signal=NULL, handler, action)
+  if(is.null(handler))
+    signal <- NULL
+  else
+    signal <- "check"
+  id <- widget$addHandler(signal=signal, handler, action)
   invisible(widget)
 
 }

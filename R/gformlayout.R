@@ -2,7 +2,7 @@
 ## changes should synchronize with gWidgets file
 
 ## helper functions
-.makeForm <- function(lst, parent, e,  ...) {
+.makeForm <- function(., lst, parent, ...) {
   g <- ggroup(cont = parent, expand=TRUE,...)
 
   ## make a local copy of lst and modify for do.call
@@ -18,20 +18,25 @@
   
   ## treat fieldset differently
   if(lst$type == "fieldset") {
-    .makeFieldset(lst, g, e, label = lst$label, width=lst$width, height=lst$height)
+    .$makeFieldset(lst, g, label = lst$label, width=lst$width, height=lst$height)
     return()
   } else {  
     ## make object
+    ## evaluate quoted functions
+    tmp <- lapply(tmp, function(i) if(is.name(i)) eval(i)() else i)
     newObject <- do.call(lst$type, tmp)
     ## store if a name is given
-    if(!is.null(lst$name))
-      e[[lst$name]] <- newObject
+    if(!is.null(lst$name)) {
+      tmp <- .$..widgets
+      tmp[[lst$name]] <- newObject
+      .$..widgets <- tmp
+    }
     ## do we enable new object
     if(!is.null(lst$depends.on)) {
-      widget <- e[[lst$depends.on]]
+      widget <- .$..widgets[[lst$depends.on]]
       if(is.null(lst$depends.signal))
         lst$depends.signal <- "addHandlerChanged"
-      do.call(lst$depends.signal,list(obj=widget,handler =  function(h,...) {
+      do.call(lst$depends.signal,list(obj=widget, handler =  function(h,...) {
         value <- svalue(h$obj)
         enabled(newObject) <- lst$depends.FUN(value)
       }))
@@ -49,14 +54,14 @@
       l <- lst$children[[i]]
       if(l$type == "fieldset") {
         if(lst$type == "gnotebook")
-          .makeFieldset(l, newObject, e, label = l$label)
+          .$makeFieldset(l, newObject, label = l$label)
         else
-          .makeFieldset(l, newObject, e, width = l$width, height = l$height)
+          .$makeFieldset(l, newObject, width = l$width, height = l$height)
       } else {
         if(lst$type == "gnotebook")
-          .makeForm(l, newObject, e, label = l$label)
+          .$makeForm(l, newObject, label = l$label)
         else
-          .makeForm(l, newObject, e)
+          .$makeForm(l, newObject)
       }
     }
   }
@@ -64,22 +69,22 @@
 
 
 ## fieldset does not recurse
-.makeFieldset <- function(lst, parent, e, width=NULL, height=NULL, ...) {
+.makeFieldset <- function(., lst, parent, width=NULL, height=NULL, ...) {
   ## parent is parent container
   ## lst is list as above
 
   
   ## outer container
   if(!is.null(lst$label)) 
-    g <- gframe(lst$label, cont = parent, width=width, height=height,...)
+    g <- gframe(lst$label, cont=parent, width=width, height=height,...)
   else
-    g <- ggroup(cont = parent,  width=width, height = height, ...)
+    g <- ggroup(cont=parent,  width=width, height=height, ...)
   ## main table
   tbl <- glayout(cont = g)
   
   ## do we enable new object
   if(!is.null(lst$depends.on)) {
-    widget <- e[[lst$depends.on]]
+    widget <- .$..widgets[[lst$depends.on]]
     if(is.null(lst$depends.signal))
       lst$depends.signal <- "addHandlerChanged"
     do.call(lst$depends.signal, list(obj = widget,handler = function(h,...) {
@@ -121,11 +126,14 @@
     newWidget <- do.call(l$type, tmp)
 
     ## store
-    if(!is.null(l$name))
-      e[[l$name]] <- newWidget
+    if(!is.null(l$name)) {
+      tmp <- .$..widgets
+      tmp[[l$name]] <- newWidget
+      .$..widgets <- tmp
+    }
     ## do we enable new object
     if(!is.null(l$depends.on)) {
-      widget <- e[[l$depends.on]]
+      widget <- .$..widgets[[l$depends.on]]
       if(is.null(l$depends.signal))
         l$depends.signal <- "addHandlerChanged"
       do.call(l$depends.signal, list(obj = widget, handler =  function(h,...) {
@@ -162,18 +170,20 @@
 
 gformlayout <- function(lst, container = NULL, ...) {
   obj <- ggroup(cont = container, ...)
-
-
-  e <- new.env()
-  .makeForm(lst, obj, e)
+  g <- ggroup(cont = obj, expand=TRUE)
 
   class(obj) <- c("gFormLayout",class(obj))
-  obj$widgets <- lapply(e, function(i) i)
+
+  obj$..widgets <- list()
+  obj$makeForm <- .makeForm
+  obj$makeFieldset <- .makeFieldset
+
+  obj$makeForm(lst, g)
 
   obj$getValue <- function(., index=NULL, drop=NULL)
-    return(lapply(.$widgets, svalue))
+    return(lapply(.$..widgets, svalue))
   obj$getNames <- function(.)
-    return(names(.$widgets))
+    return(names(.$..widgets))
   
   
   return(obj)

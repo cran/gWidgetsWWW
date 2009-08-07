@@ -2,6 +2,8 @@
 \alias{gprocessingjs}
 \title{Interface to Processing.js code to create graphics with javascript}
 \description{
+	XXX This function is no longer supported XXX
+	\cr
 
 	This function provides the ability to write to canvas on the
 	browser using somewhat familar graphics commands in R. The

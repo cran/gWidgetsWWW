@@ -44,8 +44,8 @@ g = gexpandgroup("gslider", cont=g1)
 widget = gslider(from=0, to=100, by=1,value=50, cont=g)
 
 
-g = gexpandgroup("gspinbutton", cont=g1)
-glabel("no spinbutton yet", cont=g)
+g = gexpandgroup("gspinbutton -- no trigger icons show, but arrows work", cont=g1)
+widget = gspinbutton(from=0, to=100, by=1,value=50, cont=g)
 
 
 g = gexpandgroup("gedit", cont=g1)
@@ -104,5 +104,9 @@ glabel("gtoolbar is done through gmenubar -- only one", cont=g)
 g = gexpandgroup("gstatusbar", cont=g1)
 widget = gstatusbar("statusbar text", cont=w)
 
+
+
+gstatusbar("Powered by RApache and gWidgetsWWW", cont = w)
+visible(w) <- TRUE
 
 

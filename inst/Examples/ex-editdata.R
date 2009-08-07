@@ -53,6 +53,6 @@ saveButton <- gbutton("save", cont = g, handler = function(h,...) {
 })
 
 
-
+gstatusbar("Powered by RApache and gWidgetsWWW", cont = w)
 visible(w) <- TRUE
 

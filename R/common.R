@@ -253,5 +253,10 @@ toJSArray.data.frame <- function(x,doBrackets=TRUE) {
 }
                
 
+## for working with static html files
+getStaticTmpFile <- function(ext="") 
+  paste(tempfile(tmpdir=gWidgetsWWWStaticDir),ext, sep="")
 
+convertStaticFileToUrl <- function(val)
+  gsub(gWidgetsWWWStaticDir, gWidgetsWWWStaticUrlBase, val)
 

@@ -1,5 +1,7 @@
-## interface to Processing.js
+## XXX This is deprecated.
 
+
+## interface to Processing.js
 ## handlers of processingEvents return javascript using processing. Use <<p>> to refer to processing
 ## object. For instance
 ## p$mouseMoved <- function(.) {

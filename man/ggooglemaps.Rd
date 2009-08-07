@@ -12,7 +12,6 @@
 }
 \usage{
 ggooglemaps(x, title = "", type = c("map", "panorama"), 
-	key = "ABQIAAAAYpRTbDoR3NFWvhN4JrY1ahS5eHnalTx_x--TpGz1e2ncErJceBS7FrNBqzV5DPxkpbheIzZ9nTJPsQ",
 container, ...)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -21,7 +20,6 @@ container, ...)
     address, or as a vector of latitude and longitude values. }
   \item{title}{The center is marked. This sets the text for the tooltip.}
   \item{type}{Determines type of map. One of "map" or "panorama".}
-    \item{key}{NOT WORKING! SEE BELOW. To use a google map, one must register their domain and get a "key" from Google. The default key is for the domain 127.0.0.1:8079, the Rpad local server default. To use a different domain, one must specify a new key here after getting it from http://code.google.com/apis/maps}
   \item{container}{A \pkg{gWidgetsWWW} container object}
   \item{\dots}{}
 }
