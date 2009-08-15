@@ -2,6 +2,19 @@ Dear Emacs, please make this -*-Text-*- mode!
 
 NEWS for gWidgetsWWW
 
+Changes for  0.0-9
+--------------------
+
+* make _transportToR use JSON to encode values. This allows one to
+  pass back vectors,...
+
+* reworked runHandler. Instead of munging with a key,value pair, we
+  have new value context which is a list. It is passed into the
+  handler via handlerExtraArguments as in
+  Ext.util.JSON.encode({key:value}). Then in the handler h$key is
+  value. Used to make ginput work and addHandlerKeystroke (this
+  returns key codes though, not characters).
+
 Changes for  0.0-8
 --------------------
 

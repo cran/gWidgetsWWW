@@ -17,7 +17,7 @@ gslider <- function(from = 0, to = 100, by = 1, value = from,
   widget$scripts <- function(.) {
     ## from main example page 
     f <- system.file("javascript","ext.ux.slidertip.js", package="gWidgetsWWW")
-    out <- paste(readLines(f), collapse="\n")
+    out <- String() + "\n" + paste(readLines(f), collapse="\n")
     return(out)
   }
   

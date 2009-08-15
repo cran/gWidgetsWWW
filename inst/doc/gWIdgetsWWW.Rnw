@@ -104,6 +104,8 @@ pointing a browser at it.  The main webpage for \pkg{gWidgetsWWW}
 some basic GUIs. These are included in the Examples subdirectory of
 the package once installed.
 
+GUIs made with gWidgetsWWW are not as snappy as other web GUIs. The main reason for this is the fact that callbacks to manipulate the page are sent back into R (the server) and then returned. In many GUIs, this is avoided by using javascript directly on the web page. The clear tradeoff is ease of programming for the R user (R not javascript) versus speed for the user.
+
 
 \section{Top level windows}
 
@@ -166,7 +168,9 @@ A number of little quirks are present, that are not present with other \pkg{gWid
   external packages. Otherwise, these messages will be interpreted by
   the web server and an error will usually occur.
 \item Debugging can be tough as the R session is not readily
-  available. The error messages in the browser are useful
+  available. The error messages in the browser are useful. For
+  development of the package the firebug (\url{getfirebug.com}) add on
+  to FireFox has proven very useful.
 \end{enumerate}
 
 \subsection{Data persistence}
@@ -197,6 +201,7 @@ This package is implemented independently of the \pkg{gWidgetsWWW} package, and 
 \subsection{ggooglemaps}
 \label{sec:ggooglemaps}
 
+[Currently not quite working]
 The \code{ggooglemaps} widget provides access to a sliver of the google maps API. 
 This sliver could be enlarged quite easily if desired. Using this requires the web server to be registred with google. 
 
@@ -237,9 +242,30 @@ Installation of the package requires several steps:
 \section{Security}
 \label{sec:security}
 
-Security -- is a big deal. Web servers can be hacked, and if hacked the hacker has full access to the server. This can be scary. Although it is not believed that RApache is any less secure than other Apache modules, you can protect yourself by running the entire setup within a virtual machine. There is easy to install, reasonably priced (or free) commercial software from VMWare (\url{www.vmware.com}). For open-source  fans, the VirtualBox project (\url{www.virtualbox.org}) also has software. One can install this, then run the author provided appliance. Or one can install the virtual software, install a host OS (ubuntu linux say), then install Apache and R then RApache etc. It actually isn't so hard to do.
+Security -- is a big deal. Web servers can be hacked, and if hacked
+the hacker has full access to the server. This can be scary. Although
+it is not believed that RApache is any less secure than other Apache
+modules, you can protect yourself by running the entire setup within a
+virtual machine. There is easy to install, reasonably priced (or free)
+commercial software from VMWare (\url{www.vmware.com}). For
+open-source fans, the VirtualBox project (\url{www.virtualbox.org})
+also has software. One can install this, then run the author provided
+appliance. Or one can install the virtual software, install a host OS
+(ubuntu linux say), then install Apache and R then RApache etc. It
+actually isn't so hard to do.
 
-The call from the web server back into RApache can also be source of insecurity. The \pkg{gWidgetsWWW} package allows only a limited number of calls back from a web page, which should in theory be secure. But if the script is not secure, there is nothing theh package can do. Scripts must \textit{never} trust that data sent from the web page to the server is safe. It should be coerced into any desired format, and never evaluated. Using \code{eval} say allows any one to run R commands on the server which given the power of R means they have full control of the server.
+The call from the web server back into RApache can also be source of
+insecurity. The \pkg{gWidgetsWWW} package allows only a limited number
+of calls back from a web page, which should in theory be secure. But
+if the script is not secure, there is nothing the package can
+do. Scripts must \textit{never} trust that data sent from the web page
+to the server is safe. It should be coerced into any desired format,
+and never evaluated. Using \code{eval} say allows any one to run R
+commands on the server which given the power of R means they have full
+control of the server.
 
+The web server communicates back to the web browser through an AJAX
+call. This is supposed to be secure, as only javascript code that
+originates from the same server as the initial page is executed.
 
 \end{document}

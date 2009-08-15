@@ -61,7 +61,7 @@ if(is.null(file))  {
       '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
   out <- out +
     '<script type="text/javascript" src="' + extjsBaseUrl +'/adapter/ext/ext-base.js"></script>' +
-      '<script type="text/javascript" src="' + extjsBaseUrl + '/ext-all-debug.js"></script>' +
+      '<script type="text/javascript" src="' + extjsBaseUrl + '/ext-all.js"></script>' +
         '<link rel="stylesheet" type="text/css" href="' + extjsBaseUrl + '/resources/css/ext-all.css">'
 
   if(exists("gWidgetsWWWGoogleAPI") && !is.null(gWidgetsWWWGoogleAPI)) {

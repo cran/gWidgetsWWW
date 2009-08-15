@@ -44,12 +44,14 @@
                '}'+
                  '}'
      } else if(type == "input") {
-       ## Note  we do not have to escape key and text here
+       ## Here we call the handler with the value from the widget passed in through
+       ## h$context -- not h$input
        handlerFunction <- String() +
          'function(btn,text) {' +
            'if(btn == "ok") {' +
-#             'runHandlerJS('+handlerid + ',"\'input\'","\'" + escape(text) + "\'");' +
-             'runHandlerJS('+handlerid + ',"input", text);' +
+             'runHandlerJS('+handlerid + ',' +
+               'Ext.util.JSON.encode({input:text})' +
+                 ');' +
                '}'+
                  '}'
      }

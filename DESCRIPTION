@@ -1,9 +1,9 @@
 Package: gWidgetsWWW
-Version: 0.0-8
+Version: 0.0-9
 Title: Toolkit implementation of gWidgets API for use with web pages
 Author: John Verzani
 Maintainer: John Verzani <jverzani@gmail.com>
-Depends: methods, proto, filehash, digest
+Depends: methods, proto, filehash, digest, rjson
 Suggests:
 Extends: canvas, RSVGTipsDevice, SVGAnnotation
 Description: Port of gWidgets API to www using RApache
@@ -13,6 +13,6 @@ Description: Port of gWidgets API to www using RApache
 License: GPL (>= 3)
 URL: http://www.math.csi.cuny.edu/gWidgetsWWW
 LazyLoad: FALSE
-Packaged: Fri Aug 7 14:16:48 2009; verzani
+Packaged: Sat Aug 15 16:23:42 2009; verzani
 Repository: CRAN
-Date/Publication: 2009-08-08 07:39:09
+Date/Publication: 2009-08-16 15:15:00

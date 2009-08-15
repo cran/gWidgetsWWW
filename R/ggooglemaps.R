@@ -172,9 +172,9 @@ widget$makeMarkers <- function(.) {
       .$setgmapID() +
         'var bounds = ' + .$gmapID() + '.getBounds();' +
           '_transportToR("' + .$ID + '.SouthWest",' +
-            'bounds.getSouthWest().toString());' +
+            '{value:bounds.getSouthWest().toString()});' +
               '_transportToR("' + .$ID + '.NorthEast",' +
-                'bounds.getNorthEast().toString());'
+                '{value:bounds.getNorthEast().toString()});'
     return(out)
   }
 

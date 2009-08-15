@@ -48,20 +48,13 @@ gwindow <- function(title="title",file="",visible=TRUE,
    
    ## methods
 
-  w$runHandler <- function(., id,key,value) {
+  w$runHandler <- function(., id, context) {
     lst <- .$jscriptHandlers[[as.numeric(id)]]
     h <- list(obj=lst$obj, action = lst$action)
-    if(!missing(key) && key != "") {
-      value <- unescapeURL(value)
-      assign("test", value,envir=.)
-      ## eval things that say ... eval:
-      if(length(grep("^evalme", value)) > 0) {
-        cmd <- gsub("^evalme","",value)
-        value <- eval(parse(text = cmd), envir=.)
-      }
-      h[[key]] <- value       # escaped text. See dialogs example
+    if(!missing(context) &&  is.list(context)) {
+      for(i in names(context))
+        h[[i]] <- context[[i]]
     }
-    ##  with(lst$scope,lst$handler(h))
     return(lst$handler(h))
   }
 
@@ -138,7 +131,7 @@ gwindow <- function(title="title",file="",visible=TRUE,
               ## * url is fixed
               ## key, extra needs to be added
               out <- out +
-                'runHandlerJS = function(id,key,extra) {' +
+                'runHandlerJS = function(id,context) {' +
                   "Ext.Ajax.request({" +
                     "url: '" + gWidgetsWWWAJAXurl + "'," +
                       "success: evalJSONResponse," +
@@ -147,8 +140,8 @@ gwindow <- function(title="title",file="",visible=TRUE,
                             "params: { type: 'runHandler', " +
                               "sessionID: sessionID," +
                                 "id: id," +
-                                  "key: key," +
-                                    "extra: extra" +
+                                  "context: context" +
+#                                    "extra: extra" +
                                       "}" +
                                         "}); " +
                                           '};'

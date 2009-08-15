@@ -115,7 +115,9 @@ gradio <- function(items, selected = 1, horizontal=FALSE,
     out <- String() +
       'if(checked === true) {' +
         '_transportToR(' + shQuote(.$ID) +
-          ',' + i + ');}' + '\n'         # i passed into transportValue()!
+          ',' +
+            'Ext.util.JSON.encode({value:' + i + '})' +
+            ');}' + '\n'         # i passed into transportValue()!
 
     return(out)
   }
@@ -125,9 +127,11 @@ gradio <- function(items, selected = 1, horizontal=FALSE,
   widget$writeHandlerFunction <- function(., signal, handler) {
     out <- String() +
           'if(checked === true) {' +
-            'runHandlerJS(' + handler$handlerID  +
-              handler$handlerExtraParameters + ');' + 
-                '};' + '\n'
+            'runHandlerJS(' + handler$handlerID
+    if(!is.null(handler$handlerExtraParameters))
+      out <- out + ',' + handler$handlerExtraParameters
+    out <- out + ');' + 
+      '};' + '\n'
     return(out)
   }
 

@@ -91,7 +91,7 @@ gdf <- function(items = NULL, name = deparse(substitute(items)),
     out <- String() +
       'var rowIndex = e.row + 1; var colIndex = e.column + 1;' +
         'var id = "' + .$ID + '" + "." + rowIndex.toString() + "." + colIndex.toString();' +
-          '_transportToR(id,e.value);'
+          '_transportToR(id,{value:e.value});'
     return(out)
   }
 

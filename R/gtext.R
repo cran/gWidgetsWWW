@@ -87,7 +87,7 @@ gtext <- function(text = NULL, width = NULL, height = 300,
        out[["height"]] <-  "auto"
      }
     out[["selectOnFocus"]] <- TRUE
-
+    out[["enableKeyEvents"]] <- TRUE
     return(out)
   }
 

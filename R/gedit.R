@@ -2,7 +2,7 @@
 ## svalue works
 ## svalue<- works
 ## autocomplete code not in Ext??? Use gcombobox for that.
-## addHandlerKeypress should work -- but no key passed in XXX
+## add handlerKeyPress works but value is passed in through h$context$key, not h$key as with gWidgets
 ## change handler called after change and losing focus.
 gedit <- function (text = "", width = 25, coerce.with = NULL,
                    handler = NULL,  action = NULL, container = NULL, ...) {

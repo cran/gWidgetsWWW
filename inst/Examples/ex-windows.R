@@ -1,7 +1,7 @@
 w <- gwindow("Windows example")
 g <- ggroup(cont = w, horizontal = FALSE)
 ghtml(paste("Illustration of state of modal dialogs and subwindows. Modal dialogs",
-            "are used with a handler (gconfirm). The ginput dialog doesn't not work.",
+            "are used with a handler (gconfirm).",
             "Subwindows are created by gwindow with the argument parent=toplevel_window.",
             sep=" "), cont = g)
 
@@ -25,7 +25,7 @@ b3 <- gbutton("gconfirm", cont=g1, handler = function(h,...) {
 })
 
 b4 <- gbutton("ginput", cont=g1, handler = function(h,...) {
-  ginput("ginput doesn't work, as the input is lost",
+  ginput("ginput: input returned to handler via h$input",
          parent = b4, handler = function(h,...) {
            galert(h$input)
          })

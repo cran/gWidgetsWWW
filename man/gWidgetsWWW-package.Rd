@@ -253,8 +253,10 @@ javascript libraries.
   like a combobox, but this will not be drawn if the property
   \code{..hideTrigger} is set to \code{TRUE}, as in \code{obj =
     gcombobox(...); obj$..hideTrigger <- TRUE}. In a similar way, one
-  can specify "typeAhead" by setting \code{obj$..typeAhead <- TRUE}.
+  can specify "typeAhead" by setting \code{obj$..typeAhead <- TRUE}. The handler \code{addHandlerKeystroke} returns the numeric value of the key that is pressed in the \code{key} component of the first argument, \code{h}. This is supposed to be a UNICODE value.
   \cr
+
+
   
 
   The \code{gtext} widget: The transport occurs on the "blur" signal --
@@ -390,14 +392,11 @@ javascript libraries.
   javascript \code{alert} dialog.
   \cr
 
-  The \code{gconfirm} widget has an issue. The handler is called on the
-  "ok" selection, but the javascript code it produces is not rendered by
-  the browser. This is due to some elusive subtlety with \code{cat} that will
-  hopefully be identified and worked around.
+  The \code{gconfirm} widget works. The handler is called on the
+  "ok" selection.
   \cr
 
-  The \code{ginput} widget has the same  issue with the handler as
-  \code{gconfirm}.
+  The \code{ginput} works. The handler is called on okay. The value of the input component contains the text typed into the box.
   \cr
 
   As an alternative to \code{gconfirm} and \code{ginput} a subwindow can

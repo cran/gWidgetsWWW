@@ -459,7 +459,7 @@ EXTWidget$transportValue <- function(.,...) {
 }
 EXTWidget$transportFUN <- function(.) {
   out <- String() +
-    '_transportToR(' + shQuote(.$ID) +', value);'
+    '_transportToR(' + shQuote(.$ID) +', Ext.util.JSON.encode({value:value}));'
   return(out)
 }
 
@@ -1409,21 +1409,15 @@ addDropTarget <- function(obj, targetType = "text", handler = NULL, action = NUL
 ## worry about scope!! XXX -- doesn't seem to work
 
 ## XXX replaces by runHandler in proto gwindow object
-runHandler <- function(obj, id,key,value) {
+runHandler <- function(obj, id, context) {
   obj <- get(obj, envir = .GlobalEnv)
   lst <- obj$jscriptHandlers[[as.numeric(id)]]
   h <- list(obj=lst$obj, action = lst$action)
-  if(!missing(key) && key != "") {
-    value <- unescapeURL(value)
-    assign("test", value,envir=.GlobalEnv)
-    ## eval things that say ... eval:
-    if(length(grep("^evalme", value)) > 0) {
-      cmd <- gsub("^evalme","",value)
-      value <- eval(parse(text = cmd), envir=.GlobalEnv)
-    }
-    h[[key]] <- value       # escaped text. See dialogs example
+  if(!missing(context) && context != "") {
+    ## context is a list passed in through a JSON object converted into a list
+    ## we pass this list into h object as context
+    h$context <- context
   }
-##  with(lst$scope,lst$handler(h))
   return(lst$handler(h))
 }
 
@@ -1498,9 +1492,11 @@ EXTWidget$writeHandlerFunction <- function(., signal, handler) {
   
   out <- String() +
     'function(' + .$handlerArguments(signal) + ') {'  +
-      'runHandlerJS(' + handler$handlerID  +
-        handler$handlerExtraParameters + ');' + 
-          '}' + '\n'
+      'runHandlerJS(' + handler$handlerID
+  if(!is.null(handler$handlerExtraParameters)) {
+    out <- out + "," + handler$handlerExtraParameters
+  }
+  out <- out + ');' +  '}' + '\n'
   return(out)
 }
 
@@ -1511,9 +1507,12 @@ EXTWidget$writeHandlerJS <- function(.,signal,handler=NULL) {
   if(signal == "idle") {
     out <- out +
       'setInterval(function() {' +
-        'runHandlerJS(' + handler$handlerID  +
-          handler$handlerExtraParameters + ');' +
-            '},' + handler$handlerArguments + ');' + '\n'
+        'runHandlerJS(' + handler$handlerID
+    if(!is.null(handler$handlerExtraParameters))
+      out <- out + "," + handler$handlerExtraParameters
+    out <- out +
+      ');' +
+        '},' + handler$handlerArguments + ');' + '\n'
   } else {
     
     ## write out transport if necessary
@@ -1569,12 +1568,12 @@ EXTWidget$writeHandlersJS <- function(.) {
   return(out)
 }
       
-## extra parameters fill in h$key = value
+## handlerExtraParameters is NULL or a JSON string to evaluate to a list
+## it is passed into the handler in the $context component
 ## if the value is preceeded by "^evalme" it gets eval-parsed
 EXTWidget$addHandler <- function(., signal, handler, action=NULL,
                                  handlerArguments="w",
-#                                 handlerExtraParameters=",'\"\"\',\'\"\"'",
-                                 handlerExtraParameters=",'',''",
+                                 handlerExtraParameters=NULL,
                                  handlerValue = NULL
                                  ) {
   lst <- list(obj = .,
@@ -1583,7 +1582,7 @@ EXTWidget$addHandler <- function(., signal, handler, action=NULL,
               action=action,
               scope = parent.frame(),
               handlerArguments = handlerArguments, # eg "widget,evt"
-              handlerExtraParameters = handlerExtraParameters, # eg ", keypress=evt.getKey()" -- with comma
+              handlerExtraParameters = handlerExtraParameters, # eg ", Ext.util.JSON.encode({keypress:evt.getKey()})"
               handlerValue = handlerValue                      # eg "var value = rowIndex -1" for GridPanel instances
               )
 
@@ -1687,7 +1686,7 @@ addHandlerBlur.gWidget <- function(obj,handler, action=NULL)
  EXTWidget$addHandlerMouseclick <- function(., handler, action=NULL) {
    .$addHandler(signal="mousedown",handler, action,
                 handlerArguments="e",
-                handlerExtraParameters = ",'xy', [e.layerX,e.layerY]"
+                handlerExtraParameters = "Ext.util.JSON.encode({xy:[e.layerX,e.layerY]})"
                 )
 
  }
@@ -1703,7 +1702,7 @@ addHandlerBlur.gWidget <- function(obj,handler, action=NULL)
  EXTWidget$addHandlerKeystroke <- function(., handler, action=NULL) {
    .$addHandler(signal="keyup",handler, action,
                 handlerArguments="b,e",
-                handlerExtraParameters = ",'key', e.getKey()"
+                handlerExtraParameters = "Ext.util.JSON.encode({key: e.getKey()})"
                 )
  }
 
@@ -1748,7 +1747,7 @@ addHandlerBlur.gWidget <- function(obj,handler, action=NULL)
  EXTWidget$addHandlerMouseMotion <- function(., handler, action=NULL) {
    .$addHandler(signal="mousemove",handler, action,
                 handlerArguments="e",
-                handlerExtraParameters = ",'xy',[e.layerX, e.layerY]"
+                handlerExtraParameters = "EXT.util.JSON.encode({xy:[e.layerX, e.layerY]})"
                 )
  }
 

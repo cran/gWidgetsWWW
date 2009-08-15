@@ -7,6 +7,8 @@
 ## This script requires some packages and variables for keeping
 ## track of the session to be set
 
+require(rjson)
+
 sendError <- function(db, msg) {
 #  out <- try(dbDisconnect(db), silent=TRUE)
   stop(paste("alert('", msg, "');"))
@@ -94,10 +96,15 @@ if(!is.null(POST) && !is.null(POST$type)) {
 
     ## may need to quiet down via sink
     sink(f <- tempfile())
-    if(is.null(POST$key))
+    if(is.null(POST$context)) {
       out <- try(e[[w]]$runHandler(POST$id), silent=TRUE)
-    else
-      out <- try(e[[w]]$runHandler(POST$id, POST$key, POST$value), silent=TRUE)
+    } else {
+      if(exists("sessionDBIlogfile"))
+        cat(sessionID, "POST context:", POST$context, "\n", file=sessionDBIlogfile, append=TRUE)
+
+      context <- try(fromJSON(as.character(POST$context)), silent=TRUE)
+      out <- try(e[[w]]$runHandler(POST$id, context), silent=TRUE)
+    }
     sink()
     
     if(exists("sessionDBIlogfile"))
@@ -122,10 +129,12 @@ if(!is.null(POST) && !is.null(POST$type)) {
     ## only names of  gWidgetsXXX are permitted
 
     if(exists("sessionDBIlogfile"))
-      cat(sessionID, "assign value", "\n", file=sessionDBIlogfile, append=TRUE)
+      cat(sessionID, "assign value", POST$value, "\n", file=sessionDBIlogfile, append=TRUE)
     
     variable <- POST$variable
     value <- POST$value
+    value <- fromJSON(value)            # store as JSON object
+    value <- value$value                # JSON object is a list(value=xxx)
     ## check that variable matches
     ## Could put in check to limit size of value, o/w the post
     ## data could be arbitrarily large
