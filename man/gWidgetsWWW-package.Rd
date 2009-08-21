@@ -12,14 +12,16 @@ javascript libraries.
 \details{
   
   This package ports the gWidgets API to WWW, allowing the creation of
-  interactive webpages.  The interactivity is provided through the
-  \pkg{RApache} package. The webpages themselves use the Ext toolkit
+  interactive webpages. 
+
+  The webpages can be seen locally through a local server or viewed through the internet. The local version is installed with the package and uses a small webserver run the the \pkg{tcltk} package. This is modified from that accompanying the \pkg{Rpad} package
+  
+The server version requires \pkg{RApache} to be installed and configured.	
+
+ The webpages themselves use the Ext toolkit
   (\url{www.extjs.com}) to render the widgets. This toolkit must be
-  installed separately and configured to work.
-  
-  For some reason, not yet figured out, this package does not seem to
-  work with internet explorer. It does work well with firefox.
-  
+  installed separately and configured to work. A copy of these libraries is included.
+ 
   
   As \pkg{gWidgets} is meant to be multi-toolkit, this file documents
   differences from the API, of which there are many. However, this
@@ -29,16 +31,20 @@ javascript libraries.
   \bold{Overview:}\cr
 
   The \pkg{gWidgetsWWW} package at one level maps \R\/ commands to
-  javascript commands. The communication between \R\/ and the browser
-  works as follows. Before a page is rendered, it can be constructed
-  using the gWidget constructors and methods. When the top-level window
-  is shown (via its \code{print} method), the javascript code to produce
-  the page is created. This javascript code takes advantage of the
-  freely available Ext libraries which greatly enhance the base
-  javascript language.  This
-  code should be contained in or sourced into a web page so that it can
-  be rendered in a browser. The \pkg{gWidgetsWWW} package provides
-  several examples of how this works.
+  javascript commands. A more sophisticated treatment (like
+  \code{pyjamas} for python) would compile the R code into javascript,
+  but that does not happen here. This package is a simple mapping.
+
+
+The communication between \R\/ and the browser works as
+  follows. Before a page is rendered, it can be constructed using the
+  gWidget constructors and methods. When the top-level window is shown
+  (via its \code{print} method), the javascript code to produce the
+  page is created. This javascript code takes advantage of the freely
+  available Ext libraries which greatly enhance the base javascript
+  language.  This code should be contained in or sourced into a web
+  page so that it can be rendered in a browser. The \pkg{gWidgetsWWW}
+  package provides several examples of how this works.
 
  
   The interactivity of a GUI is created through httpxmlrequests back to
@@ -65,7 +71,10 @@ javascript libraries.
 
   \bold{Installation:}\cr
   
-  Installation requires several steps: a) installing RApache, b)
+  To run the local version of \pkg{gWidgetsWWW} no installation is necessary.
+
+
+  Installation for the server requires several steps: a) installing RApache, b)
   installing gWidgetsWWW c) configuring RApache for gWidgetsWWW,
   d) installing the extjs libraries,  e) installing the gWidgetsWWW
   icons on the web browsers path and f) creating some webpages
@@ -80,18 +89,18 @@ javascript libraries.
   configure. As well, one can use to show pages one of two ways.
   \cr
   
-  The \code{Ext} libraries may be downloaded from
+  The \code{Ext} libraries are included in the \code{basehtml/ext}
+  directory. Or more recent copies may be downloaded from
   \url{www.extjs.com}. Ext has a dual-license model, offering an open
   source LGPL license along with a per-developer, royalty-free
-  commercial license. The \pkg{gWidgetsWWW} package makes no assumptions
-  about where this library is installed, as you configure it in the
-  RApache configuration.
-  \cr
+  commercial license. The \pkg{gWidgetsWWW} package makes no
+  assumptions about where this library is installed, as you configure
+  it in the RApache configuration, but they must be accessible through a URL. \cr
 
   To complete the installation, the \pkg{gWidgetsWWW} package provides
   some stock icons. As with the extjs libraries, these can be installed
   whereever, but where they are installed must be specified in the
-  RApache configuration.
+  RApache configuration. These image files are in the \code{basehtml/images} directory.
   \cr
 
   Web pages can be made in two ways. Either using brew templates to call
@@ -245,16 +254,21 @@ javascript libraries.
   \cr
 
 
-  The \code{gedit} widget: The transport occurs on the "blur" signal --
-  when the focus leaves the widget basically. The \code{gedit} widget
-  does not have the \code{[<-} method. However, if this is desired
-  (for type ahead) the \code{gcombobox} widget can be used. By default,
-  this widget has a "trigger" icon indicating to the user that it looks
-  like a combobox, but this will not be drawn if the property
-  \code{..hideTrigger} is set to \code{TRUE}, as in \code{obj =
-    gcombobox(...); obj$..hideTrigger <- TRUE}. In a similar way, one
-  can specify "typeAhead" by setting \code{obj$..typeAhead <- TRUE}. The handler \code{addHandlerKeystroke} returns the numeric value of the key that is pressed in the \code{key} component of the first argument, \code{h}. This is supposed to be a UNICODE value.
-  \cr
+  The \code{gedit} widget: The transport occurs on the "blur" signal
+  -- when the focus leaves the widget basically. The \code{gedit}
+  widget does not have the \code{[<-} method. However, if this is
+  desired (for type ahead) the \code{gcombobox} widget can be used. By
+  default, this widget has a "trigger" icon indicating to the user
+  that it looks like a combobox, but this will not be drawn if the
+  property \code{..hideTrigger} is set to \code{TRUE}, as in \code{obj
+  = gcombobox(...); obj$..hideTrigger <- TRUE}. In a similar way, one
+  can specify "typeAhead" by setting \code{obj$..typeAhead <-
+  TRUE}. The handler \code{addHandlerKeystroke} returns the numeric
+  value of the key that is pressed in the \code{key} component of the
+  first argument, \code{h}. This is supposed to be a UNICODE value. If
+  one adds the arguments "key='e.ENTER'" (say ENTER could be
+  BACKSPACE, ..) or "charCode=65", where 65 is "A" or "a" then a check
+  is made at the browser level before calling back into R.  \cr
 
 
   
@@ -370,8 +384,9 @@ javascript libraries.
 
 
   The \code{\link{ggooglemaps}} widget allows one to integrate google
-  maps into an application. This constructor is \pkg{gWidgetsWWW}
-  specific and is documented in its own help file.
+  maps into an application. It is working for the local server, but
+  may not work on a server install. This constructor is
+  \pkg{gWidgetsWWW} specific and is documented in its own help file.
   
   \bold{Dialogs:}\cr  
 

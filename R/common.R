@@ -97,7 +97,10 @@ escapeQuotes <- function(x) {
     if(length(ind) > 0) {
       for(j in ind) {
         if(j < 3 || (chars[j-2] != "/" && chars[j-1] != "/"))
-          chars[ind] <- "\\'"
+          if(gWidgetsWWWIsLocal())
+            chars[ind] <- "\\'"
+          else
+            chars[ind] <- "\'"
       }
       x[i] <- paste(chars, collapse="")
     }
@@ -254,9 +257,29 @@ toJSArray.data.frame <- function(x,doBrackets=TRUE) {
                
 
 ## for working with static html files
-getStaticTmpFile <- function(ext="") 
-  paste(tempfile(tmpdir=gWidgetsWWWStaticDir),ext, sep="")
+getStaticTmpFile <- function(ext="")  {
+  out <- paste(tempfile(tmpdir=gWidgetsWWWStaticDir),ext, sep="")
+  out <- gsub("[/]{2,}","/",out)        # strip off doubles
+  return(out)
+}
+
 
 convertStaticFileToUrl <- function(val)
   gsub(gWidgetsWWWStaticDir, gWidgetsWWWStaticUrlBase, val)
+
+
+## for keeping track of different instances
+makeSessionID <- function() {
+  ## get key
+  key <- "123456"
+  if(!is.null(tmp <- getOption("sessionSecretKey"))) {
+    key <- tmp
+  } else if(exists("sessionSecretKey", envir=.GlobalEnv)) {
+    key <- get("sessionSecretKey", envir=.GlobalEnv)
+  }
+  txt <- as.character(Sys.time())
+  key <- paste(key, txt, sep="")
+  ID <- digest(key, algo="md5")
+  return(ID)
+}
 

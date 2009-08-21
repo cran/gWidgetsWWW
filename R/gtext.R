@@ -12,7 +12,7 @@ gtext <- function(text = NULL, width = NULL, height = 300,
                   ) {
 
   if(!resizable) {
-    widget <- EXTComponent$new(toplevel=container$toplevel,
+    widget <- EXTComponentText$new(toplevel=container$toplevel,
                                ..width = width,..height=height,
                                ..wrap = wrap)
     class(widget) <- c("gText", class(widget))
@@ -56,10 +56,15 @@ gtext <- function(text = NULL, width = NULL, height = 300,
   ## lots of escapes for multiline stuff
   widget$setValueJS <- function(.,...) {
     if(exists("..setValueJS", envir=., inherits=FALSE)) .$..setValueJS(...)
-    
+
+    if(gWidgetsWWWIsLocal()) {
+      theData <- paste(.$..data, collapse="\\\\n")
+    } else {
+      theData <- paste(.$..data, collapse="\\n")
+    }
     out <- String() +
       .$asCharacter() + '.setValue(' +
-        shQuote(paste(.$..data, collapse="\\\\n")) + ');' + '\n'
+        shQuote(theData) + ');' + '\n'
 
     return(out)
 

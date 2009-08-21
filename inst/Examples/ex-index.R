@@ -1,3 +1,4 @@
+eol <- ifelse(gWidgetsWWWIsLocal(), "\\\\n","\\n")
 w <- gwindow("gWidgetsWWW")
 g <- ggroup(cont = w, horizontal=FALSE)
 ghtml("<h1>gWidgetsWWW</h1>", cont = g)
@@ -17,27 +18,33 @@ ghtml(paste(
             "server when the user initiates an action and then the web server",
             "responds with commands to manipulate the",
             "user's page.",
-            "The RApache package <A",
+            "<br>",
+            "The package now has a local server for development and stand alone use. This is installed",
+            "when the package is.",
+            "To server web pages to a wider communituy, the",
+            "RApache package <A",
             "href=http://biostat.mc.vanderbilt.edu/rapache/>url</A>, which embeds",
             "an R process within the Apache web server, is used so that callbacks",
             "from the browser to the web server can be processed through R. To",
             "return instructions to the page, javascript is used so that the entire",
             "page need not be reloaded, as javascript can manipulate elements on",
             "the page. The javascript code is simplified by using the ext",
-            "javascript libraries, available from <A",
-            "href=http://www.extjs.com>extjs.com</a>",
+            "javascript libraries <A",
+            "href=http://www.extjs.com>extjs.com</a>. These are included with",
+            "the package",
             "<br><p> To make an interactive GUI in gWidgets can be",
             "as easy as creating the following script:",
             "<br><p><pre>",
-            "w <- gwindow('simple GUI with one button', visible=FALSE)", "\\n",
-            "g <- ggroup(cont= w)","\\n",
-            "b <- gbutton('click me', cont = g, handler = function(h,...) {","\\n",
-            "  gmessage('hello world', parent = b)","\\n",
-          "})","\\n",
-            "visible(w) <- TRUE", "\\n",
+            "w <- gwindow('simple GUI with one button', visible=FALSE)", eol,
+            "g <- ggroup(cont= w)",eol,
+            "b <- gbutton('click me', cont = g, handler = function(h,...) {",eol,
+            "  gmessage('hello world', parent = b)",eol,
+          "})",eol,
+            "visible(w) <- TRUE", eol,
             "</pre>",
             sep=" "),
       cont = f)
+
 
 
 f <- gexpandgroup("Examples", cont = g, horizontal=FALSE)
@@ -52,7 +59,7 @@ makeLinks <- function(i,f) {
     g1 <- ggroup(cont = w1, horizontal=FALSE)
     Rfile <- paste(dir,i, sep=.Platform$file.sep)
     ghtml(paste("<pre>",
-                paste(readLines(Rfile), collapse="\\n"),
+                paste(readLines(Rfile), collapse="\n"),
                 "</pre>", sep=""), cont = g1)
     gseparator(cont = g1)
     gbutton("dismiss", cont = g1, handler = function(h,...) {
@@ -74,7 +81,11 @@ ghtml(paste("The gWidgetsWWW package is installed from CRAN. After installation,
       cont = f)
 
 f <- gexpandgroup("Security", cont = g)
-ghtml("Security is a big issue. Read the package vignette.", cont = f)
+ghtml("Security is a big issue with server installs. The use of RApache reduces the risk dramatically. Read the package vignette for more detail.", cont = f)
+
+f <- gexpandgroup("Recent NEWS", cont = g)
+newsfile <- system.file("NEWS", package="gWidgetsWWW")
+ghtml(paste("<pre>", paste(readLines(newsfile, n=30)[-(1:2)], collapse=eol), eol, "... %< snip >% ...", "</pre>"), cont=f)
 
 
 gstatusbar("Powered by RApache and gWidgetsWWW", cont = w)

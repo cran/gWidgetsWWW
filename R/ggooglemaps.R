@@ -15,9 +15,11 @@
 
 
 ggooglemaps <- function(x, title = "",  type = c("map","panorama"),
+                        key="ABQIAAAAYpRTbDoR3NFWvhN4JrY1ahS5eHnalTx_x--TpGz1e2ncErJceBS7FrNBqzV5DPxkpbheIzZ9nTJPsQ", # for 127.0.0.1:8079; only for local. For server, set in RApache.conf
                         container, ...) {
   widget <- EXTComponent$new(toplevel=container$toplevel,
                              ..title = title,
+                             ..key = key,
                              ..gmapType = match.arg(type))
   class(widget) <- c("gGoogleMap",class(widget))
   widget$setValue(value = x)
@@ -27,6 +29,12 @@ ggooglemaps <- function(x, title = "",  type = c("map","panorama"),
   
 
   widget$scripts <- function(.) {
+    ## we run this on creation. We also set key here:
+    ## works for local
+    ## server has key set in RApache.conf
+    options(gWidgetsWWWGoogleAPI=.$..key)
+
+    
     f <- system.file("javascript","GMapPanel.js", package="gWidgetsWWW")
     out <- paste(readLines(f), collapse="\n")
     
@@ -145,7 +153,7 @@ widget$makeMarkers <- function(.) {
   
     values <- .$getValues()
     for(i in 1:nrow(values))
-      widget$addMarker(values[i,1:2])
+      widget$addMarker(values[i,3:4])
     
   }
 
@@ -182,12 +190,8 @@ widget$makeMarkers <- function(.) {
     pat.sw = String(.$ID) + '.SouthWest'
     pat.ne = String(.$ID) + '.NorthEast'
 
-    sw <- get(pat.sw,envir=.)
-    sw <- eval(parse(text = String("c") + sw), envir=.)
-
-    ne <- get(pat.ne,envir=.)
-    ne <- eval(parse(text = String("c") + ne), envir=.)
-    ## coerce
+    sw <- unlist(pat.sw[3:4])
+    ne <- unlist(pat.ne[3:4])
 
     ## return
     list(southwest = sw, northeast = ne)
@@ -241,12 +245,12 @@ widget$makeMarkers <- function(.) {
     ## append to markers
     marks <- .$getValues()
     if(nrow(marks) == 0) {
-      marks <- data.frame(latlng[1], latlng[2], title)
+      marks <- data.frame(latlng[1], latlng[2], latlng[3], latlng[4], title)
     } else {
       n <- nrow(marks)
-      marks[n+1, 1:2] <- latlng
-      if(ncol(marks) == 3)
-        marks[n+1, 3] <- title
+      marks[n+1, 1:4] <- unlist(latlng)
+      if(ncol(marks) == 5)
+        marks[n+1, 5] <- title
     }
     .$..values <- marks                 # bypass setValues, as it would recurse
 
@@ -385,12 +389,11 @@ widget$makeMarkers <- function(.) {
           ',function(overlay, point) {' +
             ## transport bounds
             'var bounds = ' + .$gmapID() + '.getBounds();' +
-              'var SW = bounds.getSouthWest().toString();' +
-                'var NE = bounds.getNorthEast().toString();' +
-                  '_transportToR("' + .$ID + '.SouthWest",SW);' +
-                    '_transportToR("' + .$ID + '.NorthEast",NE);' +
-                      'runHandlerJS(' + handler$handlerID + ',"","")' +
-                        ##                        ',"latlng","evalme c" + point.toString());' +
+              'var SW = bounds.getSouthWest();' +
+                'var NE = bounds.getNorthEast();' +
+                  '_transportToR("' + .$ID + '.SouthWest",Ext.util.JSON.encode({value:SW}));' +
+                    '_transportToR("' + .$ID + '.NorthEast",Ext.util.JSON.encode({value:NE}));' +
+                      'runHandlerJS(' + handler$handlerID + ',Ext.util.JSON.encode({latlng:point}))' +
                         '});'
     return(out)
   }

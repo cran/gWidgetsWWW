@@ -153,6 +153,9 @@ if(!is.null(POST) && !is.null(POST$type)) {
     } else {
       sendError(db, paste("var name ", variable, " is not acceptable"))
     }
+  } else if(type == "fileupload") {
+    ## XXX Implement me with security
+    
   } else if(type == "clearSession") {
     ## untaint
     sessionID <- gsub("[^a-zA-Z0-9]","",sessionID)

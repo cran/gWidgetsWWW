@@ -2,6 +2,27 @@ Dear Emacs, please make this -*-Text-*- mode!
 
 NEWS for gWidgetsWWW
 
+Changes for  0.0-10
+--------------------
+
+* Added local server to complement RApache configuration. The local
+  server makes development easier as one can see the R process from a
+  command line. Also might be useful for stand-alone use as there are
+  no toolkits to configure or install. The main quirk between the two
+  is how backslashes get escaped in the local server.
+
+* package has copy of extjs libraries (extjs.com)
+
+* addHandlerKeystroke has extra argument key= or charCode= for testing
+  keyup keys before sending handler back into R (slower). The key can
+  be "e.ENTER" or "e.BACKSPACE" using ext key definitions.
+
+* fixed bug with gcombobox and index=TRUE
+
+* fixes to gprocessingjs -- might be useful with local version
+
+* fix to ggoglemaps to make work with local version
+
 Changes for  0.0-9
 --------------------
 

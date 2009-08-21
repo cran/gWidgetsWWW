@@ -5,7 +5,7 @@ ghtml(paste("Illustration of state of modal dialogs and subwindows. Modal dialog
             "Subwindows are created by gwindow with the argument parent=toplevel_window.",
             sep=" "), cont = g)
 
-g1 <- gexpandgroup("Modal dialogs. Handler for ginput doesn't work!!!",cont=g)
+g1 <- gexpandgroup("Modal dialogs.",cont=g)
 
 b1 <- gbutton("galert", cont=g1, handler = function(h,...) {
   galert("for quick transient messages", title="galert dialog")

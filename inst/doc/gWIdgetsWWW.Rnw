@@ -79,7 +79,10 @@ The current status of the project is still experimental. The package does not ha
 
 \section{Overview}
 
-To create a web GUI a means must be provided to callback to the web server when the user initiates an action and then the web server responds with commands to manipulate the user's page. The RApache package \url{http://biostat.mc.vanderbilt.edu/rapache/}, which embeds an R process within the Apache web server, is used so that callbacks from the browser to the web server can be processed through R. To return instructions to the page, javascript is used so that the entire page need not be reloaded, as javascript can manipulate elements on the page. The javascript code is simplified by using the extjs javascript libraries, available from \url{www.extjs.com}.
+To create a web GUI a means must be provided to callback to the web server when the user initiates an action and then the web server responds with commands to manipulate the user's page. 
+
+There are two choices for the webserver. For local use (no outside internet access) a local server is provided. This is borrowed from the \pkg{Rpad} package. To use this, the function \code{localServerStart} function is called. To allow other computers to run a \pkg{gWidgetsWWW} script
+the RApache package \url{http://biostat.mc.vanderbilt.edu/rapache/}, which embeds an R process within the Apache web server, is used. Both process callbacks from the browser to the web server that can be processed through R. To return instructions to the page, javascript is used so that the entire page need not be reloaded, as javascript can manipulate elements on the page. The javascript code is simplified by using the extjs javascript libraries, available from \url{www.extjs.com}.
 
 
 
@@ -171,6 +174,7 @@ A number of little quirks are present, that are not present with other \pkg{gWid
   available. The error messages in the browser are useful. For
   development of the package the firebug (\url{getfirebug.com}) add on
   to FireFox has proven very useful.
+\item The local server needs to have backslashes escaped, thereby doubling up the number of backslashes needed. This means some code may need to be modified to run on the outside server. The check \code{exists(".RpadEnv",envir=.GlobalEnv) \&\& get("RpadLocal", envir=.RpadEnv)} can be used to see if a script is being served locally.
 \end{enumerate}
 
 \subsection{Data persistence}
@@ -207,7 +211,9 @@ This sliver could be enlarged quite easily if desired. Using this requires the w
 
 
 \section{Installation}
-Installation of the package requires several steps:
+The local server is installed with the package.
+
+Installation of the outside server requires several steps:
 \begin{enumerate}
 \item Install the \pkg{gWidgetsWWW} package from CRAN
 \item Install the RApache module. The RApache web page has installation information. This APache module is available for UNIX and MAC OS X. Windows users can use the author-provided vmware appliance (\url{www.vmware.com}).
@@ -233,9 +239,9 @@ Installation of the package requires several steps:
 \item Install the ext javascript libraries so that they have a URL
   specified above. These libraries are free to use for open-source
   use (\url{http://www.extjs.com/license}) and can be
-  found at \url{www.extjs.com}. Version 3.0 or higher is needed.
+  found at \url{www.extjs.com}. Version 3.0 or higher is needed. A copy of these libraries is included in the \code{basehtml/ext} directory of the package.
 \item Copy the button images from the \pkg{gWidgetsWWW} package to an images
-  URL.
+  URL. These files are in the \code{basehtml/images} directory of the package, once installed.
 \end{enumerate}
 
 
@@ -243,7 +249,7 @@ Installation of the package requires several steps:
 \label{sec:security}
 
 Security -- is a big deal. Web servers can be hacked, and if hacked
-the hacker has full access to the server. This can be scary. Although
+the hacker has full access to the server. This can be scary. The local server blocks all requests that are not to the local IP 127.0.0.1, preventing outside access. As for outside access, although
 it is not believed that RApache is any less secure than other Apache
 modules, you can protect yourself by running the entire setup within a
 virtual machine. There is easy to install, reasonably priced (or free)

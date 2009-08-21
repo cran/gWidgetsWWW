@@ -19,7 +19,7 @@ gsvg <- function(f, width=480, height=400,
     out[['border']] <- FALSE
     
     out[['html']] <- paste(             # so we get quotes
-                           "<div id='svg", .$ID, "'></div>",
+                           "<div id=\"svg", .$ID, "\"></div>",
                            sep="")
     
     return(out)

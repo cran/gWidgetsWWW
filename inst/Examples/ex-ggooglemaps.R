@@ -1,5 +1,8 @@
 w <- gwindow("Test of widgets")
 g <- ggroup(cont = w, horizontal = FALSE)
+if(!gWidgetsWWWIsLocal()) {
+  ghtml("ggooglemaps isn't configured to work with server usage", cont = g)
+} else {
 glabel("How big is Central Park? Click around perimeter to see.", cont=g)
 gmap <- ggooglemaps(x = "Central Park New York, NY", title = "Central Park, New York, NY", cont = g)
 
@@ -16,7 +19,7 @@ b <- gbutton("draw polygon", cont = g, handler = function(h,...) {
  cat('alert("hi")');
  #gmap$addPolygon()
 })
-
+}
 gstatusbar("Powered by RApache and gWidgetsWWW", cont = w)
 visible(w) <- TRUE
 

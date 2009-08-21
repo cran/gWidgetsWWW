@@ -104,11 +104,11 @@ if(is.null(file))  {
 #    '<body onload=detectBrowser() onunload=clearSession("' + sessionID + '")>'
     '<body onunload=clearSession("' + sessionID + '")>'
   
-
-  out <- out +
-    '<script type="text/javascript">' +
-      'var sessionID="' + sessionID + '"' +
-        '</script>'
+## This is now donw in gWindow
+##   out <- out +
+##     '<script type="text/javascript">' +
+##       'var sessionID="' + sessionID + '"' +
+##         '</script>'
   out <- out +
     '<script type="text/javascript">'
 

@@ -7,6 +7,7 @@ ghtml <- function(x, container = NULL, ...) {
   ## x is a url or a character vector to show
   ## components
 
+  
   widget <- EXTComponent$new(toplevel=container$toplevel)
   class(widget) <- c("gHtml",class(widget))
   widget$setValue(value=x)
@@ -20,7 +21,14 @@ ghtml <- function(x, container = NULL, ...) {
       out <- out +
         '.load(' + shQuote(val) + ');'
     } else {
-      val <- paste(val,collapse="\\\\n")
+      ## this depends on local or non-local
+      if(gWidgetsWWWIsLocal()) {
+        val <- paste(val, collapse="\\\\n")
+      } else {
+        val <- paste(val, collapse="\\n")
+      }
+      
+      val <- escapeQuotes(val)
       out <- out +
         '.setText(' + shQuoteEsc(val) + ', false);'
     }
@@ -38,7 +46,7 @@ ghtml <- function(x, container = NULL, ...) {
     if(isURL(svalue(.)))
       out[['autoLoad']] <- svalue(.)
     else
-      out[['html']] <- paste(svalue(.), collapse="\\\\n")
+      out[['html']] <- paste(escapeQuotes(svalue(.)), collapse="\\\\n")
     
     return(out)
   }

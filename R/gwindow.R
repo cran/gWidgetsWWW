@@ -27,6 +27,7 @@ gwindow <- function(title="title",file="",visible=TRUE,
 
   ## no parent container -- so no ID. We fix this
   w$ID <- "gWidgetID0"                  # XXX Issue if more than one per page!
+  w$sessionID <- makeSessionID()
   w$toplevel <- w
   w$..renderTo <- String("Ext.getBody()") # can override
 ##  w$..visible <- FALSE
@@ -137,6 +138,7 @@ gwindow <- function(title="title",file="",visible=TRUE,
                       "success: evalJSONResponse," +
                         "failure: processFailure," +
                           "method: 'POST', " +
+                            "timeout: 2000," +
                             "params: { type: 'runHandler', " +
                               "sessionID: sessionID," +
                                 "id: id," +
@@ -154,7 +156,8 @@ gwindow <- function(title="title",file="",visible=TRUE,
                     "url: '" + gWidgetsWWWAJAXurl + "'," +
                       "success: evalJSONResponse," +
                         "failure: processFailure," +
-                          "method: 'POST'," +
+                          "timeout: 2000," +
+                            "method: 'POST'," +
                             "params: { type: 'assign', " +
                               "sessionID: sessionID," +
                                 "variable: id," +
@@ -257,6 +260,10 @@ gwindow <- function(title="title",file="",visible=TRUE,
      out <- out +
        'document.title =' +shQuote(.$getValue()) + ';\n' 
 
+     ## write out sessionID
+     out <- out +
+       'var sessionID =' + shQuote(.$sessionID) + ';' + '\n'
+     
 ##      out <- out +
 ##        'o' + .$ID + '.on("destroy", function() {clearSession("hi");});'
 

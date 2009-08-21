@@ -12,6 +12,7 @@
 }
 \usage{
 ggooglemaps(x, title = "", type = c("map", "panorama"), 
+key = "ABQIAAAAYpRTbDoR3NFWvhN4JrY1ahS5eHnalTx_x--TpGz1e2ncErJceBS7FrNBqzV5DPxkpbheIzZ9nTJPsQ",
 container, ...)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -20,6 +21,7 @@ container, ...)
     address, or as a vector of latitude and longitude values. }
   \item{title}{The center is marked. This sets the text for the tooltip.}
   \item{type}{Determines type of map. One of "map" or "panorama".}
+  \item{key}{A google API key. The default is for localhost 127.0.0.1:8079, which hopefully just works.}
   \item{container}{A \pkg{gWidgetsWWW} container object}
   \item{\dots}{}
 }
@@ -68,7 +70,7 @@ type="text/javascript"></script>}
   
   The available \pkg{proto} methods and their signatures are:
 
-  \itemize{
+  \describe{
   \item{widget\$getBounds()}{Returns a list with the lower and upper
     coordinates of the current map.}
   

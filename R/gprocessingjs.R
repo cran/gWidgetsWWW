@@ -26,27 +26,16 @@ gprocessingjs <- function(width=400, height=400, pointsize= 12, container = NULL
   
   ## methods to construct widget
   widget$scripts <- function(.) {
-    out <- String(sep="\n") +
-      "Ext.ux.Canvas = Ext.extend(Ext.Component, {" +
-        "value: null," +
-          "initComponent:function() {" +
-            "Ext.ux.Canvas.superclass.initComponent.call(this);" +
-              "}," +
-                "onRender:function(ct, position) {" +
-                  "this.el = document.createElement('canvas');" +
-                    "this.el.id = this.getId();" +
-                      "Ext.ux.Canvas.superclass.onRender.call(this,ct,position);" +
-                          "}," +
-                            "on:function(eventName, fn, scope, o) {" + ## see Observable.js in ext
-                              "var id = this.getId();" +
-                                "var widget = document.getElementById(id);" +
-                                  "if(widget.addEventListener) {"+
-                                    "widget.addEventListener(eventName, fn, false)" +
-                                      "} else {" +
-                                        "widget.attachEvent('on' + event, fn)}" +
-                                          "}" +
-                                            "});" +
-                                              "Ext.reg('Canvas', Ext.ux.Canvas);"
+    ## from main example page
+    if(exists(".RpadEnv", envir=.GlobalEnv) && get("RpadLocal", envir=.RpadEnv))
+      files <- c("ext.ux.canvas.js", "processing-local.js", "processinginit.js")
+    else
+      files <- c("ext.ux.canvas.js", "processing.js", "processinginit.js")
+    out <- String() + "\n"
+    for(i in files) {
+      f <- system.file("javascript",i, package="gWidgetsWWW")
+      out <- out + paste(readLines(f), collapse="\n") + "\n"
+    }
     return(out)
   }
 
@@ -326,10 +315,8 @@ gprocessingjs <- function(width=400, height=400, pointsize= 12, container = NULL
   }
 
   ## convert back into XY form pixes
-  ## mouse handlers return h$xy = "x,y" for coordinates in pixels
-  ## so this uses x,y as a string to represent x-y pixel coordinates
-  widget$pixelsToXY <- function(., xy) {
-    pxy <- as.numeric(unlist(strsplit(xy, ",")))
+  ## mouse handlers return h$xy = c(x,y) for coordinates in pixels
+  widget$pixelsToXY <- function(., pxy) {
     px <- pxy[1]; py <- pxy[2]
     xlim <- .$xlim; ylim <- .$ylim
     widget <- .$..width; height <- .$..height

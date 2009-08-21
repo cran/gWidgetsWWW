@@ -7,7 +7,7 @@
 gedit <- function (text = "", width = 25, coerce.with = NULL,
                    handler = NULL,  action = NULL, container = NULL, ...) {
   
-  widget <- EXTComponent$new(toplevel=container$toplevel,
+  widget <- EXTComponentText$new(toplevel=container$toplevel,
                              ..width = width * 8, # 8 pixels per character?
                            ..coerce.with=coerce.with)
   class(widget) <- c("gEdit",class(widget))

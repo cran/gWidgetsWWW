@@ -6,7 +6,7 @@ g <- ggroup(cont = w, horizontal = FALSE)
 data(Cars93, package="MASS")
 
 
-dataSets <- c("mtcars","Cars93")
+dataSets <- c("mtcars") #,"Cars93")
 alternatives <- data.frame(value=c("two.sided","less","greater"),
                            label = c("two sided", "less than", "greater than"))
 
@@ -64,7 +64,7 @@ addHandlerClicked(doButton, handler = function(h,...) {
        t.test(df[,var], mu=as.numeric(mu), alt=as.character(alt))
      })
      
-     svalue(outputArea) <- paste(val,collapse="\\n") # lots of escapes
+     svalue(outputArea) <- val
    }
 })
 

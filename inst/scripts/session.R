@@ -67,8 +67,9 @@ saveSession <- function(db, key, e) {
 }
 
 ## make a new session, return key
-newSession <- function(db, e=new.env()) {
-  key <- makeSessionID()
+newSession <- function(db, e=new.env(), key) {
+  if(missing(key))
+    key <- makeSessionID()
   e$.timeOut <- Sys.time() + sessionTimeout
   saveSession(db, key, e)
   return(key)
@@ -101,9 +102,10 @@ clearConnections <- function() {
   sapply(dbListConnections(odbc), dbDisconnect)
 }
 
-makeSessionID <- function() {
-  txt <- as.character(Sys.time())
-  key <- paste(sessionSecretKey, txt, sep="")
-  ID <- digest(key, algo="md5")
-  return(ID)
-}
+## moved into common
+## makeSessionID <- function() {
+##   txt <- as.character(Sys.time())
+##   key <- paste(sessionSecretKey, txt, sep="")
+##   ID <- digest(key, algo="md5")
+##   return(ID)
+## }

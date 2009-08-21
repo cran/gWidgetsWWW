@@ -43,12 +43,8 @@ if(!file.exists(sessionDbFile))
   dbCreate(sessionDbFile, type=sessionDbType)
 db <- dbInit(sessionDbFile, type=sessionDbType)
 ..e <- new.env()
-sessionID <- newSession(db, e=..e) ## XXX what is e?
 %>
 
-<script type="text/javascript">
-  var sessionID="<%= sessionID%>";
-</script>
 
 <script type="text/javascript">
 <%
@@ -60,6 +56,14 @@ source(file, local=TRUE)
 </script>
 
 <%
+## get session id from with ..e -- its in a gWindow object
+vars <- ls(envir=..e)
+gWindows <- vars[ sapply(vars, function(i) inherits(get(i, envir=..e), "gWindow")) ]
+if(length(gWindows))
+  sessionID <- gWindows[1]$sessionID
+else
+  sessionID <- makeSession()
+newSession(db, e=..e, sessionID) ## XXX what is e?
 ## This saves the session and disconnects the data base
 saveSession(db, sessionID, ..e)
 dbDisconnect(db)

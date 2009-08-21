@@ -105,15 +105,18 @@ EXTWidget$getValue <- function(., index=NULL,drop=NULL, ...) {
        .$..data <- out                  # update data
      }
    } else {
-     if(is.null(index) || !index)
+     if(is.null(index) || !index) {
        out <- .$..data
-     else
-       out <- which(.$..data %in% .$..values)
+     } else {
+       values <- .$getValues()
+       if(is.data.frame(values))
+         values <- values[,1, drop=TRUE]
+       out <- which(.$..data %in% values)
     }
-
-   out <- .$coerceValues(out)
-   return(out)
- }
+   }
+  out <- .$coerceValues(out)
+  return(out)
+}
 
 ## have we shown the widget? if so, we set in document too
 ## We need to also assign to .$ID in . as otherwise
@@ -630,6 +633,50 @@ EXTComponentResizable$footer <- function(.) {
   return(out)
   }
 
+##
+## We have gedit, gtext with key events, that are a bit different for handlers
+## as we want to intercept the event with javascript
+EXTComponentText <- EXTComponent$new()
+
+EXTComponentText$writeHandlerFunction <- function(., signal, handler) {
+   out <- String() +
+    'function(' + .$handlerArguments(signal) + ') {'
+
+   tmp <- String() +
+     'runHandlerJS(' + handler$handlerID
+   if(!is.null(handler$handlerExtraParameters)) {
+     tmp <- tmp + "," + handler$handlerExtraParameters
+   }
+   tmp <- tmp + ');'
+
+   ## need to do transport
+   
+   tmp1 <- String() +
+     "var value = escape("+ "o" + .$ID + ".getValue());" + 
+       "_transportToR('" + .$ID + "', Ext.util.JSON.encode({value:value}));" + "\n"
+
+   ## wrap inside conditional
+   if(!is.null(handler$args$key)) {
+     key <- handler$args$key
+     out <- out + "if(e.getCharCode() ==" +
+       ifelse(is.numeric(key) || nchar(key) == 1, shQuote(key),key) +
+       ") {" +
+         tmp1 +
+           tmp +
+           "};"
+   } else if(!is.null(handler$args$charCode)) {
+     key <- handler$args$charCode
+     out <- out + "if(e.getCharCode() ==" +
+       ifelse( nchar(key) == 1, shQuote(key),key) + ") {" +
+         tmp1 + tmp +
+         "};"
+   } else {
+     out <- out + tmp
+   }
+   ## close up
+   out <- out + '}' + '\n'
+  return(out)
+}
 
 
 ##
@@ -1574,8 +1621,10 @@ EXTWidget$writeHandlersJS <- function(.) {
 EXTWidget$addHandler <- function(., signal, handler, action=NULL,
                                  handlerArguments="w",
                                  handlerExtraParameters=NULL,
-                                 handlerValue = NULL
+                                 handlerValue = NULL,
+                                 ...
                                  ) {
+
   lst <- list(obj = .,
               signal=signal,
               handler=handler,
@@ -1583,7 +1632,8 @@ EXTWidget$addHandler <- function(., signal, handler, action=NULL,
               scope = parent.frame(),
               handlerArguments = handlerArguments, # eg "widget,evt"
               handlerExtraParameters = handlerExtraParameters, # eg ", Ext.util.JSON.encode({keypress:evt.getKey()})"
-              handlerValue = handlerValue                      # eg "var value = rowIndex -1" for GridPanel instances
+              handlerValue = handlerValue,                      # eg "var value = rowIndex -1" for GridPanel instances
+              args = list(...)
               )
 
   ## we put handlers into parent widget
@@ -1697,20 +1747,28 @@ addHandlerBlur.gWidget <- function(obj,handler, action=NULL)
   obj$addHandlerMouseclick(handler, action)
 
 ## addHandlerKeystroke
-## This shows how to pass in 1 argument to h using the extraparameters
-## notice the excessive quoting involved for the keyword
- EXTWidget$addHandlerKeystroke <- function(., handler, action=NULL) {
+ EXTWidget$addHandlerKeystroke <- function(., handler, action=NULL,...) {
    .$addHandler(signal="keyup",handler, action,
                 handlerArguments="b,e",
-                handlerExtraParameters = "Ext.util.JSON.encode({key: e.getKey()})"
+                handlerExtraParameters = "Ext.util.JSON.encode({key: e.getKey()})",
+                ...
                 )
  }
 
+## This handler shows how we can pass in extra information to the handler and then
+## use this by writing a custom writeHandlerFunction.
+## For EXTComponentText we do so to handle the key events as doing so by calling back into
+## R each time is too expensive.
+## Here *if* we pass either key (which should be of the form "A" or "a", but likely won't work unless
+## it is of the form "e.ENTER, or
+## BACKSPACE:8,TAB:9,NUM_CENTER:12,ENTER:13,RETURN:13,SHIFT:16,CTRL:17,CONTROL:17,ALT:18,PAUSE:19,CAPS_LOCK:20,ESC:27,SPACE:32,PAGE_UP:33,PAGEUP:33,PAGE_DOWN:34,PAGEDOWN:34,END:35,HOME:36,LEFT:37,UP:38,RIGHT:39,DOWN:40,PRINT_SCREEN:44,INSERT:45,DELETE:46,ZERO:48,ONE:49,TWO:50,THREE:51,FOUR:52,FIVE:53,SIX:54,SEVEN:55,EIGHT:56,NINE:57,A:65,B:66,C:67,D:68,E:69,F:70,G:71,H:72,I:73,J:74,K:75,L:76,M:77,N:78,O:79,P:80,Q:81,R:82,S:83,T:84,U:85,V:86,W:87,X:88,Y:89,Z:90,CONTEXT_MENU:93,NUM_ZERO:96,NUM_ONE:97,NUM_TWO:98,NUM_THREE:99,NUM_FOUR:100,NUM_FIVE:101,NUM_SIX:102,NUM_SEVEN:103,NUM_EIGHT:104,NUM_NINE:105,NUM_MULTIPLY:106,NUM_PLUS:107,NUM_MINUS)
+## or charCode which can be a numeric value, eg ENTER = 13, then before running the handler, in javasscript land a check will be made. It seems that Ctrl+Enter, say, is not detected as such.
 
- "addHandlerKeystroke" <- function(obj, handler, action=NULL)
+
+"addHandlerKeystroke" <- function(obj, handler, action=NULL,key=NULL, charCode=NULL, ...)
    UseMethod("addHandlerKeystroke")
- addHandlerKeystroke.gWidget <- function(obj,handler, action=NULL)
-   obj$addHandlerKeystroke(handler, action)
+ addHandlerKeystroke.gWidget <- function(obj, handler, action=NULL, key=NULL, charCode=NULL, ...)
+   obj$addHandlerKeystroke(handler, action, key=key, charCode=charCode, ...)
 
  ## addHandlerSelect
  EXTWidget$addHandlerSelect <- function(., handler, action=NULL) {

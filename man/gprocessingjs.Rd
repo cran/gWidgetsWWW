@@ -2,14 +2,18 @@
 \alias{gprocessingjs}
 \title{Interface to Processing.js code to create graphics with javascript}
 \description{
-	XXX This function is no longer supported XXX
-	\cr
 
 	This function provides the ability to write to canvas on the
 	browser using somewhat familar graphics commands in R. The
 	processing.js (\url{http://ejohn.org/blog/processingjs})
 	javascript library is used to provide an interface to the
 	canvas web object.
+	\cr
+
+	The package also provides \code{gcanvas}, for the \pkg{canvas}
+	device, which uses the same technology to display graphics,
+	but using R's plotting commands.
+	
 
 }
 \usage{
@@ -24,15 +28,22 @@ gprocessingjs(width=400, height=400, pointsize= 12, container = NULL, ...)
   \item{\dots}{not used}
 }
 \details{
-  This widget requires external javascript libraries to be installed and called in through in the header of the html page. 
-  
-  The libraries can be downloaded at \url{http://ejohn.org/apps/processing.js/processing.js} and 
-  \url{http://ejohn.org/apps/processing.js/examples/init.js}
 
-  The constructor returns a \code{proto} object, for which several
-  methods are defined, including many familiar graphics
-  primitives. Methods for proto objects are called through the
-  object-oriented notation \code{obj\$methodname(arguments)}.
+
+
+  This package is an interface to the processing.js javascript libraries  \url{http://ejohn.org/apps/processing.js/processing.js} and 
+  \url{http://ejohn.org/apps/processing.js/examples/init.js}. These provide the processing API for javascript. (Processing is an API for JAVA-based graphics.
+
+  The \code{gcanvas} widget is more straightforward to use, but this
+  widget is still included, as it can be used to create relatively
+  interactive graphics with the local server version of
+  \pkg{gWidgetsWWW}. For this use, no installation is required.
+
+  This does not work like a typical R device.  The constructor returns
+  a \code{proto} object, for which several methods are defined,
+  including many familiar graphics primitives. Methods for proto
+  objects are called through the object-oriented notation
+  \code{obj\$methodname(arguments)}.
   
   The \code{proto} object has properties \code{..margin} and
   \code{..background} that may be changed directly to adjust the defaults.
@@ -42,7 +53,7 @@ gprocessingjs(width=400, height=400, pointsize= 12, container = NULL, ...)
 
   The following familiar methods are implemented:
 
-  \itemize{
+  \describe{
     \item{p\$plot.new()}{
       Simply sets the background color to the value in the
       \code{..background} property
@@ -98,7 +109,7 @@ gprocessingjs(width=400, height=400, pointsize= 12, container = NULL, ...)
   example shows how one can use a slider to adjust a histogram.
 
   This can be kind of slow, as the lag between the browser and R can
-  make the interface non-responsive. If one wishes to write some
+  make the interface non-responsive. This isn't so bad with the local version. If one wishes to write some
   javascript code, the methods "mouseDragged","mouseMoved", "mousePressed", "mouseReleased",
   "keyPressed","keyReleased","draw","setup" can be set to functions that
   produce javascript handlers. This way there is not a lag between the

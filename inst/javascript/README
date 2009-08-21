@@ -1,17 +1,6 @@
-These files are needed to use the gprocessingjs widget. This widget
-allows the canvas widget to be used to draw on through some of R's
-base graphical commands.
+These are javascript files that are called in through the $scripts part of a widget
+They do not need installation, but rather are output when a widget is used. (Ease instead of speed)
 
-To install:
+The processing-local.js file is there, as the local web server messes
+up newline characters etc, so we need to escape several backslashes.
 
-a) place the files so that your webserver can see them. If you use the
-local version of Rpad this can be the directory you start the script
-from. If the serverversion, you can use the root directory.
-
-b) call in the javascript files in the header of your html document:
-
-<!-- Call in processing -->
-<script type="text/javascript" src="processing.js"></script>
-<script type="text/javascript" src="processinginit.js"></script>
-
-See ex-gprocessingjs for examples

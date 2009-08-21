@@ -17,7 +17,8 @@ getStockIcons <- function(icons) {
     gWidgetsWWWimageUrl <- "/images/"
   
   if(is.null(.stockicons$si)) {
-    files <- list.files(path=system.file("images/", package="gWidgetsWWW"))
+    files <- list.files(path = system.file(paste("basehtml","images",sep=.Platform$file.sep),
+                          package = "gWidgetsWWW"))
     newfiles <- gsub("\\.gif$|\\.jpg$|\\.jpeg$|\\.png$","",files)
     si <<- paste(gWidgetsWWWimageUrl,files, sep="")
     class(si) <- c("URL",class(si))

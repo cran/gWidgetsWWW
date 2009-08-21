@@ -3,8 +3,17 @@ export("runHandler",
        "asURL","isURL",
        "shQuoteEsc",
        "getStaticTmpFile",
-       "convertStaticFileToUrl"
+       "convertStaticFileToUrl",
+       "makeSessionID"
        )
+
+## local server files
+export("localServerStart",
+       "localServerStop",
+       "localServerRestart",
+       "localServerOpen",
+       "gWidgetsWWWIsLocal")
+
 
 export(
        "galert","gmessage","gconfirm","ginput",
