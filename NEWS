@@ -2,6 +2,15 @@ Dear Emacs, please make this -*-Text-*- mode!
 
 NEWS for gWidgetsWWW
 
+Changes for  0.0-12
+--------------------
+* fix to localServerStart
+
+Changes for  0.0-11
+--------------------
+
+* fix docs to get no warnings in R-devel.
+y
 Changes for  0.0-10
 --------------------
 

@@ -24,6 +24,9 @@ gslider <- function(from = 0, to = 100, by = 1, value = from,
   ## methods
   widget$getValueJSMethod <- "getValue"
   widget$setValueJSMethod <- "setValue"
+  ## No methods in extjs to set the values (minValue, maxValue, increment) after construction
+  ## so we can't implement [<- method
+
   widget$transportSignal <- "change"
   widget$transportValue <- function(.,...) {
     out <- String() +

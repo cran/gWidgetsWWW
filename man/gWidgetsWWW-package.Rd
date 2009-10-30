@@ -245,12 +245,12 @@ The communication between \R\/ and the browser works as
   \cr
 
   The \code{gslider} widget has a tooltip that indicates the value of
-  the widget.
+  the widget. The \code{[<-} method to set the values to choose from is not implemented.
   \cr
 
 
   The \code{gspinbutton} widget is  implemented if Ext 3.0 is
-  installed. However, the trigger icons may not appear. The widget is responsive to arrow keys to cycle through the specified values.
+  installed. However, the trigger icons may not appear. The widget is responsive to arrow keys to cycle through the specified values. The \code{[<-} method to set the values to choose from is not implemented.
   \cr
 
 

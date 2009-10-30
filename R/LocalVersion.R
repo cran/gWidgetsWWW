@@ -352,7 +352,7 @@ localServerStart <- function(file="", port=8079, package=NULL) {
   startRpadServer("index.gWWW", port)   # just to keep it quiet
   if(file == "" && is.null(package)) {
     file <- "basehtml/makeIndex.R"
-    package <- "gWidgetsWWWLocalServer"
+    package <- "gWidgetsWWW"
   }
   localServerOpen(file, package)
 }
@@ -365,7 +365,7 @@ localServerOpen <- function(file, package) {
   ## system.file(file, package=package)
   ## if file matches R$, then use gWidgetsWWWrun
   ## else pass through
-  if(!missing(package) || !is.null(package)) 
+  if(!missing(package) | !is.null(package)) 
     file <- paste("gWidgetsWWWRunFromPackage/",file, "?package=",package, sep="")
   
   if(length(grep("R$", file)))
