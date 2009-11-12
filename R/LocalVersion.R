@@ -82,18 +82,19 @@ RpadSourceScript <- function(file) {
       close(tc)
       formattedresults <- paste(textfromconnection,"\n",sep="",collapse="")
       ## Now we add some stuff to formatted results
-      formattedresults <- paste(if(!is.null(getOption("gWidgetsWWWGoogleAPI"))) {
-        paste("<script type='text/javascript' src=http://maps.google.com/maps?file=api&v=2&key=",
-              getOption("gWidgetsWWWGoogleAPI"),
-              "&sensor=false></script>", sep="")},
-                                "</html>",
-                                "<body>",
-                                "<script type='text/javascript'>",
-                                formattedresults,
-                                "</script>",
-                                collapse="\n")
+      ## header
+      out <-  String() + makegWidgetsWWWPageHeader()
+      if(!is.null(getOption("gWidgetsWWWGoogleAPI"))) {
+        out <- out +
+          paste("<script type='text/javascript' src=http://maps.google.com/maps?file=api&v=2&key=",
+                getOption("gWidgetsWWWGoogleAPI"),
+                "&sensor=false></script>", sep="")
+      }
+      out <- out + "<script type='text/javascript'>" +
+        formattedresults +
+          "</script>"
       options("gWidgetsWWWGoogleAPI"=NULL) # must set in each script
-      .Tcl(paste("set RpadTclResults {", escapeBrackets(formattedresults), "}", sep=""))
+      .Tcl(paste("set RpadTclResults {", escapeBrackets(out), "}", sep=""))
     }, error=function(e) {
       sink()
       close(tc)
@@ -133,19 +134,38 @@ mimeTypes <- function(ext) {
          )
 }
 
-makegWidgetsWWWpage <- function(results, script=TRUE) {
+makegWidgetsWWWPageHeader <- function() {
   out <- paste(
                "<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>",
                "<html xmlns='http://www.w3.org/1999/xhtml' xmlns:v='urn:schemas-microsoft-com:vml'>",
                "<head>",
                "<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>",
-               "<!-- Call in Ext and its style sheet -->",
-               "<script type='text/javascript' src='/ext/adapter/ext/ext-base.js'></script>",
-               "<script type='text/javascript' src='/ext/ext-all.js'></script>",
+               "<!-- Call in Ext style sheet -->",
                "<link rel='stylesheet' type='text/css' href='/ext/resources/css/ext-all.css'>",
-               "<script type='text/javascript' src='/gWidgetsWWW.js'></script>",
                "</head>",
                "<body>",
+               "<!-- Call in Ext files -->",               
+               "<div id='loading'>",
+               "<div class='loading-indicator'>",
+               "<img src='/images/extanim32.gif' width='32' height='32' style='margin-right:8px;float:left;vertical-align:top;'/>",
+               "gWidgetsWWW<br /><span id='loading-msg'>Loading styles and images...</span></div>",
+               "</div>",
+               "<span id='loading-msg'></span></div>",
+               "<script type='text/javascript'>document.getElementById('loading-msg').innerHTML = 'Loading Core API...';</script>",
+               "<script type='text/javascript' src='/ext/adapter/ext/ext-base.js'></script>",
+               "<script type='text/javascript'>document.getElementById('loading-msg').innerHTML = 'Loading UI Components...';</script>",
+
+               "<script type='text/javascript' src='/ext/ext-all.js'></script>",
+               "<script type='text/javascript'>document.getElementById('loading-msg').innerHTML = 'Loading gWidgetsWWW...';</script>",               
+               "<script type='text/javascript' src='/gWidgetsWWW.js'></script>",
+               "<script type='text/javascript'>Ext.onReady(function(){Ext.get('loading').remove();});</script>",
+               sep="")
+  return(out)
+}
+
+makegWidgetsWWWpage <- function(results, script=TRUE) {
+  out <- makegWidgetsWWWPageHeader()
+  out <-  paste(out,
                if(script) {
                  "<script type='text/javascript'>"
                },
@@ -185,7 +205,7 @@ RpadRunFromPackage <- function(file, package) {
                        "</UL>", sep="")
       results <- makegWidgetsWWWpage(results, script=FALSE)
     } else {
-      ## its a file
+      ## it's a file
       baseFile <- basename(filename)
       ext <- rev(unlist(strsplit(baseFile,"\\.")))[1]
       
@@ -207,7 +227,7 @@ RpadRunFromPackage <- function(file, package) {
           cat(paste(paste(textfromconnection, "\n", collapse=""), '\n', e),"\n")
         }, finally= {})
       } else {
-        ## just chage contentType
+        ## just change contentType
         output$contentType <- mimeTypes(ext)
         results <- paste(readLines(filename), collapse="\n")
       }
@@ -321,8 +341,8 @@ function(defaultfile = "index.gWWW", port = 8079) {
     assign("RpadDir",   ".",  envir = e)
     assign("RpadPort",  port, envir = e)
 
-    tclfile <- system.file( "tcl", "mini1.1.tcl", package = "gWidgetsWWWLocalServer")
-    htmlroot <- system.file("basehtml",package = "gWidgetsWWWLocalServer")
+    tclfile <- system.file( "tcl", "mini1.1.tcl", package = "gWidgetsWWW")
+    htmlroot <- system.file("basehtml",package = "gWidgetsWWW")
     tcl("source", tclfile)
     tcl("Httpd_Server", htmlroot, port, defaultfile)
     return(TRUE)

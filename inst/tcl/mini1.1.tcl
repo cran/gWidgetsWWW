@@ -271,26 +271,40 @@ proc HttpdRespond {sock} {
 
 	## we run the script -- write header, basic HTML
 	## process script through R?
-	puts $sock "HTTP/1.$data(version) 200 Data follows"
-        puts $sock "Content-Type: text/html"
-	puts $sock ""
-	puts $sock "<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>"
-	puts $sock "<html xmlns='http://www.w3.org/1999/xhtml' xmlns:v='urn:schemas-microsoft-com:vml'>"
-	puts $sock "<head>"
-	puts $sock "<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>"
-	puts $sock "<!-- Call in Ext and its style sheet -->"
-	puts $sock "<script type='text/javascript' src='/ext/adapter/ext/ext-base.js'></script>"
-	puts $sock "<script type='text/javascript' src='/ext/ext-all.js'></script>"
-	puts $sock "<link rel='stylesheet' type='text/css' href='/ext/resources/css/ext-all.css'>"
-	puts $sock "<script type='text/javascript' src='/gWidgetsWWW.js'></script>"
-#	puts $sock "</head>"
-#	puts $sock "<body>"
+# 	puts $sock "HTTP/1.$data(version) 200 Data follows"
+#         puts $sock "Content-Type: text/html"
+# 	puts $sock ""
+# 	puts $sock "<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>"
+# 	puts $sock "<html xmlns='http://www.w3.org/1999/xhtml' xmlns:v='urn:schemas-microsoft-com:vml'>"
+# 	puts $sock "<head>"
+# 	puts $sock "<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>"
+# ## JV why are these two commented out?
+# 	puts $sock "</head>"
+# 	puts $sock "<body>"
+# ## jv put in body
+# 	puts $sock "<div id='loading'>"
+# 	puts $sock "<div class='loading-indicator'><img src='shared/extjs/images/extanim32.gif' width='32' height='32' style='margin-right:8px;float:left;vertical-align:top;'/>gWidgetsWWW<br /><span id='loading-msg'>Loading styles and images...</span></div>"
+# 	puts $sock "</div>"
+# 	puts $sock "<span id='loading-msg'></span></div>"
+# 	puts $sock "<script type='text/javascript'>document.getElementById('loading-msg').innerHTML = 'Loading Core API...';</script>"
+# 	puts $sock "<script type='text/javascript' src='/ext/adapter/ext/ext-base.js'></script>"
+# 	puts $sock "<script type='text/javascript'>document.getElementById('loading-msg').innerHTML = 'Loading UI Components...';</script>"
+# 	puts $sock
+# 	puts $sock "<script type='text/javascript' src='/ext/ext-all.js'></script>"
+# 	puts $sock "<script type='text/javascript'>document.getElementById('loading-msg').innerHTML = 'Loading gWidgetsWWW...';</script>",              
+# 	puts $sock "<script type='text/javascript' src='/gWidgetsWWW.js'></script>"
+# 	puts $sock "<script type='text/javascript'>Ext.onReady(function(){Ext.get('loading').remove();});</script>"
+# # 	puts $sock "<!-- Call in Ext and its style sheet -->"
+# # 	puts $sock "<script type='text/javascript' src='/ext/adapter/ext/ext-base.js'></script>"
+# # 	puts $sock "<script type='text/javascript' src='/ext/ext-all.js'></script>"
+# # 	puts $sock "<link rel='stylesheet' type='text/css' href='/ext/resources/css/ext-all.css'>"
+# # 	puts $sock "<script type='text/javascript' src='/gWidgetsWWW.js'></script>"
 	if {[string length $RpadTclResults] > 0} {
 	    puts -nonewline $sock [subst -novariables -nocommands $RpadTclResults]
 #	    puts $sock "</script>"
 	}
-	puts $sock "</body>"
-	puts $sock "</html>"
+#	puts $sock "</body>"
+#	puts $sock "</html>"
 
 	flush $sock
         HttpdSockDone $sock 1 

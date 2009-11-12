@@ -59,7 +59,7 @@ makeLinks <- function(i,f) {
     g1 <- ggroup(cont = w1, horizontal=FALSE)
     Rfile <- paste(dir,i, sep=.Platform$file.sep)
     ghtml(paste("<pre>",
-                paste(readLines(Rfile), collapse="\n"),
+                paste(readLines(Rfile), collapse="\n<br />"),
                 "</pre>", sep=""), cont = g1)
     gseparator(cont = g1)
     gbutton("dismiss", cont = g1, handler = function(h,...) {

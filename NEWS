@@ -2,6 +2,16 @@ Dear Emacs, please make this -*-Text-*- mode!
 
 NEWS for gWidgetsWWW
 
+Changes for  0.0-13
+--------------------
+
+* added message when loading javascript
+
+* noted issue -- still to be fixed -- with local pages that are too
+  big.
+
+* fixed bug with local server -- was calling non-existent package
+
 Changes for  0.0-12
 --------------------
 * fix to localServerStart

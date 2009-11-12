@@ -59,7 +59,7 @@ gWidgetsWWWIsLocal()
 	The local server logs error messages in the console.
 	\cr
 
-	The local server will only response to requests that originate
+	The local server will only respond to requests that originate
 	from the localhost (127.0.0.1). This is a security measure.
 
 }

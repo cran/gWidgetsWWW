@@ -60,8 +60,8 @@ if(is.null(file))  {
     '<head>' +
       '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
   out <- out +
-    '<script type="text/javascript" src="' + extjsBaseUrl +'/adapter/ext/ext-base.js"></script>' +
-      '<script type="text/javascript" src="' + extjsBaseUrl + '/ext-all.js"></script>' +
+#    '<script type="text/javascript" src="' + extjsBaseUrl +'/adapter/ext/ext-base.js"></script>' +
+#      '<script type="text/javascript" src="' + extjsBaseUrl + '/ext-all.js"></script>' +
         '<link rel="stylesheet" type="text/css" href="' + extjsBaseUrl + '/resources/css/ext-all.css">'
 
   if(exists("gWidgetsWWWGoogleAPI") && !is.null(gWidgetsWWWGoogleAPI)) {
@@ -102,9 +102,26 @@ if(is.null(file))  {
 
   out <- out +
 #    '<body onload=detectBrowser() onunload=clearSession("' + sessionID + '")>'
-    '<body onunload=clearSession("' + sessionID + '")>'
+    '<body onunload=clearSession("' + sessionID + '")>' 
+
+  ## add throbber
+  out <- out +
+    paste(
+          "<div id='loading'>",
+          "<div class='loading-indicator'>gWidgetsWWW:<br /><span id='loading-msg'>Loading styles and images...</span></div>",
+          "</div>",
+          "<span id='loading-msg'></span></div>",
+          "<script type='text/javascript'>document.getElementById('loading-msg').innerHTML = 'Loading Core API...';</script>",
+          "<script type='text/javascript' src='", extjsBaseUrl, "/adapter/ext/ext-base.js'></script>",
+          "<script type='text/javascript'>document.getElementById('loading-msg').innerHTML = 'Loading UI Components...';</script>",
+          
+          "<script type='text/javascript' src='", extjsBaseUrl, "/ext-all.js'></script>",
+          "<script type='text/javascript'>document.getElementById('loading-msg').innerHTML = 'Loading gWidgetsWWW...';</script>",               
+          "<script type='text/javascript' src='/gWidgetsWWW.js'></script>",
+          "<script type='text/javascript'>Ext.onReady(function(){Ext.get('loading').remove();});</script>",
+          sep="")
   
-## This is now donw in gWindow
+          ## This is now donw in gWindow
 ##   out <- out +
 ##     '<script type="text/javascript">' +
 ##       'var sessionID="' + sessionID + '"' +
