@@ -8,7 +8,7 @@
 \usepackage[]{geometry}
 \usepackage{mathptm}            % for math fonts type 1
 \usepackage{graphicx}           % for graphics files
-\usepackage{floatflt}           % for ``floating boxes''
+%%\usepackage{floatflt}           % for ``floating boxes''
 %%\usepackage{index}
 \usepackage{relsize}            % for relative size fonts
 \usepackage{amsmath}            % for amslatex stuff
@@ -25,7 +25,7 @@
 %%\floatstyle{jvstyle}
 %%\restylefloat{table}
 %%\restylefloat{figure}
-\renewcommand\floatpagefraction{.9}
+%%\renewcommand\floatpagefraction{.9}
 \renewcommand\topfraction{.9}
 \renewcommand\bottomfraction{.9}
 \renewcommand\textfraction{.1}

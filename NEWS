@@ -2,10 +2,14 @@ Dear Emacs, please make this -*-Text-*- mode!
 
 NEWS for gWidgetsWWW
 
+Changes for  0.0-14
+--------------------
+* doc fix to make vignette with TeXLive
+
 Changes for  0.0-13
 --------------------
 
-* added message when loading javascript
+* added message when loading javascript files
 
 * noted issue -- still to be fixed -- with local pages that are too
   big.
@@ -20,7 +24,7 @@ Changes for  0.0-11
 --------------------
 
 * fix docs to get no warnings in R-devel.
-y
+
 Changes for  0.0-10
 --------------------
 
