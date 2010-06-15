@@ -17,7 +17,12 @@
 <script type='text/javascript' src='/ext/adapter/ext/ext-base.js'></script>
 <script type='text/javascript'>document.getElementById('loading-msg').innerHTML = 'Loading UI Components...';</script>
 <script type='text/javascript' src='/ext/ext-all.js'></script>
-<script type='text/javascript'>document.getElementById('loading-msg').innerHTML = 'Loading gWidgetsWWW...';</script>    <script type='text/javascript' src='/gWidgetsWWW.js'></script>
+<script
+type='text/javascript'>document.getElementById('loading-msg').innerHTML='Loading
+gWidgetsWWW...';</script>
+<script type='text/javascript' src='/codemirror/js/codemirror.js'></script>
+
+<script type='text/javascript' src='/gWidgetsWWW.js'></script>
 <script type='text/javascript'>Ext.onReady(function(){Ext.get('loading').remove();});</script>
 [This shouldn't be seen]
 </body>

@@ -27,7 +27,8 @@ ghtml <- function(x, container = NULL, ...) {
       } else {
         val <- paste(val, collapse="\\n")
       }
-      
+
+      val <- gsub("'", "&#146;", val)   # get rid of ' issue
       val <- escapeQuotes(val)
       out <- out +
         '.setText(' + shQuoteEsc(val) + ', false);'
@@ -46,7 +47,7 @@ ghtml <- function(x, container = NULL, ...) {
     if(isURL(svalue(.)))
       out[['autoLoad']] <- svalue(.)
     else
-      out[['html']] <- paste(escapeQuotes(svalue(.)), collapse="\\\\n")
+      out[['html']] <- paste(escapeQuotes(gsub("'","&#146;",svalue(.))), collapse="\\\\n")
     
     return(out)
   }

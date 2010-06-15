@@ -1,4 +1,31 @@
-## function to escapeHTML characters
+##' like URLencode, but takes care of plus signs
+ourURLencode <- function(x) {
+  ## handle + signs too
+  x <- URLencode(x)
+  x <- gsub("+","&2B;", x, fixed=TRUE)
+  x
+}
+
+##' same as URLdecode, but takes care of plus signs
+ourURLdecode <- function(x) {
+  x <- URLdecode(x)
+  x <- gsub("&2B;", "+", x, fixed=TRUE)
+  x
+}
+
+##' escaping strings
+## we use shQuote as a convenience for
+## word -> 'word' however, it doesn't escape values as we would like, hence
+## this one.
+shQuoteEsc <- function(x) {
+  out <- gsub("\'","\\\\'",x)
+  out <- paste("'",out,"'",sep="")
+  return(out)
+}
+
+
+
+##' function to escapeHTML characters
 escapeHTML <- function(x) {
   translations <- function(i) {
     switch(i,
@@ -55,6 +82,7 @@ escapeHTML <- function(x) {
   return(x)
 }
 
+##' revers for escapeURL
 unescapeURL <- function(x) {
   codes <- c("%20" = " ",
              "%22" = '"',
@@ -64,6 +92,7 @@ unescapeURL <- function(x) {
              "%25" = "%",
              "%28" = "(",
              "%29" = ")",
+             "%2B" = "+",
              "%2C" = ",",
              "%7B" = "{",
              "%7D" = "}",
@@ -89,7 +118,9 @@ unescapeURL <- function(x) {
     x <- gsub(i,codes[i],x)
   return(x)
 }
-## replace ' with \\'
+
+##' replace ' with \\'
+##' Also can replace ' with &143; type thingy
 escapeQuotes <- function(x) {
   for(i in 1:length(x)) {
     chars <- unlist(strsplit(x[i],""))
@@ -109,6 +140,13 @@ escapeQuotes <- function(x) {
 }
 ##################################################
 ## string class
+
+##' String constructor -- gives some methods for character data
+##'
+##' @param x a string
+##' @param sep Passed to \code{paste} call when string is created
+##' @param common Passed to \code{paste} call when string is created
+##' @return a "String" instance. See is \code{+.String} method
 String <- function(x,sep="",collapse="") {
   if(missing(x)) x <- ""
   x <- as.character(x)
@@ -143,32 +181,13 @@ length.String <- function(x) nchar(x)
   return(String(paste(tmp,collapse="")))
 }
 
-## escaping strings
-## we use shQuote as a convenience for
-## word -> 'word' however, it doesn't escape values as we would like, hence
-## this one.
-shQuoteEsc <- function(x) {
-  out <- gsub("\'","\\\\'",x)
-  out <- paste("'",out,"'",sep="")
-  return(out)
-}
-
-
-
-
-## String here is misnamed --
-## this function creates JS values
-coerceToJSString <- function(x) UseMethod("coerceToJSString")
-coerceToJSString.default <- function(x) x # no quote
-coerceToJSString.character <- function(x) shQuoteEsc(x)
-coerceToJSString.factor <- function(x) shQuoteEsc(as.character(x))
-coerceToJSString.logical <- function(x) tolower(as.character(x))
-coerceToJSString.function <- function(x) coerceToJSString(x())
-coerceToJSString.String <- function(x) x # to avoid quoting
-
 ##################################################
 ## Helpers
 ## see source defn.
+##' Is value a URL: either of our class URL or matches url string: ftp://, http:// or file:///
+##'
+##' @param x length 1 character value to test
+##' @return Logical indicating if a URL.
 isURL <- function(x) {
 
   ## we can bypass this by setting a value to have this class
@@ -180,10 +199,28 @@ isURL <- function(x) {
    out <- FALSE
   return(out)
 }
+
+##' Add URL to class of object if not already
+##'
+##' @param x object to add class to. Should be length 1 character
+##' @return returns object
 asURL <- function(x) {
-  class(x) <- c("URL",class(x))
+  if(!is(x,"URL"))
+    class(x) <- c("URL",class(x))
   return(x)
 }
+
+
+##' coerce an object into a JSStrig
+## String here is misnamed --
+## this function creates JS values
+coerceToJSString <- function(x) UseMethod("coerceToJSString")
+coerceToJSString.default <- function(x) x # no quote
+coerceToJSString.character <- function(x) shQuoteEsc(x)
+coerceToJSString.factor <- function(x) shQuoteEsc(as.character(x))
+coerceToJSString.logical <- function(x) tolower(as.character(x))
+coerceToJSString.function <- function(x) coerceToJSString(x())
+coerceToJSString.String <- function(x) x # to avoid quoting
 
 
 ## ## coerce R objects into javascript arrays
@@ -208,28 +245,34 @@ toJS.factor <- function(x) toJS(as.character(x))
 toJSArray <- function(x, doBrackets=TRUE) UseMethod("toJSArray")
 toJSArray.default <- function(x, doBrackets=TRUE) stop("no default method")
 toJSArray.integer <- toJSArray.numeric <- function(x, doBrackets=TRUE) {
+  x <- as.character(x)
+  x[is.na(x)] <- "'NA'"
   out <- paste(x, collapse=",")
   if(doBrackets)
     out <- paste("[",out,"]", sep="")
   return(out)
 }
 toJSArray.factor <- toJSArray.character <- function(x, doBrackets=TRUE) {
+  x <- gsub("\\n", " ", x)              # \n messes up JS parsing
   out <- paste(shQuoteEsc(as.character(x)), collapse=",")
   if(doBrackets) out <- paste("[", out,"]",sep="")
   return(out)
 }
 toJSArray.String <- function(x, doBrackets=TRUE) {
+  x <- gsub("\\n", " ", x)              # \n messes up JS parsing
   out <- paste(x, collapse=",")
   if(doBrackets) out <- paste("[", out,"]",sep="")
   return(out)
 }
 
 toJSArray.logical <- function(x,doBrackets=TRUE) {
-  toJSArray.String(tolower(as.character(x)), doBrackets)
+  x <- tolower(as.character(x))
+  x[is.na(x)] <- "'NA'"
+  toJSArray.String(x, doBrackets)
 }
 
 toJSArray.matrix <- function(x, doBrackets=TRUE) {
-  out <- paste(apply(x,1,toJSArray),collapse=",")
+  out <- paste(apply(x,1,toJSArray), collapse=",")
   if(doBrackets) out <- paste("[", out, "]", sep="")
   return(out)
 }
@@ -258,15 +301,25 @@ toJSArray.data.frame <- function(x,doBrackets=TRUE) {
 
 ## for working with static html files
 getStaticTmpFile <- function(ext="")  {
+  if(gWidgetsWWWIsLocal()) {
+    gWidgetsWWWStaticDir <- get("gWidgetsWWWStaticDir", envir=.GlobalEnv)
+  }
+  try(dir.create(gWidgetsWWWStaticDir, showWarnings=FALSE), silent=FALSE)
   out <- paste(tempfile(tmpdir=gWidgetsWWWStaticDir),ext, sep="")
-  out <- gsub("[/]{2,}","/",out)        # strip off doubles
+#  out <- gsub("[/]{2,}","/",out)        # strip off doubles
   return(out)
 }
 
 
-convertStaticFileToUrl <- function(val)
-  gsub(gWidgetsWWWStaticDir, gWidgetsWWWStaticUrlBase, val)
-
+convertStaticFileToUrl <- function(val) {
+  if(gWidgetsWWWIsLocal()) {
+    gWidgetsWWWStaticDir <- get("gWidgetsWWWStaticDir", envir=.GlobalEnv)
+    gWidgetsWWWStaticUrlBase <- get("gWidgetsWWWStaticUrlBase", envir=.GlobalEnv)
+  }
+  if(!grepl(gWidgetsWWWStaticUrlBase, val, fixed=TRUE))
+    val <- gsub(gWidgetsWWWStaticDir, gWidgetsWWWStaticUrlBase, val, fixed=TRUE) # fixed!
+  ourURLencode(val)
+}
 
 ## for keeping track of different instances
 makeSessionID <- function() {

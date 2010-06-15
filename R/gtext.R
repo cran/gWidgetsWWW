@@ -58,7 +58,7 @@ gtext <- function(text = NULL, width = NULL, height = 300,
     if(exists("..setValueJS", envir=., inherits=FALSE)) .$..setValueJS(...)
 
     if(gWidgetsWWWIsLocal()) {
-      theData <- paste(.$..data, collapse="\\\\n")
+      theData <- paste(.$..data, collapse="\\n")
     } else {
       theData <- paste(.$..data, collapse="\\n")
     }
@@ -86,7 +86,7 @@ gtext <- function(text = NULL, width = NULL, height = 300,
     } else {
       out[["width"]] <-  "auto"
     }
-    if(!is.null(.$..width)) {
+    if(!is.null(.$..height)) {
        out[["height"]] <- .$..height
      } else {
        out[["height"]] <-  "auto"

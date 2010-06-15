@@ -81,7 +81,10 @@ g = gexpandgroup("gcalendar", cont=g1)
 widget = gcalendar("select a date", cont=g)
 
 g = gexpandgroup("gfilebrowser", cont=g1)
-glabel("no gfilebrowser yet", cont=g)
+if(gWidgetsWWWIsLocal())
+  gfile("only svalue works though", cont=g)
+else
+  glabel("no gfilebrowse for non-local yet", cont=g)
 
 
 g = gexpandgroup("gtable", cont=g1)

@@ -1,3 +1,45 @@
+2010-06-09  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/gtable.R (mapRenderer): put in sensible column widths. Need
+	API to adjust column width
+
+	* R/gfile.R (gfile): got gfile working for local usage -- not
+	through the web.
+
+2010-06-04  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/gtable.R (widget$filter): added proto method filter to filter
+	rows. Also stretched last column
+
+2010-06-03  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/gcommandline.R (gcommandline): added new method for simple
+	commandline using gWidgets widgets. Uses "notebook" type style,
+	although it isn't very sophisticated.
+
+	* NAMESPACE: bug fix, forgot to export delete method
+
+2010-06-01  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/LocalVersion.R (processBasehtmlFile): Fixes to make use of
+	dynamicHelp's httpd server, not the Tcl one from Rpad.
+
+2010-01-22  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/gtable.R (widget$getValue): fix to this method. Was reading in
+	wrong environment.
+	(widget$transportValue): Fix to this method, was old style before
+	JSON use
+
+2010-01-21  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/gwindow.R (w$visible): added method to avoid trying to dispose
+	top-level window, which can't be done.
+
+2010-01-20  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/aaa.R (blockHandler.gWidget): added methods
+
 2009-10-30  john verzani  <verzani@john-verzanis-macbook-pro.local>
 
 	* R/LocalVersion.R (localServerStart): Fix to this, so that

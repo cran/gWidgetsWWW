@@ -13,7 +13,7 @@ addStockIcons <- function(iconNames, iconFiles) {
 .stockicons$si <- NULL
 
 getStockIcons <- function(icons) {
-  if(!exists("gWidgetsWWWimageUrl"))
+  if(!exists("gWidgetsWWWimageUrl") || is.null(gWidgetsWWWimageUrl))
     gWidgetsWWWimageUrl <- "/images/"
   
   if(is.null(.stockicons$si)) {

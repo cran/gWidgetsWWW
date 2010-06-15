@@ -16,6 +16,18 @@ gprocessingjs <- function(width=400, height=400, pointsize= 12, container = NULL
                              ..pointsize = pointsize)
   class(widget) <- c("gProcessingJS", class(widget))
 
+
+  ## addHandlerMouseMove
+  EXTWidget$addHandlerMousemove <- function(., handler, action=NULL) {
+    .$addHandler(signal="mousemove",handler, action,
+                 handlerArguments="e",
+                 handlerExtraParameters = "Ext.util.JSON.encode({xy:[e.layerX,e.layerY]})"
+                 )
+    
+  }
+
+
+  
   ## properties
   widget$..margin <- as.integer(c(1,2,1.5,3) * pointsize * 1.2)
   widget$..background <- 250 ## passed to .$background via plot.new
@@ -26,11 +38,8 @@ gprocessingjs <- function(width=400, height=400, pointsize= 12, container = NULL
   
   ## methods to construct widget
   widget$scripts <- function(.) {
-    ## from main example page
-    if(exists(".RpadEnv", envir=.GlobalEnv) && get("RpadLocal", envir=.RpadEnv))
-      files <- c("ext.ux.canvas.js", "processing-local.js", "processinginit.js")
-    else
-      files <- c("ext.ux.canvas.js", "processing.js", "processinginit.js")
+    files <- c("ext.ux.canvas.js", "processing.js", "processinginit.js")
+    ##    files <- c("ext.ux.canvas.js", "processing-0.9.1.js", "processinginit.js")
     out <- String() + "\n"
     for(i in files) {
       f <- system.file("javascript",i, package="gWidgetsWWW")
@@ -192,18 +201,18 @@ gprocessingjs <- function(width=400, height=400, pointsize= 12, container = NULL
 
   widget$ellipseMode <- function(., aEllipseMode)
     .$makeCommand("ellipsMode", aEllipseMode)
-
+  
   ## skip math ones
-
+  
   widget$translate <- function(., x, y)
     .$makeCommand("translate", x,y)
-
+  
   widget$scale <- function(., x,y)
     .$makeCommand("scale", x, y)
-
+  
   widget$rotate <- function(., aAngle)
     .$makeCommand("rotate", aAngle)
-
+  
   widget$redraw <- function(.) 
     .$makeCommand("redraw")
 
@@ -234,12 +243,12 @@ gprocessingjs <- function(width=400, height=400, pointsize= 12, container = NULL
 
   widget$stroke <- function(.,...) .$makeCommand("stroke",...)
 
-   widget$strokeWeight <- function(., w) .$makeCommand("strokeWeight", w)
-
-   widget$point <- function(., x, y) .$makeCommand("point", x, y)
-
+  widget$strokeWeight <- function(., w) .$makeCommand("strokeWeight", w)
+  
+  widget$point <- function(., x, y) .$makeCommand("point", x, y)
+  
   ## rename with p -- otherwise get is an issue
-   widget$pget <- function(., x, y) .$makeCommand("get", x, y)
+  widget$pget <- function(., x, y) .$makeCommand("get", x, y)
    widget$pset <- function(., x, y, obj) .$makeCommand("set", x, y, obj)
 
   widget$arc <- function(., x, y, width, height, start, stop )

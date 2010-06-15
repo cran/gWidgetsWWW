@@ -2,6 +2,26 @@ Dear Emacs, please make this -*-Text-*- mode!
 
 NEWS for gWidgetsWWW
 
+Changes for  0.0-16
+--------------------
+* Changed to use the dynamic help's httpd server -- not the Tcl one
+  from Rpad. This is much better as the Tcl one had size limitations
+  and meant an additional web server.
+* New widget gcommandline. For local use only!
+* new widget gfile. (More like gfilebrowse). For local use only.
+* new demo for local use: ex-simple-gui.R. Call with localServerStart
+  to see.
+* fixes to gtable.
+* numerous minor bug fixes, doc fixes
+
+Changes for  0.0-15
+--------------------
+* added tag, tag<- methods to make work with gWidgets code
+* added stub isExtant method
+* added blockHandler, unblockHandler methods
+* fixed bug with gtable
+* Try to integrate with traitr, but only partially successful.
+
 Changes for  0.0-14
 --------------------
 * doc fix to make vignette with TeXLive

@@ -9,7 +9,7 @@ makeLinks <- function(i,f) {
   b <- gbutton("Source", cont = g1, handler = function(h,...) {
     w1 <- gwindow("Source", parent = w)
     g1 <- ggroup(cont = w1, horizontal=FALSE)
-    Rfile <- paste(dir,i, sep=.Platform$file.sep)
+    Rfile <- paste(getwd(),i, sep=.Platform$file.sep)
     ghtml(paste("<pre>",
                 paste(readLines(Rfile), collapse="\\n"),
                 "</pre>", sep=""), cont = g1)

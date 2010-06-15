@@ -23,7 +23,7 @@ container, ...)
   \item{type}{Determines type of map. One of "map" or "panorama".}
   \item{key}{A google API key. The default is for localhost 127.0.0.1:8079, which hopefully just works.}
   \item{container}{A \pkg{gWidgetsWWW} container object}
-  \item{\dots}{}
+  \item{\dots}{ignored}
 }
 \details{
   This widget was created using the code posted to the ExtJS blog by

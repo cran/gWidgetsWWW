@@ -20,7 +20,7 @@ gimage <- function(filename = "", dirname = "",  size = "",
 
   widget$scripts <- function(.) {
     f <- system.file("javascript","ext.ux.imageBox.js", package="gWidgetsWWW")
-    out <- paste(readLines(f), collapse="\n")
+    out <- paste(readLines(f, warn=FALSE), collapse="\n")
     
     return(out)
   }

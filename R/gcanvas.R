@@ -16,16 +16,16 @@ gcanvas <- function(f, width=480, height=400,
     out[['border']] <- FALSE
     
     out[['html']] <- String() +
-      '\'<canvas id="gWidgetsCanvas" width=' + .$..width + ' height=' + .$..height +
-        '></canvas>\''
+      '\'<canvas id="gWidgetsCanvas' + .$ID + '" width=' + .$..width + ' height=' + .$..height +
+        '>' + gettext("If you see this, your browser does not support the canvas tag.") + '</canvas>\''
     
     return(out)
   }
 
   
   widget$footer <- function(.) {
-    out <- String(sep="\n") +
-      'var ctx = document.getElementById("gWidgetsCanvas").getContext("2d");' +
+    out <- String(sep="") +
+      'var ctx = document.getElementById("gWidgetsCanvas' + .$ID + '").getContext("2d");' +
         'if(!ctx.fillText) {ctx.fillText =function() {};};' + '\n' +
           .$setValueJS() 
     return(out)
@@ -37,8 +37,8 @@ gcanvas <- function(f, width=480, height=400,
       out <- String()
       if(!is.null(value)) {
         ## clear out
-        out <- out +
-          paste(readLines(value)[-1], collapse="\n") +
+        out <- out + "ctx.clear = true;" + '\n' +
+          paste(readLines(value, warn=FALSE)[-1], collapse="\n") +
             '\n'
       }
       return(out)

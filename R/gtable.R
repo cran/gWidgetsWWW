@@ -6,7 +6,7 @@
 ## transport
 ## click and double click handler
 ## icon fun: use class(icon) to mark
-## multiple is working
+## multiple is  working
 ## [<- : needs to have data frame with same column types, no. of columns
 
 ## get working:
@@ -26,13 +26,17 @@ gtable <- function(items, multiple = FALSE, chosencol = 1,
 
   class(widget) <- c("gTable",class(widget))
 
+  theArgs <- list(...)
+  
   ## set up store
   store <- EXTStore$new()
   store$ID <- container$newID()       # set ID
 
   ## load in items
-  if(!is.data.frame(items)) items <- as.data.frame(items)
-
+  if(!is.data.frame(items)) {
+    items <- data.frame(items, stringsAsFactors=FALSE)
+  }
+  
   store$chosenCol <- chosencol
   if(!is.null(icon.FUN)) {
     n <- length(items)
@@ -43,6 +47,7 @@ gtable <- function(items, multiple = FALSE, chosencol = 1,
     ## must up the chosen col by 1
     store$chosenCol <- store$chosenCol + 1
   }
+  items <- cbind(..index=seq_len(nrow(items)), items)
   store$data <- items
   widget$..store <- store
 
@@ -52,28 +57,22 @@ gtable <- function(items, multiple = FALSE, chosencol = 1,
     ## we store value as an index
     out <- .$..data
     values <- .$..store$data
-    
+
     if(exists("..shown",envir=.,inherits=FALSE)) {
       ## get from widget ID
-      out <- try(get(.$ID,envir=.),silent=TRUE) ## XXX work in index here?
+      out <- try(get(.$ID,envir=.$toplevel),silent=TRUE) ## XXX work in index here?
       if(!inherits(out,"try-error")) {
-        ## For multiple, this is stored as a vector that needs to be eval'ed
-        if(.$..multiple) {
-          out <- eval(parse(text=out))
-        } else {
-          out <- as.numeric(out)          # is character
-        }
         .$..data <- out                 # update data
       } else {
         out <- .$..data
       }
     }
     ## no index -- return values
-    if(is.null(index)) index <- FALSE
-    if(index) {
+    if(!is.null(index) && index) {
       return(as.numeric(out))
     } else {
       ## depends on drop
+      values <- values[,-1]             # drop ..index
       if(is.null(drop) || drop) {
         return(values[as.numeric(out),.$..store$chosenCol,drop=TRUE])
       } else {
@@ -81,6 +80,16 @@ gtable <- function(items, multiple = FALSE, chosencol = 1,
       }
     }      
   }
+  
+  widget$setValueJS <- function(., ...) {
+    if(exists("..setValueJS", envir=., inherits=FALSE)) .$..setValueJS(...)
+
+    ind <- .$getValue(index=TRUE, drop=TRUE)
+    out <- String() +
+       'o' + .$ID + '.getSelectionModel().selectRows(' + toJSON(ind - 1) + ');' # offset by 1
+
+    return(out)
+   }
 
   ## setValues need to add in icons.
   widget$setValues <- function(.,i,j,...,value) {
@@ -98,31 +107,62 @@ gtable <- function(items, multiple = FALSE, chosencol = 1,
         items <- items[,c(n+1,1:n)]
       }
     }
+    items <- cbind("..index"=seq_len(nrow(items)), items)
     .$..store$data <- items
 
     if(exists("..shown",envir=., inherits=FALSE))
       cat(.$setValuesJS(...), file=stdout())
   }
+
+  ##' visibility
+  widget$setVisible <- function(., value) {
+    ## XXX nothing to do here, can't find the visible (setHidden? method we need)
+
+  }
+
+  ## we don't have a good means for visible<-. Instead we have this
+  ## filter proto method 
+  widget$filter <- function(., colname, regex) {
+    if(!exists("..shown",envir=., inherits=FALSE)) {
+      ## "Can only filter once object is shown"
+      out <- ""
+    }
+
+    if(missing(colname) || !colname %in% names(.$..store$data))  {
+       ## Need colname to match one of the names of the data set
+      out <- ""
+    }
+
+    if(missing(regex) || regex=="") {
+      out <- sprintf("o%s.getStore().clearFilter();", .$ID)
+    } else {
+      out <- sprintf("o%s.getStore().filter('%s','%s');", .$ID, colname, regex)
+    }
+    cat(out, file=stdout())
+  }
+  
+
   
   widget$transportSignal <- c("cellclick")
   widget$transportValue <- function(.,...) {
+    ## we packed in ..index so we can get the index even if we've sorted
     if(.$..multiple) {
-      ## work a bit to get the value
-      out <- String() +
-        'store = w.getStore();' +
-          'selModel = w.getSelectionModel();' +
-            'var values = selModel.getSelections();' +
-              'value = "c(";' +
-                'for(var i = 0, len = values.length; i < len; i++){;' +
-                  'var  ind = store.indexOf(values[i]) + 1;' +
-                    'value = value + ind + ",";' +
-                    '};' +
-                      're = /,$/;' + 'value = value.replace(re,"");' +
-                      'value = value + ")";'
-    } else {
-      out <- "var value = rowIndex + 1;"
-    }
-    
+       ## work a bit to get the value
+       out <- String() +
+         'var store = w.getStore();' +
+           'var selModel = w.getSelectionModel();' +
+             'var values = selModel.getSelections();' +
+               'var value = new Array();' +
+                 'for(var i = 0, len=values.length; i < len; i++) {' +
+                   'var record = values[i];' +
+                     'var data = record.get("..index");' +
+                         'value[i] = data' +
+                           '};'
+     } else {
+       out <- String() +
+         'var record = w.getStore().getAt(rowIndex);' +
+           'var value = record.get("..index");' 
+     }
     return(out)
   }
 
@@ -131,9 +171,11 @@ gtable <- function(items, multiple = FALSE, chosencol = 1,
     out <- list(store = String(.$..store$asCharacter()),
                 columns = String(.$makeColumnModel()),
                 stripeRows = TRUE,
+                enableRowBody = TRUE, 
                 frame = FALSE
+                ,autoExpandColumn=tail(names(.$..store$data), n=1)
                 ) ## also autoExpandColumn, XXX
-
+    
     ## paging -- doesn't work -- doesn't get no. of fields from store
 ##     out[['bbar']] = String() +
 ##       paste("new Ext.PagingToolbar({",
@@ -184,7 +226,7 @@ gtable <- function(items, multiple = FALSE, chosencol = 1,
   widget$scripts <- function(.) {
     out <- String()
     ## text is red or black depending
-    out <- out +
+    out <- out + "\n" +
       'gtableNumeric = function(val) { ' +
         'return \'<span style="color:red">\' + val + \'</span>\';' +
           '};' + '\n'
@@ -230,10 +272,22 @@ gtable <- function(items, multiple = FALSE, chosencol = 1,
     }
 
     df <- .$..store$data
-    renderers <- sapply(df, function(i) mapRenderer(class(i)[1]))
-    colNames <- names(df)
+    renderers <- sapply(df[,-1, drop=FALSE], function(i) mapRenderer(class(i)[1]))
+    colNames <- names(df)[-1]           # XXX
+##    colNames <- names(df)
     colNames <- shQuoteEsc(colNames)
 
+    ## widths
+    fontWidth <- 10
+    colWidths <- sapply(df[,-1, drop=FALSE], function(i) max(nchar(as.character(i))) + 1)
+    colWidths <- pmax(colWidths, nchar(names(df[,-1, drop=FALSE])) + 1)
+    totalWidth <- ifelse(exists("..width", envir=., inherits=FALSE), .$..width, "auto")
+    if(totalWidth == "auto" || fontWidth * sum(colWidths) > totalWidth)
+      colWidths <- colWidths * fontWidth       # fontWidth pixels per character
+    else
+#      colWidths <- floor(fontWidth * colWidths * totalWidth/sum(colWidths))
+      colWidths <- colWidths * fontWidth       # fontWidth pixels per character
+    
     ## didn't work for header:
     trimDD <- function(x) {
       ind <- grep("^..", x)
@@ -242,11 +296,11 @@ gtable <- function(items, multiple = FALSE, chosencol = 1,
       return(x)
     }
 
-    
     tmp <- paste('{',
                  'id:',colNames,
                  ', header:',colNames,
                  ', sortable:true',
+                 ', width:', colWidths,
                  ', dataIndex:',colNames,
                  renderers,
                  '}',
@@ -277,8 +331,8 @@ gtable <- function(items, multiple = FALSE, chosencol = 1,
              "")
     }
     df <- .$..store$data
-    types <- sapply(df, function(i) mapTypes(class(i)[1]))
-    colNames <- shQuoteEsc(names(df))
+    types <- sapply(df[,-1, drop=FALSE], function(i) mapTypes(class(i)[1]))
+    colNames <- shQuoteEsc(names(df)[-1])
     tmp <- paste("{name:", colNames, types, "}", sep="")
     out <- paste("[",tmp,"]", collapse="\n")
 
@@ -303,7 +357,7 @@ gtable <- function(items, multiple = FALSE, chosencol = 1,
     .$addHandler(signal="cellclick",
                  handler = handler,
                  action = action,
-                 handlerArguments = "grid, rowIndex, columnIndex, e",
+                 handlerArguments = "grid, rowIndex, colIndex, e",
                  handlerValue = "var value = rowIndex + 1;"
                  )
   }
@@ -311,10 +365,11 @@ gtable <- function(items, multiple = FALSE, chosencol = 1,
   ## double click is default
   widget$addHandlerDoubleclick <- widget$addHandlerChanged <- function(.,handler, action=NULL, ...) {
     ## we need to set up some stuff
-    .$addHandler(signal="celldblclick",
+    .$addHandler(signal="dblclick",
                  handler = handler,
                  action = action,
-                 handlerArguments = "grid, rowIndex, columnIndex, e")
+                 handlerArguments = "grid, rowIndex, colIndex, e",
+                 handlerValue = "var value = rowIndex + 1;")
   }
   
   if(!is.null(handler))

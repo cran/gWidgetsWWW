@@ -36,7 +36,7 @@ gdf <- function(items = NULL, name = deparse(substitute(items)),
 
   ## load in items
   if(!is.data.frame(items)) items <- as.data.frame(items)
-
+  
   store$data <- items
   widget$..store <- store
 

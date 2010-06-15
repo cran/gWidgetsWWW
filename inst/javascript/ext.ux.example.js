@@ -28,5 +28,10 @@ Ext.example = function(){
       if(lb){ lb.show(); } 
     } 
   }; 
-}();// http://extjs.com/forum/showthread.php?t=65632
+}();
+// http://extjs.com/forum/showthread.php?t=65632
+
+
+
+
 

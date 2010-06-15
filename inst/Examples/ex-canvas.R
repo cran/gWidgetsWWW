@@ -1,6 +1,12 @@
 w <- gwindow("Example of canvas device within gWidgetsWWW")
 g <- ggroup(cont = w, horizontal=FALSE)
-ghtml("Example of using the canvas device with gWidgetsWWW. Not all browsers work.", cont = g)
+ghtml(paste("Example of using the canvas device with gWidgetsWWW. Requires HTML5-compliand browser to work.",
+            "<br>",
+            "The canvas device uses javascript to write the graphic, not an image. It is an alternative to the gsvg device, which requires its image to be loaded from a file.",
+            collapse="\n"),
+
+            cont = g)
+
 canvas <- gcanvas(cont = g, width=500, height=500)
 
 makePlot <- function() {

@@ -123,6 +123,10 @@ widget$makeMarkers <- function(.) {
   }
   widget$ExtConstructor <- "Ext.Panel"
   widget$ExtCfgOptions <- function(.) {
+    ## out <- list(autoLoad=String('http://www.google.com/jsapi?key=' +
+    ##               getOption("gWidgetsWWWGoogleAPI" + '"></script>' +
+    ##       '<script type="text/javascript">  google.load("maps", "2"); </script>' + '\n'
+
     out <- list(items = .$makeMapCommands())
                   
     return(out)

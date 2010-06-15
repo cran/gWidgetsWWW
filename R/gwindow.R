@@ -12,7 +12,7 @@ gwindow <- function(title="title",file="",visible=TRUE,
   ## width, height  for subwindows
   ## changed container argument to  parent to match gWidgets
   container <- parent
-1  
+
    ## make a subwindow?
    if(!is.null(container))
      return(.gsubwindow(title=title,handler=handler, action=action,
@@ -30,16 +30,19 @@ gwindow <- function(title="title",file="",visible=TRUE,
   w$sessionID <- makeSessionID()
   w$toplevel <- w
   w$..renderTo <- String("Ext.getBody()") # can override
-##  w$..visible <- FALSE
   
-   w$setValue(value=title)
-   ## XXX handle cat to STDOUT
+  w$doLoadingText <- gWidgetsWWWIsLocal() # do we print a message when calling a handler
+  w$loadingText <- gettext("Loading...")  # prints when a handler is called to indicate a request.
+  ##  w$..visible <- FALSE
+  
+  w$setValue(value=title)
+  ## XXX handle cat to STDOUT
    w$file <- file; unlink(file)
-
-   w$jscriptHandlers = list()        # handlers in parent winoow
-   w$toplevel <- w
-   w$..IDS <- c()
-
+  
+  w$jscriptHandlers = list()        # handlers in parent winoow
+  w$toplevel <- w
+  w$..IDS <- c()
+  w$..blocked_handlers <- c()           # IDs of handlers not to call
 
 
   ## store name in title for handlers.
@@ -50,13 +53,16 @@ gwindow <- function(title="title",file="",visible=TRUE,
    ## methods
 
   w$runHandler <- function(., id, context) {
-    lst <- .$jscriptHandlers[[as.numeric(id)]]
-    h <- list(obj=lst$obj, action = lst$action)
-    if(!missing(context) &&  is.list(context)) {
-      for(i in names(context))
-        h[[i]] <- context[[i]]
+    id <- as.numeric(id)
+    if(! (id %in% .$..blocked_handlers)) {
+      lst <- .$jscriptHandlers[[as.numeric(id)]]
+      h <- list(obj=lst$obj, action = lst$action)
+      if(!missing(context) &&  is.list(context)) {
+        for(i in names(context))
+          h[[i]] <- context[[i]]
+      }
+      return(lst$handler(h))
     }
-    return(lst$handler(h))
   }
 
 
@@ -123,31 +129,42 @@ gwindow <- function(title="title",file="",visible=TRUE,
                       "\n" +
                         "function evalJSONResponse(response, options) {" +
                           "eval(response.responseText);" +
-                            "};"
+                            "};" + "\n"
 
-              if(!exists("gWidgetsWWWAJAXurl")) 
+              if(!exists("gWidgetsWWWAJAXurl") || is.null(gWidgetsWWWAJAXurl))  {
                 gWidgetsWWWAJAXurl <- "/gWidgetsWWW"
-
+              }
+              
               ## XXX Need to fix
               ## * url is fixed
               ## key, extra needs to be added
               out <- out +
                 'runHandlerJS = function(id,context) {' +
+                  ifelse(.$doLoadingText, 
+                         sprintf("Ext.getBody().mask('%s');", .$loadingText),
+                         "") + "\n" +
                   "Ext.Ajax.request({" +
                     "url: '" + gWidgetsWWWAJAXurl + "'," +
                       "success: evalJSONResponse," +
                         "failure: processFailure," +
                           "method: 'POST', " +
                             "timeout: 2000," +
-                            "params: { type: 'runHandler', " +
-                              "sessionID: sessionID," +
-                                "id: id," +
-                                  "context: context" +
-#                                    "extra: extra" +
+                              "params: { type: 'runHandler', " +
+                                "sessionID: sessionID," +
+                                  "id: id," +
+                                    "context: context" +
+                                        #                                    "extra: extra" +
                                       "}" +
                                         "}); " +
-                                          '};'
+                                          '};' + "\n"
 
+              ## show loading text box if requested
+              if(.$doLoadingText) {
+                out <- out +
+                  "Ext.Ajax.on('requestcomplete', function() {Ext.getBody().unmask() }, this);" +
+                    "Ext.Ajax.on('requestexception', function() {Ext.getBody().unmask()}, this);" + "\n"
+              }
+              
               ## transportToR copies data in widget back into R
               ## using a global variable IDXXX 
               out <- out +
@@ -162,7 +179,7 @@ gwindow <- function(title="title",file="",visible=TRUE,
                               "sessionID: sessionID," +
                                 "variable: id," +
                                   "value: val" +
-                                    "}})};"
+                                    "}})};" + "\n"
 
               out <- out +
                 'function clearSession() {' +
@@ -172,7 +189,7 @@ gwindow <- function(title="title",file="",visible=TRUE,
                       "method: 'POST'," +
                         "params: { type: 'clearSession', " +
                           "sessionID: sessionID" +
-                            "}})};"
+                            "}})};" + "\n"
               
 
               ## put into run function
@@ -195,12 +212,12 @@ gwindow <- function(title="title",file="",visible=TRUE,
 
               ## ext message for galert
               f <- system.file("javascript","ext.ux.example.js", package="gWidgetsWWW")
-              out <- out + paste(readLines(f), sep="\n")
+              out <- out + paste(readLines(f, warn=FALSE), sep="\n") 
 
               ## statusbar
               if(exists("..statusBar", envir=., inherits=FALSE)) {
                 f <- system.file("javascript","ext.ux.statusbar.js", package="gWidgetsWWW")
-                out <- out + paste(readLines(f), collapse="\n")
+                out <- out + paste(readLines(f, warn=FALSE), collapse="\n") 
               }
 
 #              out <- "" ## for debug
@@ -273,9 +290,11 @@ gwindow <- function(title="title",file="",visible=TRUE,
 
 
    }
-   
 
-   w$..setHandlers <- function(.) {
+  ## can't dispose of top-level window
+  w$visible <- function(.) {}
+
+  w$..setHandlers <- function(.) {
      ## deprecated, see addHandler now
      return("")
    }

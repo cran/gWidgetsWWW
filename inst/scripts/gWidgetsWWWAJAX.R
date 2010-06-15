@@ -155,7 +155,24 @@ if(!is.null(POST) && !is.null(POST$type)) {
     }
   } else if(type == "fileupload") {
     ## XXX Implement me with security
-    
+    sink("/tmp/test.txt")
+    print(SERVER)
+    print(GET)
+    print(POST)
+    print("----")
+    print(file.info(POST[["file-path"]])) # from name of form
+    system(sprintf("mv %s /tmp/test.file", POST[['file-path']]))
+    sink(NULL)
+
+    if(1) {
+      ## JSON code for output if success
+      out <- sprintf("{'success' : true, msg : { files : [ {'file' : 1 , 'fileStatus' : '0', 'fileName' : '%s' } ] } }",
+                     "insert name")
+      setContentType("application/json")
+      cat(out)
+    } else {
+      cat(404L)                         # some error goes here
+    }
   } else if(type == "clearSession") {
     ## untaint
     sessionID <- gsub("[^a-zA-Z0-9]","",sessionID)

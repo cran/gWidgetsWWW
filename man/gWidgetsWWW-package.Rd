@@ -158,11 +158,16 @@ The communication between \R\/ and the browser works as
   \code{svalue<-} method, for adjusting the title, is defined.  \cr
   \cr
 
+  There are a few \pkg{proto} properties to adjust the page. The
+  property \code{doLoadingText} can be set to \code{FALSE} to suppress
+  the "loading" message whenever a handler is being called.
+  \cr
+
   The default means of each window being a webpage can be overridden
   by specifying a value of \code{..renderTo}, as in \code{w =
   gwindow(); w$..renderTo = "someId"} for some HTML object with
   appropriate id.
-
+  \cr
 
   The \code{ggroup} container accepts the \code{horizontal} and
   \code{spacing} arguments, but does not use the \code{use.scrollwindow}
@@ -249,9 +254,10 @@ The communication between \R\/ and the browser works as
   \cr
 
 
-  The \code{gspinbutton} widget is  implemented if Ext 3.0 is
-  installed. However, the trigger icons may not appear. The widget is responsive to arrow keys to cycle through the specified values. The \code{[<-} method to set the values to choose from is not implemented.
-  \cr
+  The \code{gspinbutton} widget is implemented but the trigger icons may
+  not appear. The widget is responsive to arrow keys to cycle through
+  the specified values. The \code{[<-} method to set the values to
+  choose from is not implemented.  \cr
 
 
   The \code{gedit} widget: The transport occurs on the "blur" signal
@@ -318,19 +324,27 @@ The communication between \R\/ and the browser works as
   
   The \code{gsvg} widget creates a space in a page to use the		
   \pkg{RSVGTipsDevice} to display graphics within a web page.
-
-
-  The \code{gfilebrowse} widget needs writing
   \cr
+
+  The \code{gfilebrowse} widget is written only for local
+  installs. The handler does not work. The basic idea is that gfile is
+  like an edit box with a button (like gfilebrowse in gWidgets) and a
+  \code{svalue} method.  \cr
 
 
   The \code{gtable} widget: when using \code{[<-} to replace values,
   indices don't work and when replacing data frame the replacement must
   have same number of columns, each with the same type; has no
-  \code{names<-}method to set column names. Only \code{addHandlerClick} and
-  \code{addHandlerDoubleclick} are working. The filtering feature
-  (specified through \code{filter.FUN} say) is not implemented. The
-  \code{icon.FUN} should return either url's or stock icon names.   
+  \code{names<-} method to set column names. Only \code{addHandlerClicked} and
+  \code{addHandlerDoubleclick} are working. 
+
+  The filtering feature (specified through \code{filter.FUN} say) is
+  not implemented. However, a proto method \code{filter} is available
+  to filter by a column name and regular expression after the widget
+  is shown. Call as in: \code{tbl=gtable(mtcars, ...);
+  tbl\$filter("cyl","6")}. The \code{ex-gtable} example has a sample usage.
+
+  The \code{icon.FUN} should return either url's or stock icon names.
   \cr
 
   The \code{gdf} widget is implemented but limited. The widget
@@ -339,7 +353,7 @@ The communication between \R\/ and the browser works as
   could start with more rows and columns than needed and then trim.) As
   the column types come from the \code{items} argument, this must be
   provided. The widget does not gracefully handle \code{NA} values
-  (\code{items[complete.cases(items),]} is used). Thi scan be worked
+  (\code{items[complete.cases(items),]} is used). This can be worked
   around, but isn't automated. For numeric values \code{NaN} is
   recongized. For character, logical or factors vectors, one could use
   \code{"NA"} or \code{""}.  The widget does not show the data frames
@@ -352,7 +366,9 @@ The communication between \R\/ and the browser works as
 
 
   The \code{gaction} widget creates "actions" which can be used in
-  menubars and attached to buttons. The methods \code{svalue<-} and
+  menubars and attached to buttons. Unlike the \code{gaction}
+  constructor of other \pkg{gWidgets} implementations, here one must
+  include a \code{parent} argument. The methods \code{svalue<-} and
   \code{enabled<-} can be used to set the label and the en/dis able the
   items. 
   \cr
@@ -362,6 +378,7 @@ The communication between \R\/ and the browser works as
   \code{gaction} elements, rather than lists as with the other gwidgets
   implementations. This allows one to call \code{enabled<-} to disable,
   and \code{svalue} to change the text.
+  The icons are not working.
   \cr
 
   At this time, support for popup menus via \code{add3rdMousePopupMenu}
@@ -411,18 +428,19 @@ The communication between \R\/ and the browser works as
   "ok" selection.
   \cr
 
-  The \code{ginput} works. The handler is called on okay. The value of the input component contains the text typed into the box.
-  \cr
+  The \code{ginput} works. The handler is called on okay. The value of
+  the input component contains the text typed into the box.  \cr
 
   As an alternative to \code{gconfirm} and \code{ginput} a subwindow can
   be used. These are created by the \code{gwindow} constructor when the
-  \code{container} argument is specified.
+  \code{parent} argument is specified. (The dialogs are modal, the
+  subwindow is not, although it sits on top of the browser window.)
 
 
   \bold{icons:}\cr
 
   
-  The funtion \code{getStockIcons} returns a vector of these icons. The
+  The function \code{getStockIcons} returns a vector of these icons. The
   \code{names} of this vector may be used to define icons in some of the
   widgets. The return values are url's of the stock icons.
   
@@ -455,7 +473,7 @@ The communication between \R\/ and the browser works as
   \cr
 
   
-  The \code{dispose<-} method only hides the widget, rather than
+  The \code{delete} and \code{dispose<-} methods only hide the widget, rather than
   destroy the widget. 
   \cr
 
@@ -488,7 +506,7 @@ The communication between \R\/ and the browser works as
   
   The \code{print} method for windows (gwindow) will print out the
   javascript to produce the page. This is how a page gets rendered to
-  the web browser.
+  the web browser, but can also help in debugging (somewhat).
   \cr
   
   The \code{tooltip<-} method will set a tooltip for the widget. The
@@ -503,12 +521,11 @@ The communication between \R\/ and the browser works as
   The interactivity between the web browser GUI and R is provided by
   handlers which respond to GUI signals sent when an event occurs. For
   instance, when the mouse clicks on a button, a mousedown signal is
-  sent. The \code{gWidgetsWWW} code -- through the essential \pkg{Rpad}
-  package -- allows \R\/ functions to be used as handlers. These
-  functions create JavaScript code to update the the web browser. The
-  \pkg{gWidgetsWWW} package takes the methods of \pkg{gWidgetsWWW} and
-  produces the JavaScript code, so the \R\/ programmer need only know
-  how to program in \R.
+  sent. The \code{gWidgetsWWW} code allows \R\/ functions to be used as
+  handlers. These functions create JavaScript code to update the the web
+  browser. The \pkg{gWidgetsWWW} package takes the methods of
+  \pkg{gWidgetsWWW} and produces the JavaScript code, so the \R\/
+  programmer need only know how to program in \R.
   
   Handlers in \pkg{gWidgetsWWW} are slightly different than in other
   implementations of gWidgets. As with others, the first argument to the
@@ -538,6 +555,13 @@ The communication between \R\/ and the browser works as
   support. Otherwise, drag and drop is not currently supported.
   
   \bold{Compound widgets:}\cr
+
+  The \code{gcommandline} widget is implemented to run locally only. It
+  provides a simple notebook like interface. The implementation does not
+  follow the API of \pkg{gWidgets}, the only arguments are the
+  container, a \code{width} and a \code{graphic_size} (to specify the
+  size for a gsvg widget).
+
 
   At this time the constructors of the compound widgets
   \code{gdfnotebook}, \code{gvarbrowser}, \code{ggraphicsnotebook},

@@ -49,7 +49,7 @@ gstatusbar <- function(text = "", container=NULL, ...) {
       .$getSBJS() +
         'widget.setStatus({' +
           'text:' + shQuote(svalue(.)) + ',' +
-            'clear: true, iconCls: "ok-icon" });' + '\n'
+            'clear: true, iconCls: "x-status-valid" });' + '\n'
     
     return(out)
   }

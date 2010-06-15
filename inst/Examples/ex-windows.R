@@ -5,12 +5,13 @@ ghtml(paste("Illustration of state of modal dialogs and subwindows. Modal dialog
             "Subwindows are created by gwindow with the argument parent=toplevel_window.",
             sep=" "), cont = g)
 
-g1 <- gexpandgroup("Modal dialogs.",cont=g)
-
+g1 <- gexpandgroup("Quick message dialog",cont=g)
 b1 <- gbutton("galert", cont=g1, handler = function(h,...) {
   galert("for quick transient messages", title="galert dialog")
 })
 
+
+g1 <- gexpandgroup("Modal dialogs.",cont=g)
 
 b2 <- gbutton("gmessage", cont=g1, handler = function(h,...) {
   ## parent needed -- dialog animation comes from parent.
@@ -40,7 +41,6 @@ b5 <- gbutton("gwindow" ,cont=g1, handler = function(h,...) {
   g1 <- ggroup(cont = w1, horizontal=FALSE)
   ## need the gimage code first!!!
   glabel("subwindow text", cont = g1)
-  gimage("ex-graph.png", cont=g1)
   gseparator(cont = g1)
   gbutton("dismiss", cont = g1, handler = function(h,...) dispose(w1))
   visible(w1) <- TRUE #show

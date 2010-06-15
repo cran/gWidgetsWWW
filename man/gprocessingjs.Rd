@@ -169,6 +169,36 @@ gprocessingjs(width=400, height=400, pointsize= 12, container = NULL, ...)
 
    visible(w) <- TRUE
 
+   ## This is really slow!
+w <- gwindow("Follow the cursor", cont=g)
+w$doLoadingText <- FALSE
+
+f <- gframe("Regression example", horiz=FALSE, cont = w)
+glabel("Move mouse through canvas and red ball will follow along", container=f)
+p1 = gprocessingjs(width=500, height = 400, container  = f)
+p1$..background = 200
+p1$plot.new()
+p1$plot.window(xlim=c(0,10), ylim=c(0,10))
+
+theta <- seq(0, 2*pi, length=100)
+inds <- 2*(0:4) + 1.5
+p1$addHandlerMousemove(handler = function(h,...) {
+  xy = p1$pixelsToXY(h$xy) ## need to convert to user coordinates
+  p1$plot.new()
+  for(i in inds) {
+    for(j in inds) {
+      r <- min(0.5, sqrt((i-xy[1])^2 + (j-xy[2])^2)/5)
+      p1$points(i, j, cex=r*10, col="red")
+    }
+  }
+})
+
+
+gstatusbar("Powered by gWidgetsWWW", cont=w)
+visible(w) <- TRUE
+
+
+
 }
 }
 \keyword{interface}

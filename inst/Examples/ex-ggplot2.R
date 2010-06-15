@@ -2,6 +2,9 @@
 ## Needs some -- alot of -- work! better representation,  DRY is violated, passing parameters to
 ## ggplot2 commands, ...
 
+if(!exists("gWidgetsWWWStaticDir") || is.null(gWidgetsWWWStaticDir))
+  gWidgetsWWWStaticDir <- tempdir()
+
 GUIdescription <- paste("An example GUI for exploring ggplot2 commands that illustrates:",
                         "the gcombobox with icons and tooltips,",
                         "dynamically adding widgets;",
@@ -14,12 +17,14 @@ GUIdescription <- paste("An example GUI for exploring ggplot2 commands that illu
 
 
 ## we want to quiet down the loading of packages
-sink("/tmp/sink.R")
+deleteMe <- tempfile()
+sink(deleteMe)
 require(reshape, quietly=TRUE, warn=FALSE)
 require(plyr, quietly=TRUE, warn=FALSE)
 require(grid, quietly=TRUE, warn=FALSE)
 require(ggplot2, quietly=TRUE, warn=FALSE)
 sink()
+unlink(deleteMe)
 
 
 ##################################################
@@ -363,7 +368,8 @@ bb <- Cars93
   require(RSVGTipsDevice, quietly=TRUE, warn=FALSE)
   if(file.exists(imageFile))
     unlink(imageFile)                     # out with the old ...
-  imagefile <- gsub("//","/",getStaticTmpFile(ext=".svg")) # in with the new
+  imagefile <- getStaticTmpFile(ext=".svg")
+#  imagefile <- gsub("//","/",getStaticTmpFile(ext=".svg")) # in with the new
   devSVGTips(imageFile)
   out <- try(print(p), silent=TRUE)
   dev.off()

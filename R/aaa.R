@@ -12,7 +12,7 @@ require(proto, quietly=TRUE)
 
 ## > a = proto(..test = TRUE, test = TRUE, new = function(.) .$proto())
 ## > b = a$new()
-## > b$..test
+## > b$test
 ## [1] TRUE
 ## > b$..test
 ## Error in get(x, env = this, inherits = inh) : 
@@ -30,6 +30,7 @@ EXTWidget <-
         toplevel = NULL,                # stores top gwindow instance
         parent = NULL,                  # stores parent (sub)window
         ID = "",                        # what am i, IDXXX
+        .tag=list(),                    # for tag<-
         ..data = NULL,                  # for svalue
         ..values = NULL,                # for [
         ..enabled = TRUE,               # is enabled (or grayed out)
@@ -126,19 +127,19 @@ EXTWidget$setValue <- function(., index=NULL, ..., value) {
   if(exists("..setValue",envir=., inherits=FALSE)) {
     .$..setValue(index=index, ..., value=value)
   } else {
-    
+    ## store index
     if(!is.null(index)) {
       items <- .$getValues();  d <- dim(items)
       if(is.null(d) || d == 1)
-        newVal <- .$getValues()[value,1]
+        newVal <- items[value,1]
       else
-        newVal <- .$getValues()[value,]
+        newVal <- items[value,]
     } else {
       newVal <- value
     }
     .$..data <- newVal
     if(.$ID != "")
-      assign(.$ID,newVal, envir=.$toplevel)
+      assign(.$ID, newVal, envir=.$toplevel)
   }
   ## now process if shown
   if(exists("..shown",envir=., inherits=FALSE)) 
@@ -445,6 +446,12 @@ EXTWidget$writeConstructor <- function(.) {
           'Ext.get(' + shQuote(.$ID) +').addClass("x-hidden");\n'
     }
   }
+
+  ## add in at the end 
+  if(exists("..writeConstructor", envir=., inherits=FALSE)) {
+    out <- out + .$..writeConstructor()
+  }
+
   return(out)
 }
 
@@ -840,19 +847,6 @@ EXTContainer$ExtStdCfgOptions <- function(.) {
 ## also a separator is possible to display between the children,
 ## although this should go
 EXTContainer$Show <- function(.) {
-  
-  ## scripts
-  if(exists("scripts", envir=., inherits=FALSE)) {
-    out <- String() 
-    for(i in .$scripts) {
-      if(is.list(i))
-        out <- out + i$FUN(i$obj)
-      else if(is.character(i))
-        out <- out + i
-    }
-    .$Cat(out)
-  }
-
   ## css -- use createStyleSheet method of Ext JS to write out
   if(exists("css",envir=., inherits=FALSE)) {
     out <- String() 
@@ -867,6 +861,19 @@ EXTContainer$Show <- function(.) {
       out <- String('Ext.util.CSS.createStyleSheet("') + out + '");'
       .$Cat(out)
     }
+  }
+
+  
+  ## scripts
+  if(exists("scripts", envir=., inherits=FALSE)) {
+    out <- String() 
+    for(i in .$scripts) {
+      if(is.list(i))
+        out <- out + i$FUN(i$obj)
+      else if(is.character(i))
+        out <- out + i
+    }
+    .$Cat(out)
   }
 
 
@@ -1015,7 +1022,7 @@ EXTStore$makeFields <- function(.) {
   .$asJSArray(.$fieldNames())
 }
 EXTStore$show <- function(.) {
-  out <- .$asCharacter() + '= new Ext.data.SimpleStore({' +
+  out <- .$asCharacter() + '= new Ext.data.ArrayStore({' +
     'fields:  ' + .$makeFields() + ',' + '\n' +
       'data: ' + .$asJSArray() +
         '\n' + '});' + '\n'
@@ -1044,15 +1051,17 @@ EXTComponentWithStore <- EXTComponent$new()
 EXTComponentWithStore$..store <- NULL
 
 ## methods
-EXTComponentWithStore$getValues <- function(., ...) .$..store$data
+EXTComponentWithStore$getValues <- function(., ...) {
+  tmp <- .$..store$data
+  if(names(tmp)[1] == "..index")
+    tmp <- tmp[,-1]
+  tmp
+}
 EXTComponentWithStore$getLength <- function(.)
   length(.$getValues())
 EXTComponentWithStore$getNames <- function(.)
   names(.$getValues())
 ## XXX names<- not defined
-## getValues needs to refer to the store
-EXTComponentWithStore$getValues <- function(.,...) 
-  .$..store$data
 EXTComponentWithStore$setValues <- function(.,i,j,...,value) {
   ## XXX need to include i,j stuff
   .$..store$data <- value
@@ -1065,7 +1074,7 @@ EXTComponentWithStore$setValuesJS <- function(.) {
   out <- String() +
     .$..store$asCharacter() + '.removeAll();' +
       .$..store$asCharacter() + '.loadData(' +
-        .$asJSArray(.$getValues()) +');'
+        .$asJSArray(.$..store$data) +');'
 
   return(out)
 }
@@ -1303,6 +1312,20 @@ delete.gWidget <- function(obj, widget, ...) {
   return(obj)
 }
 
+## tag
+tag <- function(obj, key, ...) UseMethod("tag")
+tag.gWidget <- function(obj, key, ...)  {
+  obj$.tag[[key]]
+}
+"tag<-" <- function(obj, key,...,value) UseMethod("tag<-")
+"tag<-.gWidget" <- function(obj, key, ..., value) {
+  l <- obj$.tag
+  l[[key]] <- value
+  obj$.tag <- l
+  obj
+}
+
+
  ## visible, visible<-
 visible <- function(obj) UseMethod("visible")
 visible.gWidget <- function(obj) obj$getVisible()
@@ -1443,7 +1466,33 @@ addDropMotion <- function(obj, handler = NULL, action = NULL, ...) UseMethod("ad
 addDropTarget <- function(obj, targetType = "text", handler = NULL, action = NULL,  ...) UseMethod("addDropTarget")
 
 
+## always true, but gWidgets methods
+isExtant <- function(x,...) UseMethod("isExtant")
+isExtant.gWidget <- function(x,...) TRUE
 
+logfile <- "/tmp/log.txt"
+cat("", file=logfile)
+
+blockHandler <- function(obj, ID=NULL, ...) UseMethod("blockHandler")
+blockHandler.gWidget <- function(obj, ID=NULL, ...) {
+  w <- obj$toplevel
+  if(is.null(ID))
+    ID <- seq_along(w$jscriptHandlers)
+  ID <- as.numeric(ID)
+  w$..blocked_handlers <- unique(c(w$..blocked_handlers, ID))
+}
+
+unblockHandler <- function(obj, ID=NULL,...) UseMethod("unblockHandler")
+unblockHandler.gWidget <- function(obj, ID=NULL, ...) {
+  w <- obj$toplevel  
+  if(is.null(ID)) {
+    w$..blocked_handlers <- c()
+  } else {
+    ID <- as.numeric(ID)
+    if(ID %in% w$..blocked_handlers)
+      w$..blocked_handlers <- unique(setdiff(w$..blocked_handlers, ID))
+  }
+}
 ##################################################
 ## Javascript handlers -- not submit handlers for buttons etc.
 
@@ -1617,7 +1666,6 @@ EXTWidget$writeHandlersJS <- function(.) {
       
 ## handlerExtraParameters is NULL or a JSON string to evaluate to a list
 ## it is passed into the handler in the $context component
-## if the value is preceeded by "^evalme" it gets eval-parsed
 EXTWidget$addHandler <- function(., signal, handler, action=NULL,
                                  handlerArguments="w",
                                  handlerExtraParameters=NULL,
@@ -1732,28 +1780,28 @@ addHandlerBlur.gWidget <- function(obj,handler, action=NULL)
    obj$addHandlerDoubleclick(handler, action)
 
 
- ## addHandlerMouseclick
- EXTWidget$addHandlerMouseclick <- function(., handler, action=NULL) {
-   .$addHandler(signal="mousedown",handler, action,
-                handlerArguments="e",
-                handlerExtraParameters = "Ext.util.JSON.encode({xy:[e.layerX,e.layerY]})"
-                )
+## addHandlerMouseclick
+EXTWidget$addHandlerMouseclick <- function(., handler, action=NULL) {
+  .$addHandler(signal="mousedown",handler, action,
+               handlerArguments="e",
+               handlerExtraParameters = "Ext.util.JSON.encode({xy:[e.layerX,e.layerY]})"
+               )
+  
+}
 
- }
-
- "addHandlerMouseclick" <- function(obj, handler, action=NULL)
-   UseMethod("addHandlerMouseclick")
- addHandlerMouseclick.gWidget <- function(obj,handler, action=NULL)
+"addHandlerMouseclick" <- function(obj, handler, action=NULL)
+  UseMethod("addHandlerMouseclick")
+addHandlerMouseclick.gWidget <- function(obj,handler, action=NULL)
   obj$addHandlerMouseclick(handler, action)
 
 ## addHandlerKeystroke
- EXTWidget$addHandlerKeystroke <- function(., handler, action=NULL,...) {
-   .$addHandler(signal="keyup",handler, action,
-                handlerArguments="b,e",
-                handlerExtraParameters = "Ext.util.JSON.encode({key: e.getKey()})",
-                ...
-                )
- }
+EXTWidget$addHandlerKeystroke <- function(., handler, action=NULL,...) {
+  .$addHandler(signal="keydown",handler, action,
+               handlerArguments="b,e",
+               handlerExtraParameters = "Ext.util.JSON.encode({key: e.getKey()})",
+               ...
+               )
+}
 
 ## This handler shows how we can pass in extra information to the handler and then
 ## use this by writing a custom writeHandlerFunction.

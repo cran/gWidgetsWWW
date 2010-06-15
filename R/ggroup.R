@@ -27,7 +27,7 @@ EXTGroup$ExtCfgOptions <-  function(.) {
     ## no "row" layout, so we use the default.
   }
   ## size
-##  out[['autoWidth']] <- TRUE
+  ## out[['autoWidth']] <- TRUE
   if(exists("..width", envir = ., inherits =FALSE))
     out[["width"]] <- .$..width
   if(exists("..height", envir = ., inherits =FALSE))
@@ -49,9 +49,12 @@ EXTGroup$setVisibleJS <- function(.) {
     .$callExtMethod("collapse","true")
 }
 
-## these are not defined
+EXTGroup$addSpace <- function(., value, horizontal=TRUE, ...) {
+  n <- ceiling(value/8)
+  ghtml(paste(rep("&nbsp", n), sep="", collapse=""), cont=.)
+}
+## this is not defined
 EXTGroup$addSpring <- function(.) {invisible("")}
-EXTGroup$addSpace <- function(., value, horizontal=TRUE, ...) {}
 
 ggroup <- function(horizontal=TRUE, spacing=5, use.scrollwindow = FALSE,
                     container,...) {
