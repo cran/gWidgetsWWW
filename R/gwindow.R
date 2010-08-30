@@ -30,7 +30,7 @@ gwindow <- function(title="title",file="",visible=TRUE,
   w$sessionID <- makeSessionID()
   w$toplevel <- w
   w$..renderTo <- String("Ext.getBody()") # can override
-  
+  w$..show_error_messages <- TRUE         # set to NULL to not show
   w$doLoadingText <- gWidgetsWWWIsLocal() # do we print a message when calling a handler
   w$loadingText <- gettext("Loading...")  # prints when a handler is called to indicate a request.
   ##  w$..visible <- FALSE
@@ -39,7 +39,7 @@ gwindow <- function(title="title",file="",visible=TRUE,
   ## XXX handle cat to STDOUT
    w$file <- file; unlink(file)
   
-  w$jscriptHandlers = list()        # handlers in parent winoow
+  w$jscriptHandlers <- list()        # handlers in parent winoow
   w$toplevel <- w
   w$..IDS <- c()
   w$..blocked_handlers <- c()           # IDs of handlers not to call
@@ -50,8 +50,10 @@ gwindow <- function(title="title",file="",visible=TRUE,
   assign(w$titlename,w, envir=.GlobalEnv)
   
    
-   ## methods
-
+  #### methods ####
+  ##' run a handler
+  ##' id is id of handler. Can be used for blocked handlers
+  ##' context is named list of values to pass into "h" object
   w$runHandler <- function(., id, context) {
     id <- as.numeric(id)
     if(! (id %in% .$..blocked_handlers)) {
@@ -122,14 +124,24 @@ gwindow <- function(title="title",file="",visible=TRUE,
 
               ## Some javascript functions
               ## XXX make betters
+
+              if(exists("..show_error_message", envir=.)) {
+                processFailure <- paste("function processFailure(response, options) {",
+                                        "Ext.example.msg('Error:', response.responseText, 4);",
+                                        "};",
+                                        sep="\n")
+              } else {
+                processFailure <- paste("function processFailure(response, options) {",
+                                        "eval(response.responseText);",
+                                        "};",
+                                        sep="\n")                
+              }
               out <- out +
-                "function processFailure(response, options) {" +
-                  "eval(response.responseText);" +
-                    "};" +
-                      "\n" +
-                        "function evalJSONResponse(response, options) {" +
-                          "eval(response.responseText);" +
-                            "};" + "\n"
+                processFailure +
+                  "\n" +
+                    "function evalJSONResponse(response, options) {" +
+                      "eval(response.responseText);" +
+                        "};" + "\n"
 
               if(!exists("gWidgetsWWWAJAXurl") || is.null(gWidgetsWWWAJAXurl))  {
                 gWidgetsWWWAJAXurl <- "/gWidgetsWWW"
@@ -166,12 +178,15 @@ gwindow <- function(title="title",file="",visible=TRUE,
               }
               
               ## transportToR copies data in widget back into R
-              ## using a global variable IDXXX 
+              ## using a global variable IDXXX
+              ## We don't expect a return value
               out <- out +
                 '_transportToR = function(id, val) {' +
                   "Ext.Ajax.request({" +
                     "url: '" + gWidgetsWWWAJAXurl + "'," +
-                      "success: evalJSONResponse," +
+## JV                     "success: evalJSONResponse," +
+                      ## we get some XML back, not JSON
+                      "success: function(response, opts) {}," +
                         "failure: processFailure," +
                           "timeout: 2000," +
                             "method: 'POST'," +
@@ -183,7 +198,6 @@ gwindow <- function(title="title",file="",visible=TRUE,
 
               out <- out +
                 'function clearSession() {' +
-#                  'alert(sessionID);};'
                   "Ext.Ajax.request({" +
                     "url: '" + gWidgetsWWWAJAXurl + "'," +
                       "method: 'POST'," +
@@ -220,7 +234,6 @@ gwindow <- function(title="title",file="",visible=TRUE,
                 out <- out + paste(readLines(f, warn=FALSE), collapse="\n") 
               }
 
-#              out <- "" ## for debug
               return(out)
             })
           )
@@ -241,6 +254,9 @@ gwindow <- function(title="title",file="",visible=TRUE,
    ## code to set up iconclasses for use with buttons, toolbar, menubar
    w$iconDir <- ""
    w$makeIconClasses <- function(.) {
+     ## XXX -- this doesn't work with IE so we cut it out.
+     return("")
+     ## old below
      out <- String()
      x <- getStockIcons();
      nms <- names(x)
@@ -251,15 +267,12 @@ gwindow <- function(title="title",file="",visible=TRUE,
                  collapse="") +
            '");' + '\n'
      }
-     ## XXX -- this doesn't work with IE so we cut it out.
-     out <- ""
-     
+
      return(out)
    }
    
    w$header <- function(.) {
      out <- String() + .$makeIconClasses()
-
      .$Cat(out)
    }
 
@@ -359,11 +372,7 @@ handler = NULL, action=NULL, container=NULL,...) {
       .$..setVisibleJS()
     
     ## opposite -- we already changed if we got here
-    if(.$..visible)
-      method = "show"
-    else
-      method = "hide"
-    
+    method <- ifelse(.$..visible, "show", "hide")
     out <- String() + 
       'o' + .$ID + '.' + method + '();'
     cat(out, file=stdout())

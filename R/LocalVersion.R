@@ -1,13 +1,16 @@
 ##' Environment to hold different sessions
-sessionEnv <- new.env()
+assign("..gWidgets_sessionEnv", new.env(), envir=.GlobalEnv)
 
 ##' remove session form list to free up space
 clearSessionId <- function(ID) {
+  sessionEnv <- get("..gWidgets_sessionEnv",  envir=.GlobalEnv)
   sessionEnv[[ID]] <- NULL
+  assign("..gWidgets_sessionEnv", sessionEnv, envir=.GlobalEnv)
 }
 
 ##' This lists the gwindow objects and matches against ID
 getBaseObjectFromSessionID <- function(sessionID, envir=.GlobalEnv) {
+  sessionEnv <- get("..gWidgets_sessionEnv",  envir=.GlobalEnv)  
   return(sessionEnv[[sessionID]])
   ## XXX delete me
   ## get the gWindow instance matching session ID
@@ -27,8 +30,12 @@ getBaseObjectFromSessionID <- function(sessionID, envir=.GlobalEnv) {
 
 ##' return all gWindow instances
 getBaseObjectsFromEnvironment <- function(envir=.GlobalEnv) {
-  vars <- ls(envir=envir)  
-  gWindowObjects <- vars[ sapply(vars, function(i) inherits(get(i, envir=envir), "gWindow")) ]
+  vars <- ls(envir=envir)
+  ind <- sapply(vars, function(i) inherits(get(i, envir=envir), "gWindow"))
+  if(any(ind))
+    gWindowObjects <- vars[ ind ]
+  else
+    gWindowObjects <- character(0)
   return(gWindowObjects)
 }
   
@@ -136,15 +143,17 @@ processSource <- function(path, mimeType=mime_type(path)) {
   ## OK
   ## scan through e looking for gWindow object
   objs <- getBaseObjectsFromEnvironment(e)
+
   w <- get(objs[1], envir=e)
   ID <- w$sessionID
   ## assign by session ID to some list
+  sessionEnv <- get("..gWidgets_sessionEnv",  envir=.GlobalEnv)
   sessionEnv[[ID]] <- w
-  
+  assign("..gWidgets_sessionEnv", sessionEnv, envir=.GlobalEnv)
   
   ##    results <- capture.output(source(path))
   results <- paste(results, collapse="\n")
-  out <- gWidgetsWWW:::makegWidgetsWWWpage(results, script=TRUE)
+  out <- gWidgetsWWW:::makegWidgetsWWWpage(results, script=TRUE, .=w)
   ret <- list(payload=out,
               "content-type" = mimeType,
               "headers" = NULL,
@@ -194,36 +203,52 @@ processExternalRun <- function(path, query, ...) {
 ##' passed through ..., not query. We call it query below, nonetheless
 processAJAX <- function(path, query, ...) {
   query <- list(...)[[1]]               # query passed in body, not query (POST info)
+
+  ## rstudio passes query as an object with a attr "application/x-www-form-urlencoded; charset=UTF-8"
+  if(is.raw(query)) {
+    out <- rawToChar(query)
+    tmp <- unlist(strsplit(out, "&"))
+    l <- list()
+    for(i in tmp) {
+      i <- ourURLdecode(i)
+      a <- strsplit(i, "=")[[1]]
+      if(length(a) > 1 && !is.na(a[2]))
+        l[[a[1]]] <- a[2]
+    }
+
+    query <- l
+  }
+
   query <- lapply(query, function(i) i) # make a list
   type <- query$type
   
   switch(type,
          "runHandler"= {
-           out <- gWidgetsWWW:::localRunHandler(query$id, query$context, query$sessionID)
-           ret <- list(payload=out,
+           l <- gWidgetsWWW:::localRunHandler(query$id, query$context, query$sessionID)
+           ret <- list(payload=l$out,
                        "content-type"="text/javascript",
                        "headers"=NULL,
-                       "status code"=200L
+                       "status code"=l$retval
                        )
          },
          "assign" = {
            ## pass back return value. Assign does nothing otherwise
-           out <- gWidgetsWWW:::localAssignValue(query$variable, query$value, query$sessionID)
-           ret <- list(payload="",
-                       "content-type"="text/xml",
+           l <- gWidgetsWWW:::localAssignValue(query$variable, ourURLdecode(query$value), query$sessionID)
+           ret <- list(payload=l$out,
+                       "content-type"="text/html",
                        "headers"=paste(
                          "<?xml version='1.0' encoding='ISO-8859-1'?>",
                          "<responseText></responseText>",
                          "<readyState>4</readyState>",
                          sep="\n"),
-                       "status code"=as.integer(out)
+                       "status code"=l$retval
                        )
          },
          "clearSession"={
            ## clear out session
            clearSessionId(query$sessionID)
             ret <- list(payload="",
-                       "content-type"="text/xml",
+                       "content-type"="text/html",
                        "headers"=paste(
                          "<?xml version='1.0' encoding='ISO-8859-1'?>",
                          "<responseText></responseText>",
@@ -235,17 +260,25 @@ processAJAX <- function(path, query, ...) {
          "fileupload"={
            ret <- makeErrorPage(sprintf("Don't know how to process type %s.", type))
          })
-
+  ##  assign("ret", ret, envir=.GlobalEnv)
   return(ret)
 }
 
 
 ##' basic handler to arrange for dispatch based on URL
+##'
+##' @param path passes in path including custom/gw bit
+##' @param query passes in GET info
+##' @param ... passes in post information (for AJAX calls!)
 gw.httpd.handler <- function(path, query, ...) {
 
   ## here path is path, query contains query string, ... ???
+  ## assign("path", path, envir=.GlobalEnv)
+  ## assign("query", query, envir=.GlobalEnv)
+  ## assign("post", list(...)[[1]], envir=.GlobalEnv)
   path <- ourURLdecode(path)
-
+  query <- ourURLdecode(query)
+  
   ## strip off /custom/url_base/
   path <- gsub(sprintf("^/custom/%s/",url_base), "", path)
   path <- unlist(strsplit(path, "/"))
@@ -259,7 +292,7 @@ gw.httpd.handler <- function(path, query, ...) {
                 "gWidgetsWWWRunExternal"=processExternalRun(path[-1], query, ...),
                 processBasehtmlFile(c("",path), query,  ...)
                 )
-
+  ## assign("out", out, envir=.GlobalEnv)
   return(out)
 }
 
@@ -285,7 +318,7 @@ gWidgetsWWWStaticDir <- NULL
 ##' @param package If file specified and package given, the file looked up within package through system.file
 ##' 
 ##' @details Starts help server if not already done, then loads custom http handler
-localServerStart <- function(file="", port=8079, package=NULL) {
+localServerStart <- function(file="", port=8079, package=NULL, ...) {
   if(!isServerRunning()) {
     tools:::startDynamicHelp()
   }
@@ -317,7 +350,7 @@ localServerStart <- function(file="", port=8079, package=NULL) {
   
   ## open if called to
   if(!is.null(file) && file != "") {
-    localServerOpen(file, package)
+    localServerOpen(file, package, ...)
   } else {
     if(!is.null(file)) {
       ## make a message
@@ -343,7 +376,7 @@ localServerStart <- function(file="", port=8079, package=NULL) {
 ##' Load a file in gWidgets by calling gWidgetsWWWRun
 ##' @param file filename to open
 ##' @note  XXX Unix only? Test this
-gWloadFile <- function(file) {
+gWloadFile <- function(file, ...) {
   localServerStart(file=NULL)
   .url <- sprintf("http://127.0.0.1:%s/custom/%s/gWidgetsWWWRun/%s",
                   tools:::httpdPort,
@@ -355,13 +388,13 @@ gWloadFile <- function(file) {
 ##' Load file from pacakge
 ##' @param file passed to system.file. If NULL, ignored
 ##' @param package to look for file
-localServerOpen <- function(file, package=NULL) {
+localServerOpen <- function(file, package=NULL, ...) {
   if(is.null(file))
     return()                            # do nothing
   if(!is.null(package))
     file <- system.file(file, package=package)
   if(file.exists(file))
-    gWloadFile(file)
+    gWloadFile(file, ...)
   else
     cat(sprintf("Can't find file %s\n", file))
 }
@@ -388,27 +421,47 @@ gWidgetsWWWIsLocal <- function() {
 ##' Called by AJAX script to assign a value
 localAssignValue <- function(id, value, sessionID) {
   e <- getBaseObjectFromSessionID(sessionID)
-  retval <- "419"                         # expectation failed
+  OK <- 200L; ERROR <- 419L
+  l <- list(out="", retval=OK)
   if(is.null(e)) {
-    cat("Error: can't find session for", sessionID, "\n")
+    l$out <- sprintf("Error: can't find session for", sessionID, "\n")
+    l$retval <- ERROR
   } else {
-    out <- fromJSON(value)
+    out <- ourFromJSON(value)
     if(is.list(out)) {
       tmp <- try(assign(id, out$value, envir=e), silent=TRUE)
-      if(!inherits(tmp, "try-error"))
-        retval <- "200"                   # all good
+      if(inherits(tmp, "try-error")) {
+        l$out <- tmp
+        l$retval <- ERROR
+      }
     }
   }
-  return(retval)
+  return(l)
 }
 
 ##' Called to run a handler
-localRunHandler <- function(id, context="", sessionID) {
+localRunHandler <- function(id, context=NULL, sessionID) {
+  ## assign("id",id, envir=.GlobalEnv)
+  ## assign("context", context, envir=.GlobalEnv)
+  ## assign("sessionID", sessionID, envi=.GlobalEnv)
+
+  if(!is.null(context)) {
+    context <- ourURLdecode(context)
+    if(context == "\"\"")
+      context <- NULL
+  }
+
+  ## return 200 if ok, 419 if no
+  OK <- 200L; ERROR <- 419L
+  ret <- list(out="", retval=OK)
+  
   e <- getBaseObjectFromSessionID(sessionID)
   if(is.null(e)) {
-    out <- "alert('No session for this id');"
+    ret$out <- "alert('No session for this id');"
+    ret$retval <- ERROR
   } else if(sink.number() > 10) {
-    out <- sprintf("alert('too many sinks: %s');", sink.number())
+    ret$out <- sprintf("alert('too many sinks: %s');", sink.number())
+    ret$retval <- ERROR
   } else {
     f <- tempfile()
     ## XXX There is an issue with SIGPIPE presumably related to the way we open a file to capture the output
@@ -424,32 +477,32 @@ localRunHandler <- function(id, context="", sessionID) {
       stop("Tried too many times")
     
     out <- try({
-      if(nchar(context))
-        e$runHandler(id, fromJSON(context))
+      if(!is.null(context))
+        e$runHandler(id, ourFromJSON(context))
       else
         e$runHandler(id)
     }, silent=TRUE)
     
     if(inherits(out, "try-error")) {
       sink(NULL)
-      cat("Error:", as.character(out))
-      out <- ""
+      ret$out <- sprintf("Error: %s", as.character(out))
+      ret$retval <- ERROR
     } else {
       sink(NULL)
       cat("\n", file=f, append=TRUE)
-      out <- paste(readLines(f), collapse="\n")
+      ret$out <- paste(readLines(f), collapse="\n")
     }
     
     unlink(f)
   }
-  return(out)
+  return(ret)
 }
 
 ## out <- tryCatch({
 ## tc <- textConnection("textfromconnection", open="w")
 ## sink(file=tc)
 ## if(nchar(context))
-##   e$runHandler(id, fromJSON(context))
+##   e$runHandler(id, ourFromJSON(context))
 ## else
 ##   e$runHandler(id)
 ## sink()
@@ -491,7 +544,7 @@ mimeTypes <- function(ext) {
          )
 }
 
-makegWidgetsWWWPageHeader <- function() {
+makegWidgetsWWWPageHeader <- function(.) {
   ## XXX This needs work!! The proper combination here could make things work for Chrome, safari, Opera and IE?
   out <- paste(
 #               "<!DOCTYPE html PUBLIC '-//W3C//DTD HTML 4.01 Transitional//EN'>",
@@ -521,20 +574,31 @@ makegWidgetsWWWPageHeader <- function() {
 
                "<script type='text/javascript' src='/custom/gw/ext/ext-all.js'></script>",
                "<script type='text/javascript'>document.getElementById('loading-msg').innerHTML = 'Loading gWidgetsWWW...';</script>",
-
-               "<script type='text/javascript' src='/custom/gw/codemirror/js/codemirror.js'></script>",
+               ## conditional includes -- values set in constructor on toplevel
                "<script type='text/javascript' src='/custom/gw/gWidgetsWWW.js'></script>",
                ## google stuff -- move out
-               '<script type="text/javascript" src="http://www.google.com/jsapi?key="ABQIAAAAYpRTbDoR3NFWvhN4JrY1ahS5eHnalTx_x--TpGz1e2ncErJceBS7FrNBqzV5DPxkpbheIzZ9nTJPsQ"></script>',
-               '<script type="text/javascript">  google.load("maps", "2"); </script>',
+               if(exists("ggooglemaps_key", .) && exists("do_googlemaps", .)) {
+                 paste(
+                       ## sprintf('<script type=\'text/javascript\' src=http://www.google.com/jsapi?key=%s></script>',.$ggooglemaps_key),
+                       ## '<script type="text/javascript">  google.load("maps", "2"); </script>',
+                       "<script type='text/javascript' src='/custom/gw/ggooglemaps/ext.ux.gmappanel.js'></script>" ,
+                       '<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />',
+                       '<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>',
+                       sep="\n")
+               },
                ## end google
+               ## webvis stuff move out
+               if(exists("do_gwebvis", envir=.)) {
+                 "<script type='text/javascript' src='/custom/gw/protovis/protovis-d3.1.js'></script>"
+               },
+               ##
                "<script type='text/javascript'>Ext.onReady(function(){Ext.get('loading').remove();});</script>",
                sep="\n")
   return(out)
 }
 
-makegWidgetsWWWpage <- function(results, script=TRUE) {
-  out <- makegWidgetsWWWPageHeader()
+makegWidgetsWWWpage <- function(results, script=TRUE, .=new.env()) {
+  out <- makegWidgetsWWWPageHeader(.)
   out <-  paste(out,
                if(script) {
                  "<script type='text/javascript'>"
@@ -616,7 +680,7 @@ localServerRestart <- restartRpadServer <- function() .Deprecated("",msg="No lon
 ##   if(is.null(e)) {
 ##     cat("Error: can't find session for", sessionID, "\n")
 ##   } else {
-##     out <- fromJSON(value)
+##     out <- ourFromJSON(value)
 ##     if(is.list(out)) {
 ##       tmp <- try(assign(id, out$value, envir=e), silent=TRUE)
 ##       if(!inherits(tmp, "try-error"))
@@ -637,7 +701,7 @@ localServerRestart <- restartRpadServer <- function() .Deprecated("",msg="No lon
 ##       tc <- textConnection("textfromconnection", open="w")
 ##       sink(file=tc)
 ##       if(nchar(context))
-##         e$runHandler(id, fromJSON(context))
+##         e$runHandler(id, ourFromJSON(context))
 ##       else
 ##         e$runHandler(id)
 ##       sink()

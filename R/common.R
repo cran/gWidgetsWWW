@@ -8,6 +8,8 @@ ourURLencode <- function(x) {
 
 ##' same as URLdecode, but takes care of plus signs
 ourURLdecode <- function(x) {
+  if(is.null(x))
+    return(x)
   x <- URLdecode(x)
   x <- gsub("&2B;", "+", x, fixed=TRUE)
   x
@@ -137,6 +139,21 @@ escapeQuotes <- function(x) {
     }
   }
   return(x)
+}
+
+ourFromJSON <- function(x, ...) {
+  if(x == "") return(x)
+  fromJSON(x, ...)
+}
+
+###
+##' are we online?
+gWidgetsWWWIsOnline <- function() FALSE
+##' bypass require so that we can put optional packages in different fields in DESCRIPTION
+##' From Henrik Bengtsson
+bypassRequire <- function(pkg) {
+  path <- system.file(package=pkg);
+  (path != "");
 }
 ##################################################
 ## string class
@@ -335,4 +352,5 @@ makeSessionID <- function() {
   ID <- digest(key, algo="md5")
   return(ID)
 }
+
 
