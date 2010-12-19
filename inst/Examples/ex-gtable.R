@@ -1,4 +1,5 @@
-## examples of tables
+## example of gtable widget
+
 d <- mtcars[1:3, 1:6]
 
 
@@ -49,5 +50,5 @@ cb <- gcombobox(c("<All>", unique(mtcars$cyl)), cont=f, handler=function(h,...) 
 
 
 ##
-gstatusbar("Powered by gWidgets and Rapache", cont=w)
+gstatusbar("Powered by gWidgets and RApache", cont=w)
 visible(w) <- TRUE

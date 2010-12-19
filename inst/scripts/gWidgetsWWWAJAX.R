@@ -2,41 +2,64 @@
 ## The GUI calls this as a form using an AJAX request
 ## This script returns javascript to be processed
 ## we limit the ability to call R from the browser to a) assignment to a gWidget
-## variable or b) to run ahandler by its id.
+## variable b) to run a handler by its id c) a proxystore request d) fileupload?
 
 ## This script requires some packages and variables for keeping
 ## track of the session to be set
 
-require(rjson)
+## the hack to find the lone gwindow could be improved so that we can
+## have more than one per window. This would allow us to mix html and
+## gWidgets.
 
+require(rjson)
+require(gWidgetsWWW, quietly=TRUE)
+
+## For error reporting we change this flag to TRUE and set an error message
+## Currently we don't know how to pass this error message back to RApache
+.sendError <- FALSE
+.sendErrorMessage <- ""
 sendError <- function(db, msg) {
-#  out <- try(dbDisconnect(db), silent=TRUE)
-  stop(paste("alert('", msg, "');"))
+  .sendError <<- TRUE
+  .sendErrorMessage <<- msg
+}
+
+## must figure out type. Type can be set in POST value -- or be buried in the path type/id/sessionID
+if(is.null(POST) || is.null(POST$type)) {
+
+  ## we use the uri and strip off the AJAXurl
+#  path <- SERVER$path
+#  path <- unlist(strsplit(path, "/"))
+
+  opath <- path <- SERVER$uri
+  path <- gsub(gWidgetsWWWAJAXurl,"", path)
+  path <- gsub("^/","",path)
+  path <- unlist(strsplit(path, "/"))
+
+  
+  type <- path[1]
+  id <- path[2]
+  sessionID <- path[3]
+} else {
+  opath <- path <- c()
+  type <- POST$type
+  id <- POST$id                         # if present
+  sessionID <- POST$sessionID
 }
 
 
-if(!is.null(POST) && !is.null(POST$type)) {
 
-  RApacheOutputErrors(TRUE, '', '')
+if(!.sendError && !is.null(type)) {
 
+#  RApacheOutputErrors(TRUE, 'alert("', '");')
+  RApacheOutputErrors(FALSE, '', '')
   
-  type <- POST$type
-  ## get session ID    
-  sessionID <- POST$sessionID
-
 
   if(exists("sessionDBIlogfile"))
     cat(sessionID, "\n", file=sessionDBIlogfile, append=TRUE)
-
-
   
   ## db object
   createDb(sessionDbFile) ## if not already there
 
-  if(exists("sessionDBIlogfile"))
-    cat(sessionID, "load dbfile", "\n", file=sessionDBIlogfile, append=TRUE)
-
-  
   db <- initDb(sessionDbFile, type=sessionDbType)
 
   if(exists("sessionDBIlogfile"))
@@ -46,148 +69,191 @@ if(!is.null(POST) && !is.null(POST$type)) {
     sendError(db, "Error opening data base file")
   } 
   
-  ## tidy up -- delete old sessions
-  if(!dbExists(db,"lastClearTime") ||
-     db[["lastClearTime"]] + 7 * 24 * 60 * 60 < Sys.time()) { # 7 days??
-    keys <- dbList(db)
-    if(length(keys > 1)) {
-      keys <- keys[keys != "lastClearTime"]
-      for(key in keys) {
-        session <- db[[key]]
-        if(sessionHasTimedout(session))
-          dbDelete(db,key)
-      }
-    }
-    db[['lastClearTime']] <- Sys.time()
-  }
+  ## ## tidy up -- delete old sessions
+  ## if(!dbExists(db,"lastClearTime") ||
+  ##    db[["lastClearTime"]] + 7 * 24 * 60 * 60 < Sys.time()) { # 7 days??
+  ##   keys <- dbList(db)
+  ##   if(length(keys > 1)) {
+  ##     keys <- keys[keys != "lastClearTime"]
+  ##     for(key in keys) {
+  ##       session <- db[[key]]
+  ##       if(sessionHasTimedout(session))
+  ##         dbDelete(db,key)
+  ##     }
+  ##   }
+  ##   db[['lastClearTime']] <- Sys.time()
+  ## }
   
   if(exists("sessionDBIlogfile"))
     cat(sessionID, "check valid key", "\n", file=sessionDBIlogfile, append=TRUE)
 
   ## is valid id?
-  out <- validKey(db, sessionID)
+  if(!.sendError)
+    out <- validKey(db, sessionID)
+
   if(!out$retval) {
     sendError(db, out$reason)
   }
   
   ## get environment from ID
-  e <- db[[sessionID]]
+  if(!.sendError)
+    e <- db[[sessionID]]
   
   
   ## has session timed out
- if(sessionHasTimedout(e)) {
-#   dbClear(db, sessionID)
+  if(!.sendError && sessionHasTimedout(e)) 
    sendError(db, "Session timed out")
- }
-
+  
   ## hack to find gWindow instance. Must be only one.
-  nms <- ls(e)
-  w <- nms[sapply(nms, function(i) class(get(i, envir=e))[1]) == "gWindow"]
+  if(!.sendError) {
+    ## XXX Can do better here. We have the enviroment and the ID of the
+    ## window so can search over these values and get IDs
+    nms <- ls(e)
+    ind <- sapply(nms, function(i) {
+      is(get(i, envir=e), "gWindow")
+    })
+    if(any(ind)) {
+      w <- nms[ind]
+      if(length(w) > 1) {
+        ind <- sapply(w, function(i) e[[i]]$sessionID == sessionID)
+        w <- w[ind]
+      }
+    } else {
+      sendError(db, "Can't find gwindow instance")
+    }
+  }
+  
+  ## Here we process the type of request
+  ## For a given type we do:
+  ## 1) set the content type
+  ## 2) if no errro, cat out generated commands
+  ## 3) If there is an error, we do not cat, but instead call sendError
+
   
   ## what type of request. Just a few
-  if(type == "runHandler") {
-    if(exists("sessionDBIlogfile"))
-      cat(sessionID, "run handler", "\n", file=sessionDBIlogfile, append=TRUE)
-
-
-    ## Here we run a handler callback
-    ## the environment does not remember the loaded packages
-    require(gWidgetsWWW, quietly=TRUE)
-
-    ## may need to quiet down via sink
-    sink(f <- tempfile())
-    if(is.null(POST$context)) {
-      out <- try(e[[w]]$runHandler(POST$id), silent=TRUE)
-    } else {
+  if(!.sendError) {
+    if(type == "runHandler") {
+      ## Run a handler call. Returns javascript
       if(exists("sessionDBIlogfile"))
-        cat(sessionID, "POST context:", POST$context, "\n", file=sessionDBIlogfile, append=TRUE)
-
-      context <- try(fromJSON(as.character(POST$context)), silent=TRUE)
-      out <- try(e[[w]]$runHandler(POST$id, context), silent=TRUE)
-    }
-    sink()
-    
-    if(exists("sessionDBIlogfile"))
-      cat(sessionID, "ran handler", "\n", file=sessionDBIlogfile, append=TRUE)
-
-
-    if(inherits(out, "try-error")) {
-      unlink(f)
-      sendError(db, out)
-    } else {
-      ## read out
-      setContentType("text/plain")
-      out <- try(readLines(f), silent=TRUE)
-      if(!inherits(out,"try-error"))
-        cat(out)
-      unlink(f)
-      ## store session
-      db[[sessionID]] <- e
-    }
-  } else if(type == "assign") {
-    ## Assign a value in the gwindow object
-    ## only names of  gWidgetsXXX are permitted
-
-    if(exists("sessionDBIlogfile"))
-      cat(sessionID, "assign value", POST$value, "\n", file=sessionDBIlogfile, append=TRUE)
-    
-    variable <- POST$variable
-    value <- POST$value
-    value <- fromJSON(value)            # store as JSON object
-    value <- value$value                # JSON object is a list(value=xxx)
-    ## check that variable matches
-    ## Could put in check to limit size of value, o/w the post
-    ## data could be arbitrarily large
-    if(length(grep("^gWidgetID", variable)) > 0) {
-      sink(type="message")                  # quiet RApache errors ## was tempfile()
-      tmp <- e[[w]]
-      out <- try(assign(variable, value, envir=tmp), silent=TRUE) ## not e[[w]] here.
-      if(inherits(out,"try-error")) {
+        cat(sessionID, "run handler", "\n", file=sessionDBIlogfile, append=TRUE)
+      
+      
+      ## Here we run a handler callback
+      ## the environment does not remember the loaded packages
+      require(gWidgetsWWW, quietly=TRUE)
+      
+      ## may need to quiet down via sink
+      if(is.null(POST$context)) {
+        out <- try(e[[w]]$runHandler(POST$id), silent=TRUE)
+      } else {
         if(exists("sessionDBIlogfile"))
-          cat(sessionID, "assign had error:", out, "\n", file=sessionDBIlogfile, append=TRUE)
+          cat(sessionID, "POST context:", POST$context, "\n", file=sessionDBIlogfile, append=TRUE)
+        
+        context <- try(fromJSON(as.character(POST$context)), silent=TRUE)
+        out <- try(e[[w]]$runHandler(POST$id, context), silent=TRUE)
       }
-      e[[w]] <- tmp
-      ## save session
-      db[[sessionID]] <- e
-      try(sink(NULL), silent=TRUE)
-    } else {
-      sendError(db, paste("var name ", variable, " is not acceptable"))
-    }
-  } else if(type == "fileupload") {
-    ## XXX Implement me with security
-    sink("/tmp/test.txt")
-    print(SERVER)
-    print(GET)
-    print(POST)
-    print("----")
-    print(file.info(POST[["file-path"]])) # from name of form
-    system(sprintf("mv %s /tmp/test.file", POST[['file-path']]))
-    sink(NULL)
+      
+      if(exists("sessionDBIlogfile"))
+        cat(sessionID, "ran handler", "\n", file=sessionDBIlogfile, append=TRUE)
+      
+      
+      if(inherits(out, "try-error")) {
+        sendError(db, out)
+      } else {
+        ## read out
+        setContentType("text/plain")
+        if(!inherits(out,"try-error"))
+          cat(out)
+        
+      ## store session
+        db[[sessionID]] <- e
+      }
+    } else if(type == "assign") {
+      ## Assign a value. 
+      ## Nothing to report for assign unless there is an error
+      
+      
+      ## Assign a value in the gwindow object
+      ## only names of  gWidgetsXXX are permitted
+      
+      variable <- POST$variable
+      value <- POST$value
+      value <- fromJSON(value)            # store as JSON object
+      value <- value$value                # JSON object is a list(value=xxx)
+      
+      ## check that variable matches
+      ## Could put in check to limit size of value, o/w the post
+      ## data could be arbitrarily large
+      if(length(grep("^gWidgetID", variable)) > 0) {
+        ## had sink() call here, removed. Was it required?
+#        tmp <- e[[w]]
+#        out <- try(assign(variable, value, envir=tmp), silent=TRUE) ## not e[[w]] here.
+#        e[[w]] <- tmp
 
-    if(1) {
-      ## JSON code for output if success
-      out <- sprintf("{'success' : true, msg : { files : [ {'file' : 1 , 'fileStatus' : '0', 'fileName' : '%s' } ] } }",
-                     "insert name")
-      setContentType("application/json")
-      cat(out)
-    } else {
-      cat(404L)                         # some error goes here
+        w <- e[[w]]
+        out <- try(w$assignValue(variable, value), silent=TRUE)
+        
+        ## log errors
+        if(inherits(out,"try-error")) {
+          sendError(db, out)
+        } else {
+          ## nothing to report, just commit changes to environment
+          db[[sessionID]] <- e
+        }
+      } else {
+        sendError(db, sprintf("var name %s is not acceptable", variable))
+      }
+    } else if(type == "proxystore") {
+      
+      ## get info from proxy store
+      w <- e[[w]]
+      query <- POST
+      
+      store <- w$getStoreById(id)
+      out <- try(store$parseQuery(query), silent=TRUE)
+      
+      if(!inherits(out,"try-error")) {
+        setContentType("application/javascript")
+        cat(out)
+      } else {
+        sendError(db, sprintf("Error: %s", out))
+      }
+    } else if(type == "fileupload") {
+      ## XXX Implement me with security
+      print(file.info(POST[["file-path"]])) # from name of form
+      system(sprintf("mv %s /tmp/test.file", POST[['file-path']]))
+      
+      if(1) {
+        ## JSON code for output if success
+        out <- sprintf("{'success' : true, msg : { files : [ {'file' : 1 , 'fileStatus' : '0', 'fileName' : '%s' } ] } }",
+                       "insert name")
+        setContentType("application/json")
+        cat(out)
+      } else {
+        cat(404L)                         # some error goes here
+      }
+    } else if(type == "clearSession") {
+      ## untaint
+      sessionID <- gsub("[^a-zA-Z0-9]","",sessionID)
+      f <- paste(sessionDbFile,sessionID, sep=.Platform$file.sep)
+      if(file.exists(f))
+        unlink(f)
+      if(exists("sessionDBIlogfile"))
+        cat(sessionID, "unlink ",f, "\n", file=sessionDBIlogfile, append=TRUE)
     }
-  } else if(type == "clearSession") {
-    ## untaint
-    sessionID <- gsub("[^a-zA-Z0-9]","",sessionID)
-    f <- paste(sessionDbFile,sessionID, sep=.Platform$file.sep)
-    if(file.exists(f))
-      unlink(f)
-    if(exists("sessionDBIlogfile"))
-      cat(sessionID, "unlink ",f, "\n", file=sessionDBIlogfile, append=TRUE)
+    
+    ## why don't we disconnect?
+    ##  out <- try(dbDisconnect(db), silent=TRUE)
   }
-  ## clean up
-  if(exists("sessionDBIlogfile"))
-      cat(sessionID, "disconnect db", "\n", file=sessionDBIlogfile, append=TRUE)
-
-#  out <- try(dbDisconnect(db), silent=TRUE)
 }
 
-
-DONE
+## Question: how to return the error message to browser. I get stuck
+## with general 500 warning
+if(.sendError) {
+  try(cat(paste(capture.output(.sendErrorMessage), collapse="\n"), "\n", file="/tmp/error.txt"), silent=TRUE)
+}
+if(.sendError) {
+  HTTP_INTERNAL_SERVER_ERROR
+} else {
+  DONE
+}

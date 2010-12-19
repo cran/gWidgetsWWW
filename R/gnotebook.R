@@ -1,3 +1,18 @@
+##  Copyright (C) 2010 John Verzani
+##
+##  This program is free software; you can redistribute it and/or modify
+##  it under the terms of the GNU General Public License as published by
+##  the Free Software Foundation; either version 2 of the License, or
+##  (at your option) any later version.
+##
+##  This program is distributed in the hope that it will be useful,
+##  but WITHOUT ANY WARRANTY; without even the implied warranty of
+##  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##  GNU General Public License for more details.
+##
+##  A copy of the GNU General Public License is available at
+##  http://www.r-project.org/Licenses/
+
 ## gnotebook
 ## when adding, can pass in label= and tooltip= arguments for tooltip on tab
 ## XXX needs to addJS method
@@ -12,7 +27,7 @@ gnotebook <- function(tab.pos = 3, close.buttons = FALSE, container, ...) {
    widget$setValue(value=1)             # current tab
    ## Methods
    ## how to set a value
-   widget$setValueJS <- function(.) {
+   widget$setValueJS <- function(., ...) {
      if(exists("..setValueJS", envir=., inherits=FALSE)) .$..setValueJS(...)
        
      ind <- as.numeric(.$..data - 1)
@@ -79,6 +94,7 @@ gnotebook <- function(tab.pos = 3, close.buttons = FALSE, container, ...) {
      else
        label <- "tab"
      child$..label <- label
+     child$x.hidden <- TRUE
      ## tooltips
      if(!is.null(theArgs$tooltip))
        child$..tabTooltip <- theArgs$tooltip
@@ -96,91 +112,13 @@ gnotebook <- function(tab.pos = 3, close.buttons = FALSE, container, ...) {
                  activeTab = tabNo,
                  enableTabScroll = TRUE,
                  defaults = String("{autoScroll: true}"),
-                 tabPosition = tabpos, width=200)
+                 tabPosition = tabpos
+                 )
+
      return(out)
      
    }
    widget$makeItemsFixedItems <- 'border:false,'
-
-
-   
-##   widget$header <- widget$footer <- NULL
-##    widget$Show <- function(.,...) {
-##      ## override Show
-##      children <- .$children
-
-##      out <- String() +
-##        '<script>' +
-##          'var o' + .$ID +
-##            '= new YAHOO.widget.TabView(' + shQuote(.$ID) + ');'  +
-##              '</script>' + '\n'
-##      out <-  out +
-##        '<div id=' + shQuote(.$ID) + ' class="yui-navset"> ' +
-##          '<ul class="yui-nav">' + '\n'
-##      .$Cat(out)
-
-##      if((n <- length(children)) > 0) {
-##       out <- String()
-##       for(i in 1:n) {
-##         if(i == 1)
-##           selected = ' class="selected"'
-##         else
-##           selected = ""
-##         out <- out +
-##           '<li' + selected + '><a href="#tab' + i + '"><em>' +
-##         children[[i]]$..label +
-##         '</em></a></li>\n'
-##       }
-##       .$Cat(out)
-##     }
-
-##     .$Cat('</ul> <div class="yui-content">')
-
-##     if(n >= 1) {
-##       for(i in 1:n) {
-##         .$Cat('<div><p>')
-##         children[[i]]$Show()
-##         .$Cat('</p></div>')
-##       }
-##     }
-
-##     .$Cat("</div></div>")
-
-##      .$..shown <- TRUE                     # set shown     
-##   }
-
-##    widget$footer <- function(.) {
-##      children <- .$children
-
-##      childIDs <- sapply(children, function(i) i$ID)
-##      childLabels <- sapply(children, function(i) i$..label)
-     
-##      items <- paste(paste('{title:',shQuote(childLabels),',',
-##                           'contentEl:',shQuote(childIDs),'}',
-##                           sep=""),
-##                     collapse=",")
-
-##      tabpos <- "top"
-##      if(.$..tabPos == 1)
-##        tabpos <- "bottom"
-
-##      out <- String() +
-## ##XX       '<script>' +
-##          'o' + .$ID + '= new Ext.TabPanel(' +
-##            '{' +
-##              'renderTo: Ext.getBody(),' +
-##                'id:' + shQuote(.$ID) + ',' +
-##                  'frame: true,' + ## custom frame
-##                    'activeTab:0,' +
-##                      'tabPosition:' + shQuote(tabpos) + ',' +
-##                      'items:[' + items + ']' +
-##                        '});' 
-## ##XX     out <- out +'</script>'
-
-##      .$Cat(out)
-
-##    }
-   
 
   ## add after CSS, scripts defined
   container$add(widget,...)

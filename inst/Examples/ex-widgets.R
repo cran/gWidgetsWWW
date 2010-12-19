@@ -1,5 +1,5 @@
 w <- gwindow("Example of gWidgetsWWW widgets")
-g1 <- ggroup(cont=w)
+g1 <- ggroup(cont=w, horizontal=FALSE)
 l <- glabel("This page shows the status of several of the widgets in gWidgetsWWW.",cont=g1)
 
 g = gexpandgroup("gmenu", cont=g1)
@@ -30,7 +30,7 @@ widget = gbutton("button", cont=g)
 g = gexpandgroup("ghtml", cont=g1)
 ##widget = ghtml(asURL("ex-widgets.txt"), cont=g)
 ## \" preferred to ' here, as it gets properly escaped when widget is produced
-widget = ghtml("Can be <b>marked</b><em>up</em> or a <a href=\"http://www.r-project.org\">url</a>",
+widget = ghtml("Can be <b>marked</b> <em>up</em> or a <a href=\"http://www.r-project.org\">url</a>",
   cont=g)
 
 g = gexpandgroup("gcheckbox", cont=g1)
@@ -97,11 +97,22 @@ g = gexpandgroup("gdf", cont=g1)
 widget = gdf(mtcars[1:5, 1:6], cont=g)
 size(widget) <- c(300,300)
 
+g <- gexpandgroup("gbigtable -- paging", cont=g1)
+widget <- gbigtable(mtcars, cont=g)
+size(widget) <- c(300,300)
+
+
+
 g = gexpandgroup("gtree", cont=g1)
-glabel("no gtree yet", cont=g)
-
-
-
+offspring <- function(path, ...) {
+  x <- rbinom(2, 1, .5)
+  nms <- paste(path, 0:1, sep=":")
+  icons <- c("dismiss","ok")[x+1]
+  data.frame(id=nms, hasoffspring=as.logical(x), icons=icons, stringsAsFactors=FALSE)
+}
+tr <- gtree(offspring=offspring, icon.FUN=TRUE, cont=g)
+size(tr) <- c(300,300)
+b <- gbutton("Try again", cont=g, handler=function(h,...) tr$update())
 
 
 g = gexpandgroup("gtoolbar", cont=g1)

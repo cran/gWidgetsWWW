@@ -33,6 +33,7 @@
 \alias{tag<-}
 \alias{galert}
 \alias{gaction}
+\alias{gbigtable}
 \alias{gbutton}
 \alias{gcalendar}
 \alias{gcheckbox}
@@ -65,6 +66,7 @@
 \alias{gstatusbar}
 \alias{gtable}
 \alias{gtext}
+\alias{gtree}
 \alias{gwindow}
 \alias{size}
 \alias{size<-}

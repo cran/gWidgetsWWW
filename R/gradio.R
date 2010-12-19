@@ -1,3 +1,18 @@
+##  Copyright (C) 2010 John Verzani
+##
+##  This program is free software; you can redistribute it and/or modify
+##  it under the terms of the GNU General Public License as published by
+##  the Free Software Foundation; either version 2 of the License, or
+##  (at your option) any later version.
+##
+##  This program is distributed in the hope that it will be useful,
+##  but WITHOUT ANY WARRANTY; without even the implied warranty of
+##  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##  GNU General Public License for more details.
+##
+##  A copy of the GNU General Public License is available at
+##  http://www.r-project.org/Licenses/
+
 ## gradio
 ## XXX no [<- method!!!
 ## size?,
@@ -25,19 +40,16 @@ gradio <- function(items, selected = 1, horizontal=FALSE,
   widget$setValues(value = items)
 
   ## define methods
+  ## The value stored is the index -- not the text
+  ## this way we are untainted.
+  widget$assignValue <- function(., value) {
+    .$..data <- as.numeric(value[[1]])
+  }
   ## we store values by index
   widget$getValue <- function(.,index=NULL ,drop=NULL,...) {
     ## we need to revers logic from AWidgtet$getValue
     out <- .$..data
-    if(exists("..shown",envir=.$toplevel,inherits=FALSE)) {
-      ## get from widget ID
-      out <- try(get(.$ID,envir=.$toplevel),silent=TRUE) ## XXX work in index here?
-      if(!inherits(out,"try-error")) {
-        out <- as.numeric(out)          # is character
-      } else {
-        out <- .$..data
-      }
-    }
+ 
     ## no index -- return values
     if(is.null(index)) index <- FALSE
     if(index)
@@ -47,10 +59,11 @@ gradio <- function(items, selected = 1, horizontal=FALSE,
   }
   
   ## override setValue
+  ## We store the index
   widget$setValue <- function(., index=NULL,..., value) {
     ## values can be set by index or character
     if(is.null(index) || !index) {
-      ind <- which(value %in% .$getValues())
+      ind <- which(value == .$getValues())
       if(length(ind) == 0) return()
       ind <- ind[1]
     } else {
@@ -61,7 +74,8 @@ gradio <- function(items, selected = 1, horizontal=FALSE,
     .$..data <- ind
 
     if(exists("..shown",envir=., inherits=FALSE))
-      cat(.$setValueJS(index=ind), file=stdout())
+      ##cat(.$setValueJS(index=ind), file=stdout())
+      .$addJSQueue(.$setValueJS(index=ind))
   }
 
   widget$setValueJS <- function(.,..., index) {
@@ -75,7 +89,7 @@ gradio <- function(items, selected = 1, horizontal=FALSE,
   
   ## to set values we a) remove old values b) add new ones c) handlers?
   ## XXX doesn't work!!!
-##   widget$setValuesJS <- function(.) {
+##   widget$setValuesJS <- function(.,...) {
 ##     out <- String()
 
 ##     ## JS to remove values
@@ -113,25 +127,34 @@ gradio <- function(items, selected = 1, horizontal=FALSE,
   ## transport
   widget$transportValue <- function(.,...,i) {
     out <- String() +
-      'if(checked === true) {' +
-        '_transportToR(' + shQuote(.$ID) +
-          ',' +
-            'Ext.util.JSON.encode({value:' + i + '})' +
-            ');}' + '\n'         # i passed into transportValue()!
+      paste("if(checked==true) {",
+            sprintf("_transportToR('%s', Ext.util.JSON.encode({value:%s}))",
+                    .$ID,               # i passed into transportValue
+                    i),
+            "}",
+            sep="\n")
+    
+      ## 'if(checked === true) {' +
+      ##   '_transportToR(' + shQuote(.$ID) +
+      ##     ',' +
+      ##       'Ext.util.JSON.encode({value:' + i + '})' +
+      ##       ');}' + '\n'         # i passed into transportValue()!
 
     return(out)
   }
 
+  ## kludgy override of where transport is written
   widget$transportFUN <- function(.) return(String(""))
   ## override to put with checked===true
   widget$writeHandlerFunction <- function(., signal, handler) {
     out <- String() +
-          'if(checked === true) {' +
-            'runHandlerJS(' + handler$handlerID
+      'function(' + .$handlerArguments(signal) + ') {' +
+        'if(checked === true) {' +
+          'runHandlerJS(' + handler$handlerID
     if(!is.null(handler$handlerExtraParameters))
       out <- out + ',' + handler$handlerExtraParameters
     out <- out + ');' + 
-      '};' + '\n'
+      '};}' + '\n'
     return(out)
   }
 
@@ -169,8 +192,11 @@ gradio <- function(items, selected = 1, horizontal=FALSE,
 ##     invisible(id)
 ##   }
 
-  widget$addHandlerClicked <- function(., handler, action=NULL, ...) 
+  widget$addHandlerChanged <- function(., handler, action=NULL, ...) 
     .$addHandler(signal="check", handler, action=NULL, ...)
+  
+  
+  widget$addHandlerClicked <- widget$addHandlerChanged
   
 
   ## we add handler regardless, as this introduces transport function

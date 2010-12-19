@@ -1,3 +1,145 @@
+2010-12-12  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* upgraded to ext-3.3.0. Some widgets now need explicit size
+	(gsvg). Others seem to be working
+
+2010-12-11  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/LocalVersion.R (gw_package): New functions for use locally.
+
+2010-12-10  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/gnotebook.R (widget$add): put x.hidden attribute here, not elsewhere.
+
+	* R/ggroup.R (EXTGroup$ExtCfgOptions): put in new arguments for
+	layout, seem to work
+
+2010-12-08  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/aaa.R (EXTWidget$writeConstructor): changed x.hidden behaviour
+
+	* R/gwindow.R (w$ExtCfgOptions): added layout="fit" to panel for
+	main window. Issue was resizing. Not sure this makes any difference
+
+2010-12-06  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/gwindow.R (update.gWindow): New method. Will reload window.
+
+	* R/gtree.R (widget$addHandlerChanged): Bug fixes for gtree, new test
+
+2010-12-04  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/gspinbutton.R (widget$addHandlerChanged): fixed bug in handler
+
+	* R/gcheckboxgroup.R (widget$getValue): fix to use.table version.
+
+2010-12-03  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/aaa.R (EXTComponentNoItems): added new trait so that svalue<-
+	doesn't call into ..values (when no items, not [ method, so no ..values)
+
+	* R/gnotebook.R (widget$ExtCfgOptions): remove erroneous size
+	setting in config
+
+2010-11-30  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/gdf.R (widget$assignValue): fixed how values are transported
+	to R
+
+2010-11-29  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/aaa.R: tidied up the combining of strings to make javascript calls.
+
+2010-11-28  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/gcheckboxgroup.R: Added use.table option. If TRUE widget uses
+	grid with checkboxes to select multiple from. Doesn't set value
+	from checked! (To fix)
+
+2010-11-27  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/gcheckbox.R: added use.togglebutton option
+
+	* R/gwindow.R: if a statusbar, use that to indicate assigning,
+	handler running
+
+2010-11-23  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/gbigtable.R (widget$setValuesJS): override method from
+	gtable. 
+
+2010-11-22  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* inst/scripts/gWidgetsWWWAJAX.R: for proxystore, changed how we get path, using
+	uri not path part of SERVER
+
+	* R/LocalVersion.R (localServerOpen): check for urls, downloads if there
+
+2010-11-21  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/gprocessingjs.R: added this back in. Provides a more
+	interactive graphic interface, although only low level operations
+	are available.
+
+2010-11-20  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/gtree.R (gtree): added gtree widget. Not fully featured, as
+	there is no grid
+
+2010-11-19  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/gslider.R (gslider): added tooltipTemplate (hidden) argument
+	to specify a template for the tooltip. The value {0} is
+	substituted. Again, not so fast. Had issues with 3.3.0 so reverted back
+
+	* change ext-3.0 to ext-3.3.0 (primarily for the grid tree). Not
+	so fast. Can't get 3.3.0 to work with chrome and safari so
+	reverted back
+
+	* R/aaa.R (EXTComponentWithStore$setSize): For components with
+	stores (gtable, gdf, gbigtable) the size may be specified with a
+	list with named components width, height and most imporantly
+	columnWidths. The latter specifies the individual column widths in pixels.
+
+2010-11-18  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/gwindow.R (gwindow): add hidden argument AJAXtimeout to
+	gwindow. Set larger or shorter than 10000 if needed.
+
+2010-11-15  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* inst/templates/RApache-gWidgetsWWW.conf: restructured: put in
+	defaults to match ubuntu installation of package (with sudo); need
+	only configure where gWidgetsWWWrun files are, and this defaults
+	to the Examples directory.
+
+2010-11-05  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/LocalVersion.R (processBasehtmlFile): added headers to cache
+	basehtml file
+
+2010-10-27  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/aaa.R (EXTContainer$addJS): put in code to queue up JS code
+	rather than cat it out. This will allow us to pass values from R
+	to the browser by queuing up requests then periodically querying
+	from the browser to events.
+
+2010-10-13  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/aaa.R (EXTComponentWithStore$filter): call to RegExp to
+	actually use regular expressions.
+
+2010-10-09  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/aaa.R (EXTComponentWithStore$filter): Moved $filter from
+	gtable out so that gdf can use the code.
+
+2010-10-01  john verzani  <verzani@john-verzanis-macbook-pro.local>
+
+	* R/aaa.R (EXTComponentDfStore$setValues): made Trait so that gdf
+	has [<- method that works
+
 2010-08-23  john verzani  <verzani@john-verzanis-macbook-pro.local>
 
 	* inst/Examples/ex-clt.R (makePlot): fix to example -- was making

@@ -1,8 +1,40 @@
+##  Copyright (C) 2010 John Verzani
+##
+##  This program is free software; you can redistribute it and/or modify
+##  it under the terms of the GNU General Public License as published by
+##  the Free Software Foundation; either version 2 of the License, or
+##  (at your option) any later version.
+##
+##  This program is distributed in the hope that it will be useful,
+##  but WITHOUT ANY WARRANTY; without even the implied warranty of
+##  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##  GNU General Public License for more details.
+##
+##  A copy of the GNU General Public License is available at
+##  http://www.r-project.org/Licenses/
+
+
 ## gcombobox aka gdroplist
 ## XXX -- needs two or more values
 
-gcombobox <- gdroplist <- 
-  function(items, selected=1, editable=FALSE, coerce.with=NULL,
+##' combobox implementation
+##'
+##' The \code{svalue<-} method is used to specify value by name or by
+##' index. The \code{[<-} method can be used to update the data to
+##' select from.
+##' @param items a vector of items to choose from. Or a data frame with 1 column (items), two columns (items, icons), or three columns (items, icons, tooltip)
+##' @param selected initially selected item, by index. Use \code{0L} for none.
+##' @param editable logical. Does combobox allow editing
+##' @param coerce.with Function. If given, called on value before returning
+##' @param handler handler
+##' @param action action
+##' @param container parent container
+##' @param ... passed to \code{add} method of parent
+##' @note See the  \code{..tpl} to modify template for what is
+##' displayed. Override \code{..hideTrigger} and \code{..typeAhead} to
+##' change behaviours.
+##' @export
+gcombobox <- function(items, selected=1, editable=FALSE, coerce.with=NULL,
            handler = NULL, action = NULL, container=NULL,...) {
 
     widget <- EXTComponentWithStore$new(toplevel=container$toplevel,
@@ -10,7 +42,7 @@ gcombobox <- gdroplist <-
                                ..selected = selected)
     class(widget) <- c("gComboBox",class(widget))
     
-    store <- EXTStore$new()
+    store <- EXTStore$new(toplevel=container$toplevel)
     store$ID <- container$newID()       # set ID
 
     ## we have possible a multicolumn items
@@ -21,7 +53,8 @@ gcombobox <- gdroplist <-
     ## d) 4 cols: user can use template
 
 
-    ## figure out which type
+ 
+    
     if(!is.data.frame(items) ||  ncol(items) == 1)
       widget$..type <- 1
     else
@@ -30,7 +63,7 @@ gcombobox <- gdroplist <-
     if(!is.data.frame(items)) {
       if(is.numeric(items))
         widget$coerce.with = "as.numeric"
-      items <- data.frame(value=items, stringsAsFactors=FALSE)
+      items <- data.frame(values=items, stringsAsFactors=FALSE)
     }
     
     ## double up first column
@@ -61,15 +94,8 @@ gcombobox <- gdroplist <-
     store$setData(items)
     store$setChosenCol(store$fieldNames()[1])
 
+
     widget$..store <- store
-
-    if(selected >= 1) {
-      widget$setValue(value=items[selected,1,drop=TRUE]) # items is a data frame!
-    } else {
-      widget$setValue(value="")         # selected == 0 --> no entry
-    }
-##    widget$setValues(value=items) ## done in store not here
-
     ## properties 
     widget$..width <- 200
     widget$..emptyText <- ""
@@ -97,20 +123,95 @@ gcombobox <- gdroplist <-
 
     widget$getValueJSMethod <- "getRawValue"
     widget$setValueJSMethod <- "setValue"
-    widget$..setValue <- function(., index=NULL, ..., value) {
+
+    ## we redefine the setvalue bit. We use the raw value here so that
+    ## editable and not are the same. In get value we coerce to index,
+    ## if possible, to make sure value is one we want
+    widget$assignValue <- function(., value) {
+      .$..data <- value[[1]]
+    }
+
+    ##' we override get value to make sure we check that value is in
+    widget$getValue <- function(.,index=NULL ,drop=NULL,...) {
+      ## we store value as an index
+      index <- getWithDefault(index, FALSE)
+      
+      out <- .$..data
+      values <- .$getValues()
+      ## hack to make chosenCol work with combobox
+      chosenCol <- 1
+      values <- values[, chosenCol, drop=TRUE]
+
+      ## if editable then we just return
+      if(.$..editable) {
+        if(index) {
+          ind <- values %in% out
+          if(any(ind))
+            return(ind[1])
+          else
+            return(0L)
+        } else {
+          return(out)
+        }
+      }
+
+      ## otherwise, we get the index first (to untaint) then go from there
+      ind <- which(as.character(values) %in% as.character(out))
+
+      if(length(ind) == 0)              # no match
+        if(index)
+          return(0)
+        else
+          return("")                    # not editable, so we clobber
+
+      ind <- ind[1]
+      ## no index -- return values
+      if(index) {
+        return(ind)
+      } else {
+        values <- .$..store$data
+        ## depends on drop
+        if(names(values)[1] == "__index")
+          values <- values[,-1, drop=FALSE]             # drop __index
+        
+        if(is.null(drop) || drop) {
+          return(values[ind, chosenCol, drop=TRUE])
+        } else {
+          return(values[ind,])
+        }
+      }      
+    }
+
+
+    widget$setValue <- function(., index=NULL, ..., value) {
+      
       ## can set by text or by index.
-      if(!is.null(index) && index) {
+      index <- getWithDefault(index, FALSE)
+      if(index) {
         values <- .$getValues()
         if(value >= 1)
           value <- values[value,1]        # get from data frame
         else
           value = ""                    # empty if selected = 0
       }
-      .$..data <- as.character(value)
-      if(.$ID != "")
-        assign(.$ID,value, envir=.$toplevel)
+      .$..data <- value
+      
+      ## now process if shown
+      if(.$has_local_slot("..shown"))
+        .$addJSQueue(.$setValueJS(index=index, ...))
     }
     
+    widget$setValueJS <- function(., ...) {
+      if(exists("..setValueJS", envir=., inherits=FALSE)) .$..setValueJS(...)
+      ind <- .$getValue(index=TRUE)
+      
+      if(ind <= 0)
+        out <- sprintf("%s.clearValue()", .$asCharacter())
+      else
+        out <- sprintf("%s.setValue('%s');", .$asCharacter(), .$getValue(index=FALSE))
+  return(out)
+}
+
 
     widget$setValues <- function(.,i,j,...,value) {
       ## intercept value if not data frame or if only 1 d
@@ -128,7 +229,8 @@ gcombobox <- gdroplist <-
       ## XXX need to include i,j stuff
       .$..store$data <- value
       if(exists("..shown",envir=., inherits=FALSE))
-        cat(.$setValuesJS(...), file=stdout())
+        ##cat(.$setValuesJS(...), file=stdout())
+        .$addJSQueue(.$setValuesJS(...))
     }
     widget$ExtConstructor <- "Ext.form.ComboBox"
     widget$ExtCfgOptions <- function(.) {
@@ -138,7 +240,6 @@ gcombobox <- gdroplist <-
                   store = String(.$..store$asCharacter()),
                   displayField = .$..store$displayField(),
                   valueField = .$..store$displayField(),
-                  value = svalue(.),
                   editable = .$..editable,
                   mode = "local",
                   triggerAction = "all",
@@ -148,7 +249,9 @@ gcombobox <- gdroplist <-
                   selectOnFocus = TRUE,
                   tpl =  .$..tpl
                   )
-
+      if(!is.na(svalue(.)))
+        out[['value']] <- svalue(.)     # string, not index
+      
       if(exists("..width",envir = .,inherits=FALSE))
         out[["width"]] <- .$..width
       else
@@ -171,15 +274,19 @@ gcombobox <- gdroplist <-
               'layout:"fit",' +
                 'width:' + .$..width + ',' +
                   'height: "auto",' +
-                    'renderTo: Ext.getBody(),' +
+                    sprintf('renderTo: %s,', .$toplevel$..renderTo) +
                       'items: [' + '\n' + 
                         .$mapRtoObjectLiteral() +
                           ']' + '\n' +
                             '});' + '\n'
+
+      out <- out + sprintf("o%spanel.addClass('x-hidden');\n", .$ID)
+
       out <- out +
         'o' + .$ID + ' = ' + # no var -- global
                     'o' + .$ID + 'panel.getComponent(0);' + '\n'
 
+      
       return(out)
     }
 
@@ -195,6 +302,14 @@ gcombobox <- gdroplist <-
     }
         
     
+    ## initialize after methods are defined.
+    ## This is why we need to make a Trait
+    if(selected >= 1) {
+      widget$setValue(value=items[selected,1,drop=TRUE]) # items is a data frame!
+    } else {
+      widget$setValue(value="")         # selected == 0 --> no entry
+    }
+
 
     
     ## methods
@@ -212,3 +327,8 @@ gcombobox <- gdroplist <-
     
     invisible(widget)
   }
+
+##' Old name for widget
+##'
+##' Deprecated
+gdroplist <- gcombobox

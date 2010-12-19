@@ -1,4 +1,17 @@
-## XXX This is deprecated.
+##  Copyright (C) 2010 John Verzani
+##
+##  This program is free software; you can redistribute it and/or modify
+##  it under the terms of the GNU General Public License as published by
+##  the Free Software Foundation; either version 2 of the License, or
+##  (at your option) any later version.
+##
+##  This program is distributed in the hope that it will be useful,
+##  but WITHOUT ANY WARRANTY; without even the implied warranty of
+##  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##  GNU General Public License for more details.
+##
+##  A copy of the GNU General Public License is available at
+##  http://www.r-project.org/Licenses/
 
 
 ## interface to Processing.js
@@ -9,8 +22,26 @@
 ##        "<<p>>.line(1,2,4,5)
 ## }
 
+##' Widget to allow low-level graphics commands through processingjs.
+##'
+##' The advantage over gcanvas is that this has more interactivity
+##' defined for it.  The use of this is different though. The basic
+##' idea is that several of the lowlevel plot commands are
+##' implemented. For exmaple plot.new, plot.window, axis, title,
+##' lines, polygon etc. These are called differently though. They are
+##' implemented as proto methods of the gprocessingjs object, so are
+##' called as in p\$plot.window().  The method addHandlerClick passes
+##' back a value xy wich contains the position of the mouse click in
+##' pixel coordinates. One can use the method pixelsToXY to covert to
+##' usr coordinates.
+##' @param width of graphic
+##' @param height height of graphic (pixels)
+##' @param pointsize size of fonts
+##' @param container parent container
+##' @param ... passed to container's add method
+##' @export
 gprocessingjs <- function(width=400, height=400, pointsize= 12, container = NULL, ...) {
-  widget <- EXTComponent$new(toplevel = container$toplevel,
+  widget <- EXTComponentNoItems$new(toplevel = container$toplevel,
                              ..width = width,
                              ..height = height,
                              ..pointsize = pointsize)
@@ -35,18 +66,6 @@ gprocessingjs <- function(width=400, height=400, pointsize= 12, container = NULL
   ## holds value as string
   widget$out <- String()
   
-  
-  ## methods to construct widget
-  widget$scripts <- function(.) {
-    files <- c("ext.ux.canvas.js", "processing.js", "processinginit.js")
-    ##    files <- c("ext.ux.canvas.js", "processing-0.9.1.js", "processinginit.js")
-    out <- String() + "\n"
-    for(i in files) {
-      f <- system.file("javascript",i, package="gWidgetsWWW")
-      out <- out + paste(readLines(f), collapse="\n") + "\n"
-    }
-    return(out)
-  }
 
   widget$ExtConstructor <- "Ext.ux.Canvas"
   widget$ExtCfgOptions <- function(.) {
@@ -56,20 +75,27 @@ gprocessingjs <- function(width=400, height=400, pointsize= 12, container = NULL
   }
 
 
+  widget$asProcessingCharacter <- function(.) sprintf("processing%s", .$ID)
+  widget$..writeConstructor <- function(.) {
+    ## create element
+    out <- String() + "\n" + "// ------- \n" +
+      sprintf("var %s = new Processing(document.getElementById('%s'));", .$asProcessingCharacter(), .$ID) +
+        sprintf("%s.size(%s, %s);", .$asProcessingCharacter(), .$..width, .$..height) +
+          .$out + "\n"
+    out
+  }
+    
   widget$footer <- function(.) {
     ID <- .$ID
-    pID <- String("processing") + ID
-   ## create element
-    out <- String() +
-      "var " + pID + " = Processing('" + ID + "');" +
-        pID + ".size(" + .$..width + "," + .$..height + ");" +
-          .$out
+    pID <- .$asCharacter()
 
-     ## for i in handlers, call
-     ## these are javascript to call direct avoiding R handlers.
-     for(i in .$processingEvents) {
-       f <- .[[i]]
-       if(!is.null(f)) {
+    out <- String()
+    
+    ## for i in handlers, call
+    ## these are javascript to call direct avoiding R handlers.
+    for(i in .$processingEvents) {
+      f <- .[[i]]
+      if(!is.null(f)) {
          val <- f()
          pID <- String("processing") + ID
          fnHead <- pID + "." + i + "= function() {\n"
@@ -79,9 +105,8 @@ gprocessingjs <- function(width=400, height=400, pointsize= 12, container = NULL
        }
      }
      ## call init
-    out <- out + pID + ".init();"
-    
-    .$Cat(out)
+#    out <- out + sprintf("%s.init();", .$asCharacter())
+    out
   }
   
   ## turn method into javascript command from Processing.js
@@ -91,9 +116,10 @@ gprocessingjs <- function(width=400, height=400, pointsize= 12, container = NULL
     vals <- paste(args, collapse=", ")
 
     val <-  String() +
-      "processing" + .$ID +  "." + name + "(" + vals + ");"
-    if(exists("..shown", envir=., inherits=FALSE))
-      cat(val)
+      "processing" + .$ID +  "." + name + "(" + vals + ");\n"
+
+    if(.$has_local_slot("..shown"))
+      .$addJSQueue(val)
     else
       .$out <- .$out + val
   }
@@ -280,10 +306,10 @@ gprocessingjs <- function(width=400, height=400, pointsize= 12, container = NULL
 
   ## rect -> prect
   widget$prect <- function(., x,y, width, height)
-    .$makeCommand("rect",  x,y, width, height)
+    .$makeCommand("rect",  x, y, width, height)
 
   ## draw ellipse or circle
-  widget$ellipse <- function(., x, y, width, height=width)
+  widget$ellipse <- function(., x, y, width=10, height=width)
     .$makeCommand("ellipse", x, y, width, height)
 
 
@@ -431,15 +457,17 @@ gprocessingjs <- function(width=400, height=400, pointsize= 12, container = NULL
     xy$x <- .$xToPixels(x)
     xy$y <- .$yToPixels(y)
 
+    ## recycle cex
+    cex <- rep(cex, length.out=length(xy$x))
     ## fix and recycle col
     if(is.na(col))
       col <- "black"
     col <- .$fixColor(col)
-    col <- rep(col, length(xy$x))
+    col <- rep(col, length.out=length(xy$x))
 
-    for(i in 1:length(xy$x))  {
+    for(i in seq_along(xy$x))  {
       .$fill(col[i])
-      .$ellipse(xy$x[i], xy$y[i], round(cex * 5))
+      .$ellipse(xy$x[i], xy$y[i], width=round(cex[i] * 5))
     }
   }
   

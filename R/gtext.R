@@ -1,3 +1,17 @@
+##  Copyright (C) 2010 John Verzani
+##
+##  This program is free software; you can redistribute it and/or modify
+##  it under the terms of the GNU General Public License as published by
+##  the Free Software Foundation; either version 2 of the License, or
+##  (at your option) any later version.
+##
+##  This program is distributed in the hope that it will be useful,
+##  but WITHOUT ANY WARRANTY; without even the implied warranty of
+##  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##  GNU General Public License for more details.
+##
+##  A copy of the GNU General Public License is available at
+##  http://www.r-project.org/Licenses/
 
 ## no wrap argument in Ext
 ## font.attr not implemented -- use markup
@@ -52,14 +66,16 @@ gtext <- function(text = NULL, width = NULL, height = 300,
   widget$setValueJS <- function(.,...) {
     if(exists("..setValueJS", envir=., inherits=FALSE)) .$..setValueJS(...)
 
-    if(gWidgetsWWWIsLocal()) {
-      theData <- paste(.$..data, collapse="\\n")
-    } else {
-      theData <- paste(.$..data, collapse="\\n")
-    }
-    out <- String() +
-      .$asCharacter() + '.setValue(' +
-        shQuote(theData) + ');' + '\n'
+    ## if(gWidgetsWWWIsLocal()) {
+    ##   theData <- paste(.$..data, collapse="\\n")
+    ## } else {
+    ##   theData <- paste(.$..data, collapse="\\n")
+    ## }
+
+    out <- sprintf("%s.setValue('%s');", .$asCharacter(), stripSlashN(.$..data, sep=" ", dostrwrap=FALSE))
+    ## out <- String() +
+    ##   .$asCharacter() + '.setValue(' +
+    ##     shQuote(theData) + ');' + '\n'
 
     return(out)
 
@@ -68,14 +84,16 @@ gtext <- function(text = NULL, width = NULL, height = 300,
   widget$transportSignal <- "change"
   widget$transportValue <- function(.,...) {
     out <- String() +
-      'var value = escape(' + .$asCharacter() + '.' +
-        .$getValueJSMethod + '());' + '\n'
+      sprintf("var value=escape(%s.%s());",
+              .$asCharacter(), .$getValueJSMethod)
+##      'var value = escape(' + .$asCharacter() + '.' +
+##        .$getValueJSMethod + '());' + '\n'
     return(out)
   }
   widget$ExtConstructor <- "Ext.form.TextArea"
   widget$ExtCfgOptions <- function(.) {
     out <- list()
-    out[["value"]] = paste(svalue(.), collapse="\\\\n")
+    out[["value"]] = stripSlashN(svalue(.), sep="\\\\n", dostrwrap=FALSE)
     if(!is.null(.$..width)) {
       out[["width"]] <- .$..width
     } else {

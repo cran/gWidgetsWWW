@@ -1,3 +1,19 @@
+##  Copyright (C) 2010 John Verzani
+##
+##  This program is free software; you can redistribute it and/or modify
+##  it under the terms of the GNU General Public License as published by
+##  the Free Software Foundation; either version 2 of the License, or
+##  (at your option) any later version.
+##
+##  This program is distributed in the hope that it will be useful,
+##  but WITHOUT ANY WARRANTY; without even the implied warranty of
+##  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##  GNU General Public License for more details.
+##
+##  A copy of the GNU General Public License is available at
+##  http://www.r-project.org/Licenses/
+
+
 ## button -
 ## methods
 ## svalue works
@@ -7,10 +23,20 @@
 ## *IF* handler = NULL and action a gaction instance then
 ## will use that action. Not for addHandlerClicked though.
 
+##' button widget
+##'
+##' 
+##' @param text button text. See \code{svalue} to change
+##' @param border logical. If \code{FALSE} will not draw border
+##' @param handler click handler
+##' @param action passed to handler
+##' @param container parent container
+##' @param ... passed to \code{add} method of container
+##' @export
 gbutton <- function(text="", border=TRUE,
                     handler = NULL, action=NULL, container, ...) {
   ## components
-  widget <- EXTComponent$new(toplevel=container$toplevel,
+  widget <- EXTComponentNoItems$new(toplevel=container$toplevel,
                              ..handler = handler,
                              ..action=action
                              )
@@ -52,16 +78,14 @@ gbutton <- function(text="", border=TRUE,
   }
 
   ## intercept action possibility
+  ## XXX Issue here -- doesn't work with subwindows/
   widget$writeConstructor <- function(.) {
-    
+    ID <- .$asCharacter()
     if(.$doAction()) {
-      out <- String() +
-        'o' + .$ID + '= new ' + .$ExtConstructor + '(' +
-          .$..action$asCharacter() + ');'
-      out <- out +
-        .$asCharacter() + '.id=' + shQuote(.$ID) + ';' 
-      out <- out +
-        .$asCharacter() + '.render(document.body);' + '\n'
+      out <- paste(sprintf("%s = new %s(%s);", ID, .$ExtConstructor, .$..action$asCharacter()),
+                   sprintf("%s.id = %s;", ID, shQuote(.$ID)),
+                   sprintf("%s.render(document.body);", ID),
+                   sep="\n")
     } else {
       out <- get("writeConstructor",envir=EXTWidget)(.)
     }

@@ -45,8 +45,9 @@ export(
        "gslider","gspinbutton",
        "gstatusbar",
        "gsvg",
-       "gtable",
+       "gtable", "gbigtable",
        "gtext",
+       "gtree",
        "gwebvis",
        "gwindow",
        "getStockIcons",
@@ -85,7 +86,8 @@ export(
        "String"
        )
 
-exportS3Classes("gWidget","gWindow","String")
+## is this needed?
+#exportS3Classes("gWidget","gWindow","String")
 
 S3method("svalue","gWidget")
 S3method("svalue<-","gWidget")
@@ -131,3 +133,6 @@ S3method("print","String")
 S3method("length","String")
 S3method("[","String")
 S3method("[<-","String")
+
+## some "apps"
+export("gw_package", "gw_browseEnv")

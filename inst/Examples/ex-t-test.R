@@ -1,21 +1,20 @@
 ## Build a t-test gui
-##require(Cairo) ## no X11 dependence
 
 w <- gwindow("t-test example")
 g <- ggroup(cont = w, horizontal = FALSE)
-data(Cars93, package="MASS")
+
+require(MASS, quietly=TRUE)
 
 
-dataSets <- c("mtcars") #,"Cars93")
-alternatives <- data.frame(value=c("two.sided","less","greater"),
-                           label = c("two sided", "less than", "greater than"))
+dataSets <- c("mtcars","Cars93")
+alternatives <- c("two.sided","less","greater")
 
 tbl <- glayout(cont=g)
 tbl[1,1] <- glabel("Selecte a data frame:", cont=tbl)
 tbl[1,2] <- (selData <- gcombobox(dataSets, selected=0, cont=tbl, editable=TRUE))
 
 tbl[2,1] <- glabel("Select a variable", cont=tbl)
-tbl[2,2] <- (selVariable <- gcombobox(c("",""),cont = tbl, editable = TRUE))
+tbl[2,2] <- (selVariable <- gcombobox(c(""),cont = tbl, editable = TRUE))
 
 tbl[3,1] <- glabel("mu:", cont=tbl)
 tbl[3,2] <- (selMu <- gedit(0, cont=tbl))
@@ -43,7 +42,12 @@ addHandlerChanged(selData, handler = function(h,...) {
   enabled(selVariable) <- TRUE
   df <- svalue(selData)
   df <- get(df, inherits=TRUE)                # string to object
-  selVariable[] <- data.frame(names(df),names(df), stringsAsFactors=FALSE)
+  selVariable[] <- data.frame(names(df), stringsAsFactors=FALSE)
+  svalue(selVariable, index=TRUE) <- 0
+  enabled(selMu) <- FALSE
+  enabled(selAlt) <- FALSE
+  enabled(buttonGroup) <- FALSE
+  svalue(outputArea) <- ""
 })
 
 addHandlerChanged(selVariable, handler = function(h,...) {
@@ -64,7 +68,7 @@ addHandlerClicked(doButton, handler = function(h,...) {
        t.test(df[,var], mu=as.numeric(mu), alt=as.character(alt))
      })
      
-     svalue(outputArea) <- val
+     svalue(outputArea) <- paste(val, collapse="\\n")
    }
 })
 
@@ -72,7 +76,7 @@ addHandlerClicked(doGraph, handler = function(h,...) {
   df <- svalue(selData)
   var <- svalue(selVariable)
   width <- 400; height <- 300
-
+  dpi <- 118
 
 
   w1 <- gwindow("EDA", parent = w, width=width, height=height+2*25 + 20 + 30)
@@ -81,12 +85,13 @@ addHandlerClicked(doGraph, handler = function(h,...) {
   gseparator(cont = g1)
   gbutton("dismiss", cont=g1, handler = function(h,...) dispose(w1))
 
+  ## call within callback, otherwise may not be present
   require(RSVGTipsDevice, quietly=TRUE, warn=FALSE)
-  f <- getStaticTmpFile(ext=".svg")
-  devSVGTips(f)
+  devSVGTips(f <- getStaticTmpFile(ext=".svg"), width=width/dpi, height=height/dpi)
   df <- get(df, inherits=TRUE)
   hist(df[, var], main=var)
   dev.off()
+
   svalue(cv) <- convertStaticFileToUrl(f)
   
   ## show page

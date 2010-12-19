@@ -1,3 +1,31 @@
+##  Copyright (C) 2010 John Verzani
+##
+##  This program is free software; you can redistribute it and/or modify
+##  it under the terms of the GNU General Public License as published by
+##  the Free Software Foundation; either version 2 of the License, or
+##  (at your option) any later version.
+##
+##  This program is distributed in the hope that it will be useful,
+##  but WITHOUT ANY WARRANTY; without even the implied warranty of
+##  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##  GNU General Public License for more details.
+##
+##  A copy of the GNU General Public License is available at
+##  http://www.r-project.org/Licenses/
+
+
+##' widget to display svg files
+##'
+##' Used like a non-interactive device: create file
+##' (\code{getStaticTmpFil(ext=".svg")}), use this with the svg device
+##' (such as \code{devSVGTips} from the \pkg{RSVGTipsDevice} package),
+##' then pass to \code{f} or use \code{svalue<-} to assign.
+##' @param f filename
+##' @param width width of widget in pixels
+##' @param height height of widget in pixels
+##' @param container parent container
+##' @param ... passed to \code{add} method of parent container
+##' @export
 gsvg <- function(f, width=480, height=400,
 ##                 handler = NULL, action = NULL,
                  container = NULL,...) {
@@ -7,7 +35,7 @@ gsvg <- function(f, width=480, height=400,
   if(!bypassRequire("RSVGTipsDevice"))
     return(glabel(gettext("gsvg needs the RSVGTipsDevice package to be installed"), cont=container))
 
-  widget <- EXTComponent$new(toplevel=container$toplevel,
+  widget <- EXTComponentNoItems$new(toplevel=container$toplevel,
                              ..width=as.numeric(width),
                              ..height=as.numeric(height))
   
@@ -59,12 +87,19 @@ gsvg <- function(f, width=480, height=400,
       ## convert to URL -- it is in static directory
       value <- convertStaticFileToUrl(value)
       out <- String() +
-        "var el = document.getElementById('svg" + .$ID + "');" + "\n" +
-          "el.innerHTML =  '<embed src=\"" + value + "\" " +
-            "width=" + .$..width + " " +
-              "height=" + .$..height + " " +
-                "type=\"image/svg+xml\">';"
-      cat(out)
+        paste(sprintf("var el%s = document.getElementById('svg%s');", .$ID, .$ID),
+              sprintf("el%s.innerHTML = '<embed src=\"%s\" width=%s height=%s type=\"image/svg+xml\">';",
+                      .$ID,
+                      escapeQuotes(value),
+                      .$..width, .$..height),
+              collapse="")
+        ## "var el = document.getElementById('svg" + .$ID + "');" + "\n" +
+        ##   "el.innerHTML =  '<embed src=\"" + value + "\" " +
+        ##     "width=" + .$..width + " " +
+        ##       "height=" + .$..height + " " +
+        ##         "type=\"image/svg+xml\">';"
+      .$addJSQueue(out)
+      ## cat(out)
     } else {
       return("")
     }
@@ -75,8 +110,8 @@ gsvg <- function(f, width=480, height=400,
   widget$writeHandlersJS <- function(., signal, handler=NULL) { return("")}
 
   ## XXX replace when handler code added
-##   if(!is.null(handler)) 
-##     widget$addHandlerClicked(handler, action)
+  ##   if(!is.null(handler)) 
+  ##     widget$addHandlerClicked(handler, action)
 
   
   ## add after CSS, scripts defined
@@ -85,8 +120,3 @@ gsvg <- function(f, width=480, height=400,
   
 }
 
-
-## ggraphics is a pass through for gcanvas
-ggraphics <- function(width = 480, height=400, container=NULL, ...) {
-  gcanvas(width=width, height=height, container=container, ...)
-}
