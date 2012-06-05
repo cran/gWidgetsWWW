@@ -1,0 +1,7 @@
+Some basic tests for gWidgetsWWW
+
+You can run them all with code like:
+
+library(gWidgetsWWW)
+x <- list.files(system.file("Tests", package="gWidgetsWWW"),full.name=TRUE)
+sapply(x[!grepl("README",x)], localServerOpen)
